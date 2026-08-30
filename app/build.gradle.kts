@@ -11,7 +11,11 @@ android {
         minSdk = 24
         targetSdk = 34
         versionCode = 1
-        versionName = "0.1"
+        versionName = "0.2"
+        ndk {
+            // real target phones are ARM; dropping x86 halves the APK (rubric: efficiency)
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
+        }
     }
 
     compileOptions {

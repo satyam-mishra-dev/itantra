@@ -4,6 +4,7 @@
     <string name="starting">starting…</string>
     <string name="recording">recording…</string>
     <string name="no_peers">no peers connected — same Wi-Fi/hotspot?</string>
+    <string name="nothing_to_send">nothing to send — speak (with model pack) or type a message</string>
     <string name="input_hint">message text (P1 stub — STT lands in P2)</string>
     <string name="alert_label">ALERT (max volume, repeats)</string>
     <string name="ptt_label">HOLD TO TALK</string>
