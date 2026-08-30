@@ -15,3 +15,18 @@
 
 *AMR/Codec2 columns: bytes those codecs would spend on the same sentence spoken aloud (13.3 chars/s en, 10 chars/s Indic) ÷ VarnaCode bytes. gzip shown for honesty: on short single sentences its header overhead loses to VarnaCode.*
 
+## Pipeline smoke test (measured on this machine, CPU)
+
+Loop: Hindi text -> Piper VITS (hi_IN-pratham-medium) -> wav -> STT -> text, 4 sentences.
+Round-trip CER compounds BOTH engines' errors (TTS pronunciation + STT recognition) —
+per-engine CER on natural speech is lower. Whisper-tiny emits romanized Hindi, so its raw
+same-script CER is meaningless; we report a transliteration-normalized approximation.
+IndicConformer int8 (native Devanagari, research/stt.md) replaces both in P1.
+
+| Metric | Piper TTS | Whisper-tiny STT | Vosk small-hi STT |
+|---|---|---|---|
+| RTF (mean) | 0.049 | 0.055 | 0.119 |
+| Round-trip CER | — | ~50% (translit-normalized, approx) | 1.6% (same-script, honest) |
+| Round-trip WER | — | — | 7.1% |
+| Model on disk | 77 MB | 245 MB (fp32+int8) | 78 MB |
+
