@@ -64,3 +64,22 @@ IndicConformer int8 (native Devanagari, research/stt.md) replaces both in P1.
 | Model on disk | 77 MB | 245 MB (fp32+int8) | 78 MB |
 
 Tests: `python3 test_p0.py` — 154 assertions green.
+
+## P4: STT quantization (int8 dynamic, measured)
+
+`quantize_stt.py` — onnxruntime `quantize_dynamic` (weights→QInt8) on the converted
+IndicConformer NeMo-CTC model, sherpa-onnx metadata re-injected post-quantization
+(quantizer strips custom metadata_props). Same 4 Piper wavs + references as the
+pipeline demo; sherpa-onnx `OfflineRecognizer.from_nemo_ctc`, 2 threads, desktop CPU.
+
+| Hindi model | Size MB | Load s | RTF | CER vs ref | CER vs fp32 hyps |
+|---|---|---|---|---|---|
+| fp32 | 493 | 0.7 | 0.047 | 0.8% | — |
+| int8 | **140** | 0.5 | **0.059** | **1.6%** | 0.8% |
+
+- 72% size cut; RTF stays ~17× faster than real time; accuracy loss is anusvara/
+  candrabindu-level (जाएँ→जाए, पहुँचेगी→पहुंचेगी) — within the ±1 pt the literature predicts.
+- Generalization: Bengali (5,633-token vocab) converts + quantizes to the same
+  **140 MB** and loads in 0.8 s (no bn reference audio locally, so size/load only).
+- Per-language phone budget confirmed: ~140 MB STT (int8) + ~63 MB Piper TTS ≈ **203 MB**,
+  vs the idea doc's ≤230 MB/language budget. ✓

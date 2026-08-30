@@ -35,7 +35,7 @@ adb push <lang-pack>/stt/  /sdcard/Android/data/com.nullpointers.itantra/files/m
 adb push <lang-pack>/tts/  /sdcard/Android/data/com.nullpointers.itantra/files/models/<lang>/tts/
 ```
 
-- `stt/model.onnx` + `stt/tokens.txt` — IndicConformer int8, NeMo-CTC ONNX export (sherpa-onnx `OfflineNemoEncDecCtcModelConfig`)
+- `stt/model.onnx` + `stt/tokens.txt` — IndicConformer NeMo-CTC ONNX (sherpa-onnx `OfflineNemoEncDecCtcModelConfig`). Sideload the **int8** variant (rename `model.int8.onnx` → `model.onnx` when pushing): 140 MB vs 493 MB fp32, measured CER 1.6% vs 0.8%, RTF 0.059 vs 0.047 — phone-sized at ±1 pt accuracy
 - `tts/model.onnx` + `tts/tokens.txt` [+ `tts/espeak-ng-data/`] — Piper/VITS voice (e.g. `vits-piper-hi_IN-pratham-medium`, same files as `p0/models/`)
 
 **Graceful degradation:** missing STT pack → typed-text stub still transmits;
@@ -67,14 +67,22 @@ vocab.json + `<blk>` appended, and injected metadata
 `model_type=EncDecCTCModel`) — the raw export lacks all of these and
 `subsampling_factor=8` silently truncates transcripts.
 
-Smoke test (desktop, p0/.venv, sherpa-onnx 1.13.6): Hindi model on the p0
-Piper-generated wav → **CER 0.0%, RTF 0.054**, loaded by the exact
-`OfflineNemoEncDecCtcModelConfig` path the app uses. The official AI4Bharat
-int8 ONNX (would cut ~493→~150 MB) is HF-gated — request access, then the
-same recipe applies; until then fp32 packs work.
+Add `--int8` to also emit `model.int8.onnx` — onnxruntime dynamic weight
+quantization with the sherpa-onnx metadata re-injected (the quantizer strips
+it). Measured on the p0 Piper wavs (desktop, sherpa-onnx 1.13.6, the exact
+`OfflineNemoEncDecCtcModelConfig` path the app uses):
 
-## P4/P5 next
+| Hindi model | Size | Load | RTF | CER vs ref |
+|---|---|---|---|---|
+| fp32 | 493 MB | 0.7 s | 0.047 | 0.8% |
+| int8 | **140 MB** | 0.5 s | 0.059 | 1.6% |
 
-int8-quantize the converted packs (onnxruntime dynamic quantization),
-in-app pack downloads, store-and-forward queue on disconnect, AES-GCM frame
+int8 vs fp32 transcripts differ by 0.8% CER (anusvara/candrabindu variants —
+e.g. जाएँ→जाए). Recipe generalizes: Bengali converts+quantizes to the same
+140 MB and loads clean. The official AI4Bharat int8 ONNX remains a HF-gated
+alternative; ours removes that dependency.
+
+## P5 next
+
+In-app pack downloads, store-and-forward queue on disconnect, AES-GCM frame
 envelope, ESP32 LoRa bridge firmware.
