@@ -1,4 +1,4 @@
-# iTantra Android app (P2 — real on-device speech)
+# iTantra Android app (P3 — VAD sentence streaming, Evaluation Mode, dual bearers)
 
 Native Kotlin. Package `com.nullpointers.itantra`. AGP 9.3.2 · Gradle 9.7.1 · Java 17 target.
 
@@ -42,18 +42,39 @@ adb push <lang-pack>/tts/  /sdcard/Android/data/com.nullpointers.itantra/files/m
 missing TTS pack → platform `TextToSpeech` speaks. The app never hard-crashes
 without models.
 
-## What's real (P2)
+## What's real (P3)
 
-- VarnaCode v1 + frame protocol, wire-compatible with p0 (tested)
-- NSD discovery + TCP transport, foreground service (microphone type)
-- 16 kHz PCM capture while PTT held → **sherpa-onnx OfflineRecognizer** on release
-- **sherpa-onnx OfflineTts** (VITS/Piper) playback via AudioTrack
-- ALERT: max volume (MUSIC+ALARM streams), `AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE`, 2× repeat
-- Latency stamps in transcript: `stt <ms> (RTF x.xx)` on send, `tts-first-audio <ms>` on receive — Evaluation Mode's seed
+- VarnaCode v1 + frame protocol, wire-compatible with p0 (30 interop vectors byte-identical)
+- **Silero VAD sentence streaming**: a long PTT hold is chunked at pauses; sentence 1
+  is recognized and transmitted while sentence 2 is still being spoken (the PS's
+  "detect pauses, form sentences, stream instantly"). VAD model ships in assets (630 KB)
+- Dual bearers behind one `Transport` interface: NSD/TCP (Wi-Fi) + **Bluetooth RFCOMM**
+  (bonded devices, zero Wi-Fi infra); frames go out on both
+- 16 kHz PCM capture → **sherpa-onnx OfflineRecognizer**; **OfflineTts** (VITS/Piper) playback
+- ALERT: max volume (MUSIC+ALARM), `AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE`, 2× repeat
+- **Evaluation Mode screen**: per-language model-pack inventory (✓/✗ + MB), reference-sentence
+  read test scoring live CER/WER (CER is the honest Indic metric — arXiv 2203.16601),
+  per-utterance RTF, last receive→first-audio ms, 5-s idle-CPU sample (/proc/self/stat)
+- Graceful degradation everywhere: no STT pack → typed text; no TTS pack → platform TTS
 
-## P3 next
+## IndicConformer STT packs (desktop-verified)
 
-10-language pack manager UI (download/sideload status per language), Silero VAD
-sentence chunking during long PTT holds, streaming partials while held,
-in-app Evaluation Mode screen (CER vs reference, idle CPU, footprints),
-Bluetooth RFCOMM second transport.
+`tools/convert_indicconformer.py <lang> <outdir>` downloads the community
+IndicConformer ONNX (trysem/indicconformer-120m-onnx, 12 Indic languages,
+~493 MB fp32 each) and fixes it for sherpa-onnx NeMo-CTC: tokens.txt from
+vocab.json + `<blk>` appended, and injected metadata
+(`vocab_size`, `normalize_type=per_feature`, `subsampling_factor=4`,
+`model_type=EncDecCTCModel`) — the raw export lacks all of these and
+`subsampling_factor=8` silently truncates transcripts.
+
+Smoke test (desktop, p0/.venv, sherpa-onnx 1.13.6): Hindi model on the p0
+Piper-generated wav → **CER 0.0%, RTF 0.054**, loaded by the exact
+`OfflineNemoEncDecCtcModelConfig` path the app uses. The official AI4Bharat
+int8 ONNX (would cut ~493→~150 MB) is HF-gated — request access, then the
+same recipe applies; until then fp32 packs work.
+
+## P4/P5 next
+
+int8-quantize the converted packs (onnxruntime dynamic quantization),
+in-app pack downloads, store-and-forward queue on disconnect, AES-GCM frame
+envelope, ESP32 LoRa bridge firmware.
