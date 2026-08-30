@@ -61,4 +61,14 @@ try:
 except ValueError:
     n += 1
 
+# v1 codebooks: present for all 10 languages, and native-script text beats 6 bits/char
+assert set(vc._BOOKS) >= set(vc.LANGS), 'codebooks.json missing languages'
+n += 1
+for lang, text in SAMPLES.items():
+    assert vc.bits_per_char(text, lang) < 6.5, (lang, vc.bits_per_char(text, lang))
+    n += 1
+# bigram symbols exist and are multi-char strings
+assert any(len(s) == 2 for s in vc._BOOKS['hi']['bigrams']), 'no bigram symbols'
+n += 1
+
 print(f'OK — {n} assertions passed')

@@ -50,27 +50,22 @@ def bench():
         secs = chars / CHARS_PER_SEC.get(lang, 10.0)
         amr = secs * 12200 / 8
         c2 = secs * 450 / 8
-        rows.append((lang, chars, utf8, varna, varna * 8 / chars,
-                     utf8 / varna, gz, amr / varna, c2 / varna))
+        bpc = varna * 8 / chars
+        # chars fitting a 51-byte LoRa SF12 payload (worst-case frame): UTF-8 vs VarnaCode
+        lora_utf8 = int(51 / (utf8 / chars))
+        lora_vc = int(51 * 8 / bpc)
+        rows.append((lang, chars, utf8, varna, bpc,
+                     utf8 / varna, gz, amr / varna, c2 / varna, lora_utf8, lora_vc))
     return rows
 
 
 if __name__ == '__main__':
     rows = bench()
     lines = [
-        '## Compression benchmark (held-out sentences, measured)',
-        '',
-        '| Lang | Chars | UTF-8 B | VarnaCode B | bits/char | × vs UTF-8 | gzip B | × vs AMR-NB | × vs Codec2-450 |',
-        '|---|---|---|---|---|---|---|---|---|',
+        '| Lang | Chars | UTF-8 B | VarnaCode B | bits/char | × vs UTF-8 | gzip B | × vs AMR-NB | × vs Codec2-450 | chars/LoRa-51B UTF-8 | chars/LoRa-51B VarnaCode |',
+        '|---|---|---|---|---|---|---|---|---|---|---|',
     ]
     for r in rows:
-        lines.append('| {} | {} | {} | {} | {:.2f} | {:.1f}× | {} | {:.0f}× | {:.1f}× |'.format(
-            r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8]))
-    lines.append('')
-    lines.append('*AMR/Codec2 columns: bytes those codecs would spend on the same sentence '
-                 'spoken aloud (13.3 chars/s en, 10 chars/s Indic) ÷ VarnaCode bytes. '
-                 'gzip shown for honesty: on short single sentences its header overhead loses to VarnaCode.*')
-    out = '\n'.join(lines) + '\n'
-    print(out)
-    with open('RESULTS.md', 'a') as f:
-        f.write(out + '\n')
+        lines.append('| {} | {} | {} | {} | {:.2f} | {:.1f}× | {} | {:.0f}× | {:.1f}× | {} | {} |'.format(*r))
+    print('\n'.join(lines))
+    # RESULTS.md is hand-curated; paste this table in under the v1 heading.
