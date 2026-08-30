@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>iTantra — Offline Multilingual Semantic Transceiver | SIH 2026 Idea Document</title>
+<style>
+  :root{
+    --ink:#1a1a2e; --accent:#9a3412; --accent2:#0c4a6e; --soft:#fdf3ec; --soft2:#eff6ff;
+    --warn:#92400e; --warnbg:#fef3c7; --line:#ead8c8; --muted:#5b5b73;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:Georgia,'Times New Roman',serif; color:var(--ink); font-size:10.5pt; line-height:1.55; background:#fff;}
+  @page{size:A4; margin:16mm 15mm 18mm 15mm;}
+  .page{page-break-after:always;}
+  .page:last-child{page-break-after:auto;}
+  h1{font-size:23pt; color:var(--accent); line-height:1.2;}
+  h2{font-size:15pt; color:var(--accent); border-bottom:2.5px solid var(--accent); padding-bottom:4px; margin-bottom:12px;}
+  h2 .secno{color:var(--accent2); margin-right:8px;}
+  h3{font-size:11.5pt; color:var(--accent2); margin:14px 0 5px;}
+  h4{font-size:10.5pt; margin:10px 0 3px;}
+  p{margin-bottom:7px;}
+  ul,ol{margin:0 0 8px 20px;}
+  li{margin-bottom:3.5px;}
+  a{color:var(--accent); text-decoration:none;}
+  table{width:100%; border-collapse:collapse; margin:8px 0 12px; font-size:9pt; font-family:Helvetica,Arial,sans-serif;}
+  th{background:var(--accent); color:#fff; text-align:left; padding:5px 7px; font-size:8.5pt;}
+  td{border:1px solid var(--line); padding:4.5px 7px; vertical-align:top;}
+  tr:nth-child(even) td{background:var(--soft);}
+  .tag{display:inline-block; background:var(--accent2); color:#fff; font-family:Helvetica,Arial,sans-serif; font-size:7.5pt; font-weight:bold; padding:1.5px 7px; border-radius:9px; margin-right:4px; vertical-align:middle;}
+  .tagp{background:var(--accent);}
+  .box{background:var(--soft); border-left:4px solid var(--accent); padding:9px 12px; margin:9px 0; border-radius:0 4px 4px 0;}
+  .boxg{background:var(--soft2); border-left:4px solid var(--accent2); padding:9px 12px; margin:9px 0; border-radius:0 4px 4px 0;}
+  .boxw{background:var(--warnbg); border-left:4px solid var(--warn); padding:9px 12px; margin:9px 0; border-radius:0 4px 4px 0;}
+  .kicker{font-family:Helvetica,Arial,sans-serif; font-size:9pt; letter-spacing:2.5px; text-transform:uppercase; color:var(--accent2); font-weight:bold;}
+  .small{font-size:8.5pt; color:var(--muted);}
+  .src{font-size:8pt; color:var(--muted); font-style:italic;}
+  code{font-family:Menlo,Consolas,monospace; font-size:8.5pt; background:var(--soft); padding:0 3px; border-radius:3px;}
+  .cover{display:flex; flex-direction:column; justify-content:center; min-height:250mm; text-align:center;}
+  .cover .logo{font-size:52pt; margin-bottom:8px;}
+  .cover h1{font-size:30pt; margin-bottom:6px;}
+  .cover .sub{font-size:13pt; color:var(--muted); margin-bottom:26px;}
+  .cover .meta{display:inline-block; text-align:left; background:var(--soft); border:1px solid var(--line); border-radius:8px; padding:16px 26px; font-family:Helvetica,Arial,sans-serif; font-size:10pt; line-height:1.9;}
+  .toc{list-style:none; margin-left:0; font-family:Helvetica,Arial,sans-serif; font-size:10.5pt;}
+  .toc li{border-bottom:1px dotted var(--line); padding:5.5px 2px; display:flex; justify-content:space-between;}
+  .toc .n{color:var(--accent2); font-weight:bold; width:34px; flex-shrink:0;}
+  .toc a{flex-grow:1; color:var(--ink);}
+  .toc .pg{color:var(--muted); font-size:9pt;}
+  .arch{font-family:Menlo,Consolas,monospace; font-size:8pt; line-height:1.35; background:#16162a; color:#f5d9c9; padding:12px 14px; border-radius:6px; white-space:pre; overflow-x:auto; margin:8px 0;}
+  .wowcard{border:1.5px solid var(--accent); border-radius:7px; padding:9px 12px; margin-bottom:9px; page-break-inside:avoid;}
+  .wowcard h4{color:var(--accent); margin-top:0;}
+  .refs{font-size:8.4pt;}
+  .refs li{margin-bottom:2.5px;}
+</style>
+</head>
+<body>
+
+<!-- ============================ COVER ============================ -->
+<div class="page cover">
+  <div class="logo">📻🗣️</div>
+  <div class="kicker">Smart India Hackathon 2026 · Internal Idea Document</div>
+  <h1>iTantra</h1>
+  <div class="sub">The Offline Multilingual Semantic Transceiver — voice that travels as text</div>
+  <div>
+    <div class="meta">
+      <b>Problem Statement:</b> SIH26173 — Indian Multilingual TTS &amp; STT Aided Neural Transceiver<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;Radio Access for low-bitrate links<br>
+      <b>Organization:</b> ISRO &nbsp;·&nbsp; <b>Category:</b> Software<br>
+      <b>Languages:</b> Hindi · Gujarati · Marathi · Kannada · Malayalam · Tamil · Telugu · Odia · Bengali · English<br>
+      <b>Document:</b> Full ideation, research base, architecture &amp; phase-wise build plan<br>
+      <b>Team:</b> Null Pointers &nbsp;·&nbsp; <b>Version:</b> 1.0 · August 2026
+    </div>
+  </div>
+  <p style="margin-top:30px" class="small">Don't compress the voice. Eliminate the waveform. — 100–600× below any voice codec, fully offline, in 10 Indian languages.</p>
+</div>
+
+<!-- ============================ INDEX ============================ -->
+<div class="page">
+  <h2><span class="secno">§0</span>Index</h2>
+  <p class="small">Every entry is clickable — in the PDF, click to jump straight to the section.</p>
+  <ul class="toc">
+    <li><span class="n">§1</span><a href="#s1">Idea in One Page (TL;DR)</a><span class="pg">the elevator version</span></li>
+    <li><span class="n">§2</span><a href="#s2">The Problem — When the Towers Go Down</a><span class="pg">cited stats</span></li>
+    <li><span class="n">§3</span><a href="#s3">Current Solutions &amp; Their Gaps</a><span class="pg">govt + hobbyist + market</span></li>
+    <li><span class="n">§4</span><a href="#s4">Why Text-as-Codec — The Honest Case</a><span class="pg">semantic communication science</span></li>
+    <li><span class="n">§5</span><a href="#s5">Proposed Solution — Architecture Deep Dive</a><span class="pg">the pipeline</span></li>
+    <li><span class="n">§6</span><a href="#s6">Unique Features &amp; Wow Factors</a><span class="pg">what wins the room</span></li>
+    <li><span class="n">§7</span><a href="#s7">Model Plan — 10 Languages, Fully Offline</a><span class="pg">every model, size, license</span></li>
+    <li><span class="n">§8</span><a href="#s8">Expected Benchmarks</a><span class="pg">defendable numbers, rubric-mapped</span></li>
+    <li><span class="n">§9</span><a href="#s9">Tech Stack</a><span class="pg">frameworks + hardware</span></li>
+    <li><span class="n">§10</span><a href="#s10">Feasibility, Risks &amp; Mitigations</a><span class="pg">pre-empting the jury</span></li>
+    <li><span class="n">§11</span><a href="#s11">Impact &amp; Benefits</a><span class="pg">India-first framing</span></li>
+    <li><span class="n">§12</span><a href="#s12">Phase-Wise Implementation Plan</a><span class="pg">P0 → P5</span></li>
+    <li><span class="n">§13</span><a href="#s13">Delivery Table — Expected Deliverables</a><span class="pg">as the PS demands</span></li>
+    <li><span class="n">§14</span><a href="#s14">Research &amp; References</a><span class="pg">every claim, linked</span></li>
+  </ul>
+
+  <div class="boxg" style="margin-top:18px">
+    <b>How to read this document.</b> §1 is the pitch. §2–§4 are the research foundation (problem → market gap → scientific wedge) — every number carries a source in §14. §5–§6 are the idea itself. §7–§9 make it concrete. §10 arms you against every hard question a judge can ask. §12–§13 are the execution contract. Figures marked <span class="tag" style="background:var(--warn)">EST</span> are estimates or ARM-proxy benchmarks pending on-device measurement — say so if asked.
+  </div>
+</div>
+
+<!-- ============================ S1 TLDR ============================ -->
+<div class="page" id="s1">
+  <h2><span class="secno">§1</span>Idea in One Page (TL;DR)</h2>
+
+  <div class="box">
+    <b>iTantra</b> (<i>tantra</i> = system/apparatus) turns any Android phone into a <b>semantic transceiver</b>: press-to-talk speech is transcribed <b>on-device</b> in any of 10 Indian languages (IndicConformer, int8, fully offline), the <b>text</b> — not the waveform — is compressed by our Indic-aware <b>VarnaCode</b> coder to ~30–60 bytes per sentence and streamed over whatever link survives (Wi-Fi, Bluetooth, or a ₹1,650 LoRa bridge with km-scale range), and the far phone <b>re-synthesizes natural speech</b> in the same language (AI4Bharat FastPitch + HiFi-GAN / Piper, offline). Alert-class messages auto-play at maximum volume, non-interruptible. The app ships a <b>Live Evaluation Mode</b> that measures its own CER, RTF and mouth-to-ear latency — the judging rubric, demonstrated live inside the product.
+  </div>
+
+  <h3>The three-sentence pitch</h3>
+  <p><b>1. The problem:</b> When Cyclone Amphan hit, ~7,000 of West Bengal's 14,167 cell towers went dark and networks ran at 65–70% for days — and even where SMS alerts get through, rural literacy of 67.8% (female ~50.6%) in the most disaster-prone belts means text alerts structurally miss the people most at risk. Voice is the only inclusive medium, and voice is 64,000 bps.</p>
+  <p><b>2. The science:</b> The speech <i>content</i> of human conversation is ~13 characters/second ≈ <b>107 bps as text</b> — 6× below NATO's battlefield MELPe codec (600 bps), 4× below Codec2's floor, ~600× below raw telephony. Transmitting recognized text instead of any waveform is the core thesis of "semantic communication," a recognized 6G research field (Qin &amp; Tao, DeepSC-ST, STCTS ~80 bps), with a 2025 paper reporting 94% latency reduction for exactly this STT→link→TTS architecture.</p>
+  <p><b>3. The product:</b> The pieces are proven — offline Indic STT (IndicConformer, MIT, all 22 languages), offline Indic TTS (AI4Bharat, MIT, all 9), P2P phone links — but <b>nobody has assembled them into a walkie-talkie</b>: not RTranslator (translation, not radio UX), not the Codec2-over-LoRa hobby projects (still ship waveforms), not any SIH team (this PS is new for 2026). iTantra is that assembly, engineered honestly, measured live.</p>
+
+  <h3>Flagship demo</h3>
+  <table>
+    <tr><th>Leg</th><th>Setup</th><th>What it proves</th></tr>
+    <tr><td><b>Walkie-talkie loop</b></td><td>2 phones, hotspot/Bluetooth, PTT both ways, any of 10 languages</td><td>The full PS requirement — speak Hindi on A, hear it spoken on B, offline</td></tr>
+    <tr><td><b>Bandwidth ticker</b></td><td>Live on-screen: bytes sent vs what AMR/Codec2 would have cost</td><td>The 100–600× semantic-compression claim, visible per message</td></tr>
+    <tr><td><b>Alert broadcast</b></td><td>Alert-flagged message → far phone interrupts at max volume</td><td>The PS's non-interruptible alert requirement + inclusion story</td></tr>
+    <tr><td><b>LoRa bridge</b> <span class="tag" style="background:var(--warn)">STRETCH</span></td><td>Phone ⇆ BT ⇆ ESP32-LoRa ⇆ km-scale hop ⇆ ESP32-LoRa ⇆ BT ⇆ phone</td><td>The "embedded device" leg of the PS at ₹1,650, IN865-legal</td></tr>
+    <tr><td><b>Evaluation Mode</b></td><td>In-app: CER vs reference, RTF, idle CPU, end-to-end latency</td><td>The 20/40/20/20 rubric, measured live in front of the jury</td></tr>
+  </table>
+
+  <h3>The six wow factors (detail in §6)</h3>
+  <ul>
+    <li><b>Text is the codec</b> — 100–600× bandwidth reduction; a deployable instance of 6G semantic-communication research, not a compression tweak.</li>
+    <li><b>VarnaCode</b> — Indic-script-aware entropy coding: UTF-8 spends 24 bits per Indic character, we target ~5–6; a full spoken sentence fits in one LoRa frame.</li>
+    <li><b>Live Evaluation Mode</b> — the app benchmarks itself (CER, not WER — the scientifically correct metric for agglutinative Indic languages) on stage.</li>
+    <li><b>₹1,650 LoRa bridge</b> — the low-bitrate radio leg made physical, km-range, license-free in IN865.</li>
+    <li><b>Alert layer done right</b> — CAP-aligned priority frames, max-volume non-interruptible playback, and a pronunciation lexicon for place names (pre-empting FEMA's documented TTS-mispronunciation failure mode).</li>
+    <li><b>India's own AI, offline</b> — MeitY/Bhashini-lineage models (IndicConformer + AI4Bharat TTS, both MIT) bundled on-device: national language infrastructure that works with zero internet.</li>
+  </ul>
+</div>
+
+<!-- ============================ S2 PROBLEM ============================ -->
+<div class="page" id="s2">
+  <h2><span class="secno">§2</span>The Problem — When the Towers Go Down</h2>
+
+  <h3>2.1 Disaster comms fail exactly when they matter</h3>
+  <ul>
+    <li><b>Cyclone Amphan (2020, West Bengal):</b> ~<b>7,000 of 14,167 cell tower sites went non-operational</b>; networks ran at <b>65–70% capacity three days after landfall</b> (COAI) — the evacuation succeeded, the network that was supposed to carry follow-on coordination didn't. <span class="src">[R1, R2]</span></li>
+    <li><b>Himachal floods (Aug 2025):</b> ~<b>66% of 1,761 telecom sites down</b> in Chamba at the rain peak; a week later the network was still only 65% restored. <span class="src">[R3]</span></li>
+    <li><b>Systemic exposure:</b> a CDRI study maps ~<b>7.7 lakh Indian telecom towers</b> exposed to floods, cyclones, earthquakes and landslides; DoT + CDRI now run a dedicated resilience framework naming Odisha, Uttarakhand, Assam, Tamil Nadu, Gujarat. <span class="src">[R4, R5]</span></li>
+    <li><b>Cyclone Fani (2019):</b> only 3% of towers physically lost — but 8-hour power backup and fiber cuts stretched outages far past the physical damage. Grid failure, not tower failure, is the long tail. <span class="src">[R6]</span></li>
+  </ul>
+
+  <h3>2.2 Text alerts structurally miss the most exposed people</h3>
+  <ul>
+    <li>Rural literacy is <b>67.8–73.5%</b> (vs ~88% urban) and rural <b>female literacy ~50.6%</b> (2011) — in every disaster-prone state, female literacy trails male by 6–12 points: Bihar 70.9%, Assam 72.2%, WB 82.6%. <span class="src">[R7, R8]</span></li>
+    <li>~<b>90% of India's rural population communicates only in its mother tongue</b> across 22 scheduled languages — an SMS in English or Hindi is a structural exclusion, not an edge case. <span class="src">[R9]</span></li>
+    <li>The government knows: NDMA/SACHET has pushed <b>tens of billions of SMS alerts in 19+ languages</b>, yet is still building cell broadcast (where supported handsets <b>read the message aloud</b>) and reinforcing All India Radio for last-mile reach — a tacit admission that silent text doesn't close the gap. <span class="src">[R10, R11]</span></li>
+    <li>The ICTD literature is unambiguous: for low-literacy users, <b>voice interfaces significantly outperform text</b> for task completion; a single illiterate user's access to text systems typically depends on one literate proxy nearby — voice removes the dependency. <span class="src">[R12, R13]</span></li>
+  </ul>
+
+  <h3>2.3 But voice is the most expensive thing you can transmit</h3>
+  <ul>
+    <li>Telephone-grade voice is <b>64,000 bps</b> (G.711); cellular AMR-NB needs 4,750–12,200 bps; even the best neural codecs (Lyra 3,000 bps, EnCodec 1,500 bps) and military vocoders (MELPe 600 bps) need hundreds of bits per second — on a dying link, none of it gets through. <span class="src">[R14–R17]</span></li>
+    <li>Meanwhile the <b>content</b> of that same speech — the words — is ~13 chars/sec ≈ <b>107 bps raw, ~15–20 bps entropy-coded</b>. <span class="src">[R18]</span></li>
+  </ul>
+
+  <div class="box">
+    <b>The gap iTantra closes:</b> India has broadcast alerting (SACHET, assumes towers), ham radio (needs licenses and operators), and voice apps (need internet). Nobody has shipped <b>two-way, offline, voice-native, 10-language</b> communication that works over links measured in bits per second. That is precisely what ISRO — whose Disaster Management Support programme already fields GSAT satellite mobile radios and VSAT links to state disaster authorities — is asking for: the missing <i>voice-intelligence layer</i> on top of its own low-bitrate radio access. <span class="src">[R19, R20]</span>
+  </div>
+</div>
+
+<!-- ============================ S3 CURRENT SOLUTIONS ============================ -->
+<div class="page" id="s3">
+  <h2><span class="secno">§3</span>Current Solutions &amp; Their Gaps</h2>
+
+  <h3>3.1 Government &amp; institutional systems</h3>
+  <table>
+    <tr><th>System</th><th>What it does</th><th>Gap it leaves</th></tr>
+    <tr><td><b>SACHET / CAP (NDMA + C-DOT)</b></td><td>Geo-targeted SMS + cell broadcast, 19+ languages, all 36 states/UTs</td><td>One-to-many only; assumes surviving towers; silent text under-reaches low-literacy users</td></tr>
+    <tr><td><b>Cell Broadcast pilot (DoT+NDMA)</b></td><td>Congestion-immune pop-up alerts, read-aloud on supported handsets</td><td>Still tower-dependent; one-way; read-aloud only on newer phones</td></tr>
+    <tr><td><b>ISRO DMS (GSAT Mobile Radio, SILAAS, VSAT-SDMA)</b></td><td>Satellite radio access where terrestrial fails</td><td>Low-bitrate links carry data, not conversational voice; no multilingual voice layer — <b>this PS is ISRO asking for one</b></td></tr>
+    <tr><td><b>Ham radio / FreeDV</b></td><td>Codec2 digital voice over HF, proven in every Indian disaster</td><td>Licensed operators only; dedicated hardware; not multilingual, not app-ified</td></tr>
+    <tr><td><b>J-Alert (Japan)</b></td><td>National TTS-spoken disaster alerts in 5 languages</td><td>Proves TTS-alerting at national scale — but one-way broadcast; no Indian analogue exists</td></tr>
+  </table>
+
+  <h3>3.2 Apps &amp; open-source prior art</h3>
+  <table>
+    <tr><th>Project</th><th>Scale</th><th>Gap it leaves</th></tr>
+    <tr><td><b>Zello / commercial PTT</b></td><td>150M+ users</td><td>Needs internet — dead in exactly the target scenario</td></tr>
+    <tr><td><b>Bridgefy / Briar / bitchat</b></td><td>BT-mesh offline messaging</td><td>Text-only chat UX — excludes the low-literacy users who most need it; Bridgefy's protocol was broken by researchers in 2020</td></tr>
+    <tr><td><b>QMesh, esp32_loradv, codec2_talkie</b></td><td>LoRa walkie-talkie hobby hardware</td><td>Still transmit <b>waveforms</b> (Codec2 frames, 450–3200 bps) — 4–30× fatter than text, no Indic anything</td></tr>
+    <tr><td><b>RTranslator</b> (10.4k★, Apache-2.0)</td><td>Offline STT→translate→TTS between 2 phones</td><td>The closest architectural cousin — but built as a translator (conversation mode), not a radio: no PTT UX, no alert layer, no low-bitrate framing, weak Indic coverage (Whisper-small)</td></tr>
+    <tr><td><b>sherpa-onnx</b> (14.5k★) / Vosk (15k★)</td><td>Offline STT+TTS runtimes with Android bindings</td><td>Engines, not products — they are what we build <i>with</i></td></tr>
+  </table>
+
+  <div class="boxg">
+    <b>Whitespace, precisely stated:</b> offline Indic STT exists (engines), offline Indic TTS exists (models), P2P phone links exist (transports), LoRa text mesh exists (Meshtastic). <b>No project combines them into a voice-native, low-bitrate, multilingual walkie-talkie</b> — and PS SIH26173 is new for 2026, so there is no prior team's blueprint. First-mover room, with every component de-risked by an existing, actively-maintained open-source project. <span class="src">[R21–R28]</span>
+  </div>
+</div>
+
+<!-- ============================ S4 WHY TEXT ============================ -->
+<div class="page" id="s4">
+  <h2><span class="secno">§4</span>Why Text-as-Codec — The Honest Case</h2>
+  <p class="small">Judges will have seen teams claim magic compression. We win by stating the science exactly — including what text transmission loses — and engineering around the losses.</p>
+
+  <h3>4.1 The bitrate ladder (what a second of speech costs)</h3>
+  <table>
+    <tr><th>Representation</th><th>Bitrate</th><th>vs text (~107 bps)</th></tr>
+    <tr><td>Raw telephone PCM (G.711)</td><td>64,000 bps</td><td>~600×</td></tr>
+    <tr><td>AMR-NB (GSM full-rate voice)</td><td>12,200 bps</td><td>~115×</td></tr>
+    <tr><td>Google Lyra v2 (neural)</td><td>3,200 bps</td><td>~30×</td></tr>
+    <tr><td>Meta EnCodec (neural, floor)</td><td>1,500 bps</td><td>~14×</td></tr>
+    <tr><td>MELPe — NATO STANAG 4591</td><td>600 bps</td><td>~6×</td></tr>
+    <tr><td>Codec2 (open-source floor)</td><td>450 bps</td><td>~4×</td></tr>
+    <tr><td><b>Recognized text (ASCII-rate)</b></td><td><b>~107 bps</b></td><td>1×</td></tr>
+    <tr><td><b>Text + VarnaCode entropy coding</b></td><td><b>~15–25 bps</b> <span class="tag" style="background:var(--warn)">EST</span></td><td>~0.2×</td></tr>
+  </table>
+  <p class="small">Derivation: 130–150 wpm conversational speech × ~5.7 chars/word ≈ 13.3 chars/s; 8 bits/char ≈ 107 bps. English text entropy is ~1.0–1.5 bits/char — and Indic scripts in UTF-8 waste even more (24 bits/char), which is VarnaCode's opening (§6). <span class="src">[R14–R18]</span></p>
+
+  <h3>4.2 This is published science, not a hack</h3>
+  <ul>
+    <li><b>Semantic communication</b> is a recognized 6G research field: transmit the <i>meaning</i>, not the bits — Qin, Tao, Lu, Tong &amp; Li's foundational survey (arXiv 2201.01389) defines exactly this. <span class="src">[R29]</span></li>
+    <li><b>DeepSC-ST</b> (IEEE Trans. Wireless Comm. 2023) builds a speech transceiver where the transmitted representation is recognition-oriented text features, recovered to speech at the receiver — "significantly reduces required data transmission without performance degradation." <span class="src">[R30]</span></li>
+    <li><b>STCTS</b> (2025) hits <b>~80 bps</b> — 75× smaller than Opus — by decomposing speech into content + prosody + timbre. <span class="src">[R31]</span></li>
+    <li><b>"Voice over Low Data Rate Networks Using STT and Semantic Compression"</b> (2025) describes near-exactly iTantra's pipeline and reports <b>up to 94% latency reduction</b> vs sending compressed audio. <span class="src">[R32]</span></li>
+  </ul>
+  <div class="boxg"><b>Framing:</b> iTantra is a <b>deployable, India-context implementation of semantic-communication research</b> — but instead of fragile learned latent vectors, we transmit <b>human-readable text</b>: simpler, debuggable, loggable, encryptable, and it works over any bearer down to SMS-class links. When 6G standardizes semantic transport, this architecture is what it will look like.</div>
+
+  <h3>4.3 What text transmission honestly loses — and our answers</h3>
+  <table>
+    <tr><th>Loss</th><th>Why it matters</th><th>iTantra's answer</th></tr>
+    <tr><td>Speaker identity, emotion, prosody</td><td>"Who is speaking and how scared are they" carries information</td><td>Sender name + language + priority ride in every frame header; alert-class framing conveys urgency explicitly rather than acoustically</td></tr>
+    <tr><td>STT errors propagate</td><td>A mis-recognition becomes confidently spoken misinformation</td><td>Confidence gate: low-confidence utterances prompt the sender to repeat; transcript shown on both screens for literate users (voice-first, not voice-only)</td></tr>
+    <tr><td>Proper nouns &amp; numbers</td><td>FEMA officially documents TTS mispronunciation as a failure mode</td><td>Alert pronunciation lexicon: district/place names + digit-by-digit number reading in alert mode (§6.5) <span class="src">[R33]</span></td></tr>
+    <tr><td>Non-speech audio (cries, background)</td><td>Sometimes the sound <i>is</i> the message</td><td>Out of scope by design — stated, not hidden; the PS asks for speech transmission</td></tr>
+  </table>
+</div>
+
+<!-- ============================ S5 ARCHITECTURE ============================ -->
+<div class="page" id="s5">
+  <h2><span class="secno">§5</span>Proposed Solution — Architecture Deep Dive</h2>
+
+  <div class="arch">
+ ┌────────────────────────────────  iTANTRA PIPELINE  ────────────────────────────────┐
+ │  SENDER PHONE (PTT held)                                                           │
+ │  ┌─────────┐   ┌────────────┐   ┌──────────────────────┐   ┌───────────────────┐   │
+ │  │ Mic     │──▶│ Silero VAD │──▶│ STT: IndicConformer  │──▶│ Confidence gate + │   │
+ │  │ (Oboe,  │   │ sentence   │   │ int8 ONNX, streaming │   │ text normalize    │   │
+ │  │ 16kHz)  │   │ chunking   │   │ via sherpa-onnx      │   │ (indic-numtowords)│   │
+ │  └─────────┘   └────────────┘   └──────────────────────┘   └─────────┬─────────┘   │
+ │                                                                      ▼             │
+ │                       ┌───────────────────────────────────────────────────┐        │
+ │                       │ VarnaCode: Indic-aware entropy coder (~5-6 b/char)│        │
+ │                       │ + iTantra Frame: hdr[lang|prio|seq|CRC] + payload │        │
+ │                       └────────────────────────┬──────────────────────────┘        │
+ │                                                ▼                                   │
+ │   TRANSPORTS   ┌────────────┬──────────────────┬─────────────────────────┐         │
+ │   (pluggable)  │ Wi-Fi/NSD  │ Bluetooth RFCOMM │ BT⇆ESP32 LoRa bridge    │         │
+ │                │ TCP socket │ (no infra needed)│ (IN865, km-range) STRETCH│        │
+ │                └────────────┴──────────────────┴─────────────────────────┘         │
+ │  RECEIVER PHONE                                ▼                                   │
+ │  ┌──────────────┐   ┌──────────────────────────┐   ┌─────────────────────────┐     │
+ │  │ Frame decode │──▶│ TTS: AI4Bharat FastPitch │──▶│ AudioTrack playback     │     │
+ │  │ + de-dup +   │   │ +HiFi-GAN / Piper ONNX   │   │ · voice-note mode       │     │
+ │  │ VarnaCode⁻¹  │   │ sentence-streamed        │   │ · ALERT: max volume,    │     │
+ │  └──────────────┘   └──────────────────────────┘   │   non-interruptible     │     │
+ │                                                    └─────────────────────────┘     │
+ │  CROSS-CUTTING: foreground service (mic type) · audio focus TRANSIENT_EXCLUSIVE    │
+ │  · per-language model packs (download-on-demand) · Evaluation Mode overlay         │
+ │  · eSpeak-NG fallback voice · walkie-talkie off ⇒ normal phone untouched           │
+ └────────────────────────────────────────────────────────────────────────────────────┘</div>
+
+  <h3>Stage-by-stage rationale</h3>
+  <ol>
+    <li><b>Audio capture via Oboe</b> (Google's low-latency C++ audio library) — Java AudioRecord adds unpredictable latency; we are chasing a mouth-to-ear budget, so latency is engineered at every stage. <span class="src">[R34]</span></li>
+    <li><b>Silero VAD (~1–6 MB, &lt;1 ms/chunk)</b> does something subtler than endpointing: during a long PTT hold it <b>segments speech into sentences</b>, so sentence 1 is transcribed and transmitted while sentence 2 is still being spoken — the pipeline is full-duplex with itself. PS requirement "detect pauses and form sentences" is satisfied by design. <span class="src">[R35]</span></li>
+    <li><b>STT: IndicConformer</b> (AI4Bharat; MIT; all 22 Indian languages; official int8 ONNX) via <b>sherpa-onnx</b> Android bindings — the only single-family, single-license model covering all 9 Indic targets; Hindi WER 13.2 on the spontaneous-speech Vaani benchmark. English falls back to whisper.cpp tiny/base (faster-than-real-time on ARM). PTT gives us the utterance boundary for free — streaming partials while held, final decode on release. <span class="src">[R36–R38]</span></li>
+    <li><b>Confidence gate + normalization:</b> low-confidence finals prompt "repeat that?" instead of transmitting garbage; numbers/dates normalized for TTS via <code>indic-numtowords</code>. <span class="src">[R39]</span></li>
+    <li><b>VarnaCode + iTantra Frame (§6.2):</b> the payload becomes ~30–60 bytes/sentence; the frame header carries language, priority (NORMAL/ALERT), sequence and CRC — so any transport, however dumb, can carry it.</li>
+    <li><b>Pluggable transports:</b> NSD/mDNS discovery + TCP over hotspot (demo-day reliable), Bluetooth RFCOMM (zero-infra), and the LoRa bridge as the physical "low-bitrate link" (§6.4). Wi-Fi Direct is a stretch path — OEM-flaky, documented in §10. Google Nearby Connections is deliberately excluded: proprietary Play Services, fails the open-source constraint. <span class="src">[R40]</span></li>
+    <li><b>TTS: AI4Bharat FastPitch+HiFi-GAN (MIT, all 9 Indic) exported to ONNX + Piper voices where they exist</b> (Hindi, Marathi, Malayalam, Telugu, Bengali), sentence-streamed (synthesize N+1 while N plays — up to 85% first-audio latency cut), eSpeak-NG as the never-silent fallback. <span class="src">[R41–R43]</span></li>
+    <li><b>Alert playback:</b> <code>AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE</code>, stream volume pinned to max, playback non-cancellable until complete, repeat-twice policy — the PS requirement, implemented with Android audio-focus semantics rather than hacks.</li>
+    <li><b>Modes:</b> PTT walkie-talkie (app on) / voice-note relay (queued when link drops, forwarded on reconnect) / off (normal phone). Store-and-forward comes free from the frame layer.</li>
+  </ol>
+</div>
+
+<!-- ============================ S6 WOW ============================ -->
+<div class="page" id="s6">
+  <h2><span class="secno">§6</span>Unique Features &amp; Wow Factors</h2>
+  <p class="small">Last year we won on one structural differentiator surrounded by proof of execution. Same recipe, six cards.</p>
+
+  <div class="wowcard">
+    <h4>1 · Text is the codec — the semantic transceiver</h4>
+    <p>iTantra doesn't compress voice; it <b>eliminates the waveform</b>. ~107 bps raw, ~15–25 bps coded — below NATO's MELPe (600 bps) and Codec2's floor (450 bps), ~600× below telephony. Framed as a deployable instance of 6G semantic-communication research (Qin/Tao survey; DeepSC-ST; STCTS; 2025 STT-over-low-rate paper reporting 94% latency cuts). A live <b>bandwidth ticker</b> in the app shows, per message, bytes sent vs what AMR would have cost — the wow factor is a number the jury watches update in real time.</p>
+  </div>
+
+  <div class="wowcard">
+    <h4>2 · VarnaCode — Indic-aware text compression <span class="tag tagp">CORE INVENTION</span></h4>
+    <p>UTF-8 spends <b>3 bytes (24 bits) per Indic character</b> — Devanagari, Tamil, Odia all live in the 3-byte plane. VarnaCode assigns each of the 10 languages a per-script codebook (aksharas + matras + common bigrams, trained on IndicCorp frequency tables): <b>~5–6 bits/char, a 4–5× cut over UTF-8</b> <span class="tag" style="background:var(--warn)">EST</span> — so a full spoken sentence (~60 Indic chars) fits in ~<b>45 bytes: one LoRa frame, one SMS-class burst</b>. Nobody else at this hackathon will have a compression layer designed for Indic scripts specifically; it is small enough to build honestly (a coder + tables, ~300 lines) and big enough to demo (side-by-side byte counts).</p>
+  </div>
+
+  <div class="wowcard">
+    <h4>3 · Live Evaluation Mode — the rubric, inside the app</h4>
+    <p>The judging rubric is 20% efficiency / 40% accuracy / 20% latency. iTantra ships an <b>Evaluation Mode screen</b> that measures itself: read a reference sentence → live <b>CER and WER</b> (we report CER as the headline — arXiv 2203.16601 shows WER disproportionately punishes agglutinative Malayalam/Kannada/Telugu; most rival teams will quote the scientifically wrong metric), <b>RTF</b> per utterance, <b>idle CPU%</b>, model footprints, and <b>mouth-to-ear latency</b> measured against the ITU-T G.114 &lt;400 ms interactive-voice standard. We don't claim numbers; we measure them in front of the jury. <span class="src">[R44, R45]</span></p>
+  </div>
+
+  <div class="wowcard">
+    <h4>4 · The ₹1,650 LoRa bridge — the low-bitrate link made physical</h4>
+    <p>The PS says "wifi/Bluetooth connected embedded device." Ours is an <b>ESP32 + SX127x LoRa node (₹1,650–2,000 in India)</b>: phone speaks to it over Bluetooth serial, it carries iTantra frames <b>1–10 km</b> in the license-free IN865 band. Our ~45-byte payloads fit LoRa's 1–5 kbps with 10–30× headroom for FEC and retries inside the 1% duty cycle. Hobby prior art (QMesh, codec2_talkie) pushes Codec2 <i>waveforms</i> over LoRa; we push <i>meaning</i> — 4–30× smaller. And it slots conceptually onto ISRO's own GSAT mobile-radio stack: same frames, satellite-grade link. <span class="src">[R46–R48]</span></p>
+  </div>
+
+  <div class="wowcard">
+    <h4>5 · An alert layer that pre-empts the official critique</h4>
+    <p>Alert-class frames (CAP-aligned severity field) auto-play at <b>maximum volume, non-interruptible</b>, repeat twice, and light the screen — the PS requirement. The judo move: FEMA's IPAWS documentation officially warns that <b>TTS mispronounces place names and numbers</b> and recommends human audio. iTantra answers with an <b>alert pronunciation lexicon</b> — district names of the pilot states + digit-by-digit number reading — turning the strongest argument against TTS alerting into our differentiator. Japan's J-Alert already speaks synthesized alerts in 5 languages; India deserves the same in 10+. <span class="src">[R33, R49]</span></p>
+  </div>
+
+  <div class="wowcard">
+    <h4>6 · India's national language AI — running with zero internet</h4>
+    <p>Every model is <b>MIT-licensed, Indian-government-lineage</b>: IndicConformer STT and AI4Bharat FastPitch TTS come from the MeitY/C-DAC-funded, Bhashini-ecosystem AI4Bharat lab — but Bhashini itself is a cloud API. iTantra bundles the underlying open checkpoints <b>on-device</b>: "built on India's national language AI infrastructure, working where the internet doesn't." Roadmap (flagged, not promised): the same text-relay architecture makes <b>cross-language relay</b> — speak Hindi, heard in Tamil — a model-swap away (RTranslator proves offline MT on-device is feasible). <span class="src">[R50, R51]</span></p>
+  </div>
+</div>
+
+<!-- ============================ S7 MODEL PLAN ============================ -->
+<div class="page" id="s7">
+  <h2><span class="secno">§7</span>Model Plan — 10 Languages, Fully Offline</h2>
+
+  <h3>7.1 STT (all offline, all open)</h3>
+  <table>
+    <tr><th>Component</th><th>Model</th><th>License</th><th>Size (int8)</th><th>Notes</th></tr>
+    <tr><td>Primary ASR ×9 Indic</td><td>AI4Bharat IndicConformer (per-language ~120M)</td><td>MIT</td><td>~120–150 MB/lang <span class="tag" style="background:var(--warn)">EST</span></td><td>Official int8 ONNX export; all 22 languages; trained on spontaneous IndicVoices speech — matches PTT acoustics</td></tr>
+    <tr><td>English ASR</td><td>whisper.cpp tiny/base (GGML q5)</td><td>MIT</td><td>39–74 MB</td><td>Faster-than-real-time on ARM; battle-tested Android AAR</td></tr>
+    <tr><td>VAD</td><td>Silero VAD</td><td>MIT</td><td>~1–6 MB</td><td>&lt;1 ms per 30 ms chunk; sentence segmentation inside PTT holds</td></tr>
+    <tr><td>Dev-time referee</td><td>IndicWhisper (Vistaar)</td><td>MIT</td><td>—</td><td>Not shipped; used to sanity-check IndicConformer accuracy per language</td></tr>
+  </table>
+
+  <h3>7.2 TTS (all offline, all open)</h3>
+  <table>
+    <tr><th>Languages</th><th>Model</th><th>License</th><th>Size</th><th>Notes</th></tr>
+    <tr><td>Hindi, Marathi, Malayalam, Telugu, Bengali</td><td>Piper VITS medium voices (official ONNX)</td><td>MIT</td><td>~63–77 MB/voice</td><td>Zero conversion work — known-good ONNX, RTF ~0.2 on Pi-5-class ARM</td></tr>
+    <tr><td>Gujarati, Kannada, Tamil, Odia</td><td>AI4Bharat Indic-TTS (FastPitch+HiFi-GAN) → our ONNX export</td><td>MIT</td><td>~40–80 MB/lang <span class="tag" style="background:var(--warn)">EST</span></td><td>The one real conversion job — standard NVIDIA-Riva-class export, scoped to 4 languages</td></tr>
+    <tr><td>English</td><td>Piper en_US/en_IN-adjacent voice</td><td>MIT</td><td>~63 MB</td><td>Off the shelf</td></tr>
+    <tr><td>All 10 (fallback)</td><td>eSpeak-NG formant synthesis</td><td>GPL-3.0 (separate process/engine)</td><td>~3 MB total</td><td>Robotic but never silent; covers any missing/corrupt voice pack</td></tr>
+  </table>
+
+  <div class="boxw"><b>License discipline (the trap other teams will fall into):</b> Meta MMS-TTS is the <i>only</i> single source covering all 10 languages — and it is <b>CC-BY-NC 4.0, which is not open source</b> and fails the PS's explicit constraint. We flag it, exclude it, and use it only as a dev-time listening reference. Similarly excluded: Google Nearby Connections (proprietary Play Services) and FUTO Voice Input ("source-first" license). Every shipped byte of iTantra is MIT/Apache/GPL-clean. <span class="src">[R52]</span></div>
+
+  <h3>7.3 Footprint strategy (rubric: 20% efficiency)</h3>
+  <ul>
+    <li><b>APK ships thin</b> (~60 MB: app + sherpa-onnx runtime + eSpeak-NG + Silero + English tiny) — Indic language packs (~180–230 MB = STT+TTS per language) are <b>download-on-demand, sideload-able via SD card/USB-OTG</b> for zero-internet provisioning (a disaster-prep step, like downloading offline maps).</li>
+    <li><b>int8 everywhere:</b> quantization is measured as near-free — 45–57% size cut at ±1 WER point across every study surveyed. <span class="src">[R53]</span></li>
+    <li><b>Idle discipline:</b> when not in PTT, only the VAD-armed mic loop runs (sub-1% CPU); models are memory-mapped and lazily loaded per selected language, not all 10 at once.</li>
+  </ul>
+</div>
+
+<!-- ============================ S8 BENCHMARKS ============================ -->
+<div class="page" id="s8">
+  <h2><span class="secno">§8</span>Expected Benchmarks</h2>
+  <p class="small">Mapped to the PS rubric: Efficiency 20% · Accuracy 40% · Latency 20% (+ demo loop 20%). Every target is defended by a cited proxy; Evaluation Mode (§6.3) measures the real numbers on stage. <span class="tag" style="background:var(--warn)">EST</span> = ARM-proxy pending on-device measurement — the first engineering task (§12·P0) is replacing every EST with a measured number.</p>
+
+  <table>
+    <tr><th>Rubric axis</th><th>Metric</th><th>Target</th><th>Basis</th></tr>
+    <tr><td rowspan="3"><b>Efficiency (20%)</b></td><td>Language pack size (STT+TTS, int8)</td><td>≤ 230 MB/lang; APK ≤ 60 MB</td><td>IndicConformer int8 ~120–150 MB + Piper ~63 MB; measured post-quantization</td></tr>
+    <tr><td>Idle-listening CPU</td><td>&lt; 2% (VAD-only loop)</td><td>Silero &lt;1 ms per 30 ms chunk ≈ 3% duty on one core, less on-device</td></tr>
+    <tr><td>RAM in active call</td><td>&lt; 800 MB</td><td>One STT + one TTS model resident, memory-mapped</td></tr>
+    <tr><td rowspan="2"><b>Accuracy (40%)</b></td><td>STT — CER (headline), WER (reported)</td><td>CER &lt; 10–15% on clean speech per language</td><td>IndicConformer Hindi WER 13.2 on spontaneous Vaani; CER runs well below WER for Indic; per-language table measured in P0</td></tr>
+    <tr><td>TTS intelligibility</td><td>STOI &gt; 0.8 / MOS-class &gt; 3.5 on listening panel</td><td>AI4Bharat paper beats prior Indic baselines; Piper medium widely deployed</td></tr>
+    <tr><td rowspan="3"><b>Latency (20%)</b></td><td>STT finalize after PTT release</td><td>&lt; 1.0 s (streaming decode during hold)</td><td>Conformer-class RTF 0.19 shown on edge devices; partials decoded while speaking</td></tr>
+    <tr><td>TTS first-audio</td><td>&lt; 0.7 s (sentence-streamed)</td><td>VITS RTF ~0.2 on Pi-5-class ARM; 85% first-audio cut from chunked synthesis</td></tr>
+    <tr><td><b>Sentence-to-sentence (mouth-to-ear)</b></td><td><b>&lt; 2.5 s target, &lt; 4 s worst-case</b></td><td>Sum of stages + ~45-byte transmission (negligible on any link); honest vs G.114: this is walkie-talkie half-duplex, not telephony — we say so</td></tr>
+    <tr><td><b>Link efficiency</b></td><td>Payload per spoken sentence</td><td>~30–60 bytes (VarnaCode) vs ~7,600 bytes AMR-NB, ~375 bytes Codec2-450</td><td>Byte-count math; live bandwidth ticker demos it</td></tr>
+  </table>
+
+  <div class="box"><b>The honesty line for the jury:</b> "Every number on this slide is re-measured live by the app's own Evaluation Mode. If our demo phone disagrees with our slide, believe the phone."</div>
+
+  <h3>Loop verification (the PS's own test)</h3>
+  <p>Two phones, same APK: A in STT mode, B in TTS mode, connected over hotspot or Bluetooth → PTT on A, speech plays on B — <b>walkie-talkie when on, normal phone when off</b>. Then the same loop through the LoRa bridge at range. Then reversed languages. Then an ALERT frame interrupting B at max volume. Four demos, one binary. </p>
+</div>
+
+<!-- ============================ S9 STACK ============================ -->
+<div class="page" id="s9">
+  <h2><span class="secno">§9</span>Tech Stack</h2>
+  <table>
+    <tr><th>Layer</th><th>Choice</th><th>Why</th></tr>
+    <tr><td>App</td><td><b>Native Kotlin</b>, Jetpack Compose, single activity + foreground service (<code>microphone</code> + <code>connectedDevice</code> types)</td><td>Every actively-maintained offline-speech Android app is native Kotlin; Flutter/RN platform channels add JNI hops on the audio hot path — the ecosystem has already voted</td></tr>
+    <tr><td>Inference runtime</td><td><b>sherpa-onnx</b> (Apache-2.0, 14.5k★, near-daily commits) — one AAR for STT + TTS + VAD</td><td>One JNI surface, one model-management pattern; Android demos ship in-repo; PS-permitted framework (ONNX Runtime class)</td></tr>
+    <tr><td>STT models</td><td>IndicConformer int8 ONNX ×9 · whisper.cpp tiny/base (EN)</td><td>§7 — coverage + license + official export</td></tr>
+    <tr><td>TTS models</td><td>Piper VITS ×6 · AI4Bharat FastPitch+HiFi-GAN ONNX ×4 · eSpeak-NG fallback</td><td>§7 — MIT coverage of all 10</td></tr>
+    <tr><td>Audio I/O</td><td>Oboe (AAudio) native capture/playback, 16 kHz mono</td><td>Predictable low latency; sibling native dep of the ONNX JNI stack</td></tr>
+    <tr><td>Discovery + transport</td><td>NsdManager (mDNS <code>_itantra._tcp</code>) + TCP sockets · Bluetooth Classic RFCOMM · BT-serial→ESP32 LoRa (IN865)</td><td>Platform-native, no Play Services, open-source-clean; three independent bearers for one tiny frame format</td></tr>
+    <tr><td>Protocol</td><td>iTantra Frame (hdr: ver|lang|prio|seq|CRC-16) + VarnaCode payload; store-and-forward queue</td><td>~300 lines, unit-testable on desktop, bearer-agnostic</td></tr>
+    <tr><td>Text processing</td><td>indic-numtowords · Indic NLP Library normalization · alert pronunciation lexicon (static tables)</td><td>TTS-ready text; the FEMA-critique answer</td></tr>
+    <tr><td>Embedded bridge</td><td>ESP32 + SX127x, Arduino/PlatformIO, BT-SPP⇆LoRa relay firmware (~200 lines)</td><td>₹1,650; IN865 legal; the PS's "embedded device" leg</td></tr>
+    <tr><td>Eval harness</td><td>Python (desktop twin of the pipeline): jiwer for WER/CER, RTF timers, byte-count logs → CSV → charts</td><td>Same models run on desktop via sherpa-onnx — benchmarks reproducible outside the phone</td></tr>
+  </table>
+  <div class="boxg"><b>Compliance line:</b> open-source only ✓ (no proprietary SDK anywhere in the dependency tree — Nearby Connections and MMS-TTS explicitly rejected on license) · fully offline ✓ (no endpoint exists to call) · allowed frameworks ✓ (ONNX Runtime / TFLite class) · low/mid-range Android ✓ (int8 models, one language resident, Oboe).</div>
+</div>
+
+<!-- ============================ S10 FEASIBILITY ============================ -->
+<div class="page" id="s10">
+  <h2><span class="secno">§10</span>Feasibility, Risks &amp; Mitigations</h2>
+  <table>
+    <tr><th>#</th><th>Risk</th><th>Severity</th><th>Mitigation</th></tr>
+    <tr><td>1</td><td><b>On-device RTF unproven</b> — all RTF figures are Pi/edge proxies, not phone measurements</td><td>High</td><td>P0 is literally "benchmark on a real budget phone." Fallback ladder: int8 → smaller Piper "low" voices → streaming decode overlap. Conformer-class models have hit RTF 0.19 on wearable-grade silicon — headroom exists</td></tr>
+    <tr><td>2</td><td><b>sherpa-onnx IndicConformer wrappers are community conversions</b>, not official k2-fsa artifacts</td><td>Med-High</td><td>Budgeted QA per language in P1; hard fallback: direct ONNX Runtime Mobile against AI4Bharat's <i>official</i> int8 export, bypassing the wrapper (more glue, zero conversion risk)</td></tr>
+    <tr><td>3</td><td><b>FastPitch→ONNX export for 4 TTS languages</b> is our own engineering</td><td>Medium</td><td>Same export recipe as NVIDIA Riva's production path; scoped to 4 languages only (Piper covers the rest); eSpeak-NG guarantees no language is ever silent while export lands</td></tr>
+    <tr><td>4</td><td><b>Wi-Fi Direct OEM flakiness</b> breaks demos</td><td>Medium</td><td>It's not on the critical path: hotspot+NSD+TCP is the demo default, BT RFCOMM the backup — Wi-Fi Direct demoted to stretch</td></tr>
+    <tr><td>5</td><td><b>Modern Android bg-audio policy</b> (fg-service types, audio focus) — where every stale sample app dies</td><td>Medium</td><td>Built fresh, first, in P1 (not retrofitted); this is a known list of requirements, not a research problem</td></tr>
+    <tr><td>6</td><td><b>STT errors become spoken misinformation</b></td><td>Medium</td><td>Confidence gate + on-screen transcript both ends + sender hears-back option; alert lexicon for the highest-stakes content</td></tr>
+    <tr><td>7</td><td><b>Storage on budget phones</b> (10 languages × ~200 MB)</td><td>Low</td><td>Users install <i>their</i> language(s), not all 10; SD-card sideload path for offline provisioning</td></tr>
+    <tr><td>8</td><td><b>Mesh/relay security</b> (Bridgefy's 2020 break is the cautionary tale)</td><td>Low (v1 is 1-hop)</td><td>Frames carry CRC now, AES-GCM envelope planned before any multi-hop relay ships — designed in, not retrofitted</td></tr>
+    <tr><td>9</td><td><b>PS brief drift</b> — rubric weights quoted from the published PS text</td><td>Low</td><td>Re-pull the live PS from sih.gov.in before submission; Evaluation Mode measures whatever the final rubric names</td></tr>
+  </table>
+  <div class="box"><b>Why this is buildable by a student team in hackathon time:</b> every hard component is an existing, maintained, permissively-licensed project (sherpa-onnx, IndicConformer, Piper, Silero, Oboe, eSpeak-NG). Our own code is integration + VarnaCode (~300 lines) + frame protocol (~300 lines) + the Android product layer — and the desktop twin of the whole pipeline runs tonight, so accuracy/latency numbers exist before a single Android line is written.</div>
+</div>
+
+<!-- ============================ S11 IMPACT ============================ -->
+<div class="page" id="s11">
+  <h2><span class="secno">§11</span>Impact &amp; Benefits</h2>
+
+  <h3>Potential impacts</h3>
+  <ul>
+    <li><b>Closes the last-mile alert gap:</b> voice-native two-way comms for the ~50% of rural women and ~32% of rural Indians whom text alerts cannot reach — in their own language, on the phone they already own.</li>
+    <li><b>Completes ISRO's disaster stack:</b> GSAT mobile radios and VSAT-SDMA links exist; iTantra is the multilingual voice-intelligence layer their low-bitrate channels have been missing — same frames, satellite-grade links.</li>
+    <li><b>Resilience economics:</b> a ₹1,650 LoRa node + existing phones replaces hardware walkie-talkies (₹8,000–25,000/pair, single-language, unencrypted) for village disaster committees, fisherfolk co-ops, and trek/border communities.</li>
+    <li><b>A national capability, not an app:</b> the frame protocol + VarnaCode are bearer-agnostic — the same stack rides Bluetooth today, HF/satellite tomorrow; and the architecture is the deployable shape of semantic communication that 6G standardization is moving toward.</li>
+  </ul>
+
+  <h3>Benefits</h3>
+  <ul>
+    <li><b>Social:</b> literacy-independent, language-first (10 languages covering ~85%+ of India's population), disability-relevant (voice for the visually impaired, on-screen transcript for the hearing-impaired — the same message serves both).</li>
+    <li><b>Economic:</b> zero recurring cost (no SIM, no data plan, no server); open-source, so states/NGOs can deploy without procurement lock-in; commodity hardware end to end.</li>
+    <li><b>Strategic:</b> fully sovereign stack — Indian models (AI4Bharat/Bhashini lineage), Indian band plan (IN865), no foreign cloud dependency, aligned with Digital India / Atmanirbhar Bharat and the National Language Translation Mission (₹450 crore Bhashini).</li>
+    <li><b>Environmental/operational:</b> LoRa nodes run days on a power bank; the phone pipeline is int8-efficient by design (measured in Evaluation Mode) — deployable on solar-charged equipment in a blackout.</li>
+  </ul>
+
+  <div class="boxg"><b>Adoption path (credible, not grandiose):</b> pilot with one coastal district's disaster-management committee (Odisha/WB, where SACHET infrastructure and cyclone drills already exist) → NDMA/SDMA mock-drill integration → ISRO DMS evaluation as the voice layer over GSAT terminals. Each step needs no new infrastructure — that is the point of the design.</div>
+</div>
+
+<!-- ============================ S12 PHASES ============================ -->
+<div class="page" id="s12">
+  <h2><span class="secno">§12</span>Phase-Wise Implementation Plan</h2>
+  <table>
+    <tr><th>Phase</th><th>Deliverable</th><th>Exit test</th></tr>
+    <tr><td><b>P0 · Desktop truth</b></td><td>Python twin of the full pipeline: IndicConformer + Piper via sherpa-onnx, Silero VAD, VarnaCode v0, frame protocol; WER/CER/RTF harness on real Indic audio</td><td>Measured per-language CER/RTF table replaces every EST in §8; VarnaCode round-trips losslessly with measured bits/char</td></tr>
+    <tr><td><b>P1 · Android spine</b></td><td>Kotlin app: fg-service + audio focus + Oboe capture; Hindi STT on-device; NSD discovery + TCP frames between 2 phones</td><td>Speak on A → text appears on B, offline, on real hardware</td></tr>
+    <tr><td><b>P2 · Voice loop</b></td><td>TTS playback (Piper Hindi), sentence-streamed; PTT UX; store-and-forward queue</td><td>The PS loop: walkie-talkie A→B and B→A in Hindi, mouth-to-ear timed</td></tr>
+    <tr><td><b>P3 · 10 languages + alerts</b></td><td>Language packs (download/sideload), all 9 Indic STT + 10 TTS wired, alert frames with max-volume non-interruptible playback + lexicon</td><td>Any-language loop demo; alert interrupts correctly; pack sizes within §8 budget</td></tr>
+    <tr><td><b>P4 · Evaluation Mode + optimization</b></td><td>In-app CER/RTF/latency/CPU dashboard; int8 sweep; latency profiling (systrace) per stage</td><td>Rubric numbers measured on a budget phone match or beat §8 targets</td></tr>
+    <tr><td><b>P5 · LoRa bridge + hardening</b></td><td>ESP32 BT⇆LoRa firmware, range test; BT RFCOMM second transport; AES-GCM envelope; demo script</td><td>km-range sentence relay; kill-the-hotspot mid-demo recovery works</td></tr>
+  </table>
+  <p class="small">P0 runs on a laptop tonight — models are public downloads; accuracy and compression numbers exist before the first APK builds. P1–P2 is the minimum viable PS answer; P3–P4 is the winning answer; P5 is the room-silencer.</p>
+</div>
+
+<!-- ============================ S13 DELIVERY ============================ -->
+<div class="page" id="s13">
+  <h2><span class="secno">§13</span>Delivery Table — Expected Deliverables</h2>
+  <table>
+    <tr><th>PS requirement (verbatim intent)</th><th>iTantra deliverable</th><th>Where proven</th></tr>
+    <tr><td>Android app, lightweight, low/mid-range phones</td><td>Native Kotlin APK ≤ 60 MB + per-language packs, int8 models, one language resident in RAM</td><td>§7, §9 · Evaluation Mode footprint panel</td></tr>
+    <tr><td>Highly accurate STT, 10 languages, offline</td><td>IndicConformer int8 ×9 + whisper.cpp EN via sherpa-onnx</td><td>§7 · CER table (P0)</td></tr>
+    <tr><td>STT forms sentences on pauses, streams instantly</td><td>Silero VAD sentence chunking inside PTT hold; per-sentence frames transmitted as formed</td><td>§5 stage 2 · live demo</td></tr>
+    <tr><td>Stream via Wi-Fi/Bluetooth to embedded device or phone</td><td>NSD+TCP · BT RFCOMM · ESP32 LoRa bridge — one frame format, three bearers</td><td>§5, §6.4 · demo legs</td></tr>
+    <tr><td>TTS converts received text to intelligible speech, voice-note style</td><td>FastPitch+HiFi-GAN / Piper, sentence-streamed, normalized text, pronunciation lexicon</td><td>§7 · listening demo</td></tr>
+    <tr><td>Alert messages: highest volume, non-interruptible</td><td>ALERT-priority frames → audio-focus-exclusive max-volume playback, repeat policy</td><td>§6.5 · alert demo</td></tr>
+    <tr><td>Two-phone loop: STT mode + TTS mode = walkie-talkie (PTT); off = normal phone</td><td>Exactly this, as the flagship demo, plus latency timer on screen</td><td>§8 loop verification</td></tr>
+    <tr><td>Open-source only; TFLite/PyTorch Mobile-class frameworks; no internet APIs</td><td>MIT/Apache/GPL-clean tree; ONNX Runtime (sherpa-onnx); zero network calls — license audit table in repo</td><td>§7.3 box, §9</td></tr>
+    <tr><td>Metrics: efficiency/accuracy/latency evidence</td><td>Live Evaluation Mode + reproducible desktop harness (CSV + scripts in repo)</td><td>§6.3, §8</td></tr>
+  </table>
+  <div class="box"><b>Submission artifacts:</b> idea PPT (6 slides, template-compliant) · this idea document · GitHub repo (app + firmware + eval harness + license audit) · demo video of the two-phone loop · benchmark CSVs.</div>
+</div>
+
+<!-- ============================ S14 REFERENCES ============================ -->
+<div class="page" id="s14">
+  <h2><span class="secno">§14</span>Research &amp; References</h2>
+  <p class="small">Grouped by section. All links verified during research (Aug 2026). Full research dossiers (5 documents, ~1,000 lines) live in the repo under <code>research/</code>.</p>
+
+  <h3>Problem &amp; India context (§2)</h3>
+  <ol class="refs">
+    <li>[R1] Amphan: networks at 65–70% capacity (COAI) — <a href="https://www.deccanherald.com/india/cyclone-amphan-telecom-networks-operating-at-65-70-capacity-in-affected-districts-says-coai-840844.html">Deccan Herald</a></li>
+    <li>[R2] Amphan: ~7,000/14,167 WB towers down — <a href="https://www.thequint.com/tech-and-auto/tech-news/cellphone-services-hit-after-amphan-knocks-out-cell-towers-in-west-bengal">The Quint</a>; WMO evacuation praise — <a href="https://wmo.int/media/news/cyclone-amphan-highlights-value-of-multi-hazard-early-warnings">WMO</a></li>
+    <li>[R3] Himachal floods 2025: ~66% of Chamba telecom sites down — <a href="https://diarytimes.com/2025/09/04/himachal-pradesh-restores-65-of-damaged-telecom-network-after-heavy-rains/">Diary Times</a></li>
+    <li>[R4] ~770,000 towers disaster-exposed (CDRI) — <a href="https://www.business-standard.com/article/economy-policy/telecom-infrastructure-in-india-may-soon-get-disaster-resilient-standards-119102600658_1.html">Business Standard</a></li>
+    <li>[R5] DoT+CDRI Disaster Risk &amp; Resilience Framework — <a href="https://www.pib.gov.in/PressReleasePage.aspx?PRID=2206477&reg=3&lang=1">PIB</a></li>
+    <li>[R6] Cyclone Fani comms lessons — <a href="https://theconversation.com/indias-cyclone-fani-recovery-offers-the-world-lessons-in-disaster-preparedness-116870">The Conversation</a></li>
+    <li>[R7] Literacy in India (rural/urban, gender) — <a href="https://en.wikipedia.org/wiki/Literacy_in_India">Census/NSO compilation</a></li>
+    <li>[R8] State literacy rates — <a href="https://www.findeasy.in/indian-states-by-literacy-rate/">NSO/survey compilation</a></li>
+    <li>[R9] Rural mother-tongue-only communication (~90%) — <a href="https://kadence.com/en-us/knowledge/connecting-with-digital-india-engaging-tech-savvy-consumers/">Kadence Digital India study</a></li>
+    <li>[R10] SACHET scale &amp; cell broadcast — <a href="https://sachet.ndma.gov.in/About">NDMA</a>, <a href="https://www.pib.gov.in/PressReleasePage.aspx?PRID=2256706&reg=3&lang=1">PIB</a></li>
+    <li>[R11] AIR/DD reinforced for last-mile alerts — <a href="https://www.newsonair.gov.in/akashvani-doordarshan-boost-last-mile-delivery-of-disaster-alerts-and-welfare-schemes-says-govt">News on Air</a></li>
+    <li>[R12] IVR design for low-literacy users — <a href="https://www.researchgate.net/publication/40904086_Designing_interactive_voice_response_IVR_interfaces_Localisation_for_low_literacy_users">ICTD literature</a></li>
+    <li>[R13] Speech interfaces for low-literate users — <a href="https://dl.acm.org/doi/10.1145/2537052.2537062">ACM DEV</a></li>
+  </ol>
+
+  <h3>Bitrate science &amp; semantic communication (§4)</h3>
+  <ol class="refs" start="14">
+    <li>[R14] Codec2 (450–3200 bps) — <a href="https://github.com/drowe67/codec2">GitHub</a>; FreeDV — <a href="https://freedv.org/">freedv.org</a></li>
+    <li>[R15] MELPe / STANAG 4591 (600/1200/2400 bps) — <a href="https://melp.org/">melp.org</a></li>
+    <li>[R16] Google Lyra v2 — <a href="https://opensource.googleblog.com/2022/09/lyra-v2-a-better-faster-and-more-versatile-speech-codec.html">Google Open Source blog</a></li>
+    <li>[R17] Meta EnCodec — <a href="https://www.alphaxiv.org/abs/2210.13438">arXiv 2210.13438</a></li>
+    <li>[R18] Speaking rate 130–150 wpm — <a href="https://virtualspeech.com/blog/average-speaking-rate-words-per-minute">VirtualSpeech</a></li>
+    <li>[R19] ISRO Disaster Management Support programme — <a href="https://www.researchgate.net/publication/342657614_ISRO's_Capabilities_in_Disaster_Management">overview</a>; NESAC SATCOM — <a href="https://nesac.gov.in/scientific-programmes/satellite-communication-applications/">nesac.gov.in</a></li>
+    <li>[R20] Ham radio in disaster comms — <a href="https://en.wikipedia.org/wiki/Amateur_radio_emergency_communications">reference</a></li>
+    <li>[R29] Qin, Tao, Lu, Tong, Li — Semantic Communications: Principles and Challenges — <a href="https://arxiv.org/abs/2201.01389">arXiv 2201.01389</a></li>
+    <li>[R30] DeepSC-ST: semantic comms with speech recognition &amp; synthesis — <a href="https://dl.acm.org/doi/10.1109/TWC.2023.3240969">IEEE TWC 2023</a>; DeepSC-S — <a href="https://arxiv.org/pdf/2102.12605">arXiv 2102.12605</a></li>
+    <li>[R31] STCTS ~80 bps semantic speech codec — <a href="https://arxiv.org/html/2512.00451v1">arXiv 2512.00451</a></li>
+    <li>[R32] Voice over Low Data Rate Networks Using STT &amp; Semantic Compression (94% latency cut) — <a href="https://www.researchgate.net/publication/394380603_Voice_over_Low_Data_Rate_Networks_Using_Speech-to-Text_and_Semantic_Compression">2025 paper</a></li>
+    <li>[R33] FEMA IPAWS: TTS mispronunciation guidance — <a href="https://www.fema.gov/sites/default/files/documents/fema_ipaws-tip-42-alerts-with-audio.pdf">FEMA Tip 42</a></li>
+  </ol>
+
+  <h3>Prior art &amp; engineering (§3, §5, §9)</h3>
+  <ol class="refs" start="34">
+    <li>[R34] Oboe low-latency audio — <a href="https://github.com/google/oboe">google/oboe</a></li>
+    <li>[R35] Silero VAD — <a href="https://github.com/snakers4/silero-vad">GitHub</a>; VAD comparison — <a href="https://picovoice.ai/blog/best-voice-activity-detection-vad/">Picovoice</a></li>
+    <li>[R36] IndicConformer (MIT, 22 languages, int8 ONNX) — <a href="https://huggingface.co/ai4bharat/indic-conformer-600m-multilingual">HF model card</a></li>
+    <li>[R37] sherpa-onnx — <a href="https://github.com/k2-fsa/sherpa-onnx">k2-fsa/sherpa-onnx</a>; IndicConformer conversion thread — <a href="https://github.com/k2-fsa/sherpa-onnx/discussions/3199">discussion #3199</a></li>
+    <li>[R38] Vistaar/IndicWhisper benchmarks — <a href="https://arxiv.org/pdf/2305.15386">arXiv 2305.15386</a>; whisper.cpp — <a href="https://github.com/ggml-org/whisper.cpp">GitHub</a></li>
+    <li>[R39] indic-numtowords — <a href="https://github.com/AI4Bharat/indic-numtowords">AI4Bharat</a>; Indic NLP Library — <a href="https://anoopkunchukuttan.github.io/indic_nlp_library/">docs</a></li>
+    <li>[R40] LANwalkieTalkie (socket PTT skeleton) — <a href="https://github.com/devapro/LANwalkieTalkie">GitHub</a>; bitchat-android BLE mesh — <a href="https://github.com/permissionlesstech/bitchat-android">GitHub</a>; Bridgefy protocol break — <a href="https://eprint.iacr.org/2021/214.pdf">IACR 2021/214</a></li>
+    <li>[R41] AI4Bharat Indic-TTS (MIT, FastPitch+HiFi-GAN, 13 languages) — <a href="https://github.com/AI4Bharat/Indic-TTS">GitHub</a>; paper — <a href="https://arxiv.org/pdf/2211.09536">arXiv 2211.09536</a></li>
+    <li>[R42] Piper TTS voices — <a href="https://huggingface.co/rhasspy/piper-voices">manifest</a>; ARM RTF — <a href="https://turingpi.com/whisper-cpp-piper-tts-arm64-turing-pi-rk3588/">RK3588 benchmark</a></li>
+    <li>[R43] Streaming TTS first-audio latency — <a href="https://soniox.com/wiki/streaming-tts">Soniox</a></li>
+    <li>[R44] WER wrong for agglutinative Indic; use CER — <a href="https://arxiv.org/pdf/2203.16601">arXiv 2203.16601</a>; SN-WER — <a href="https://arxiv.org/pdf/2606.02548">arXiv 2606.02548</a></li>
+    <li>[R45] ITU-T G.114 mouth-to-ear delay — <a href="https://www.itu.int/rec/T-REC-G.114">ITU-T</a>; edge Conformer RTF 0.19 — <a href="https://arxiv.org/abs/2312.10359">Apple ML, arXiv 2312.10359</a>; quantized on-device ASR energy — <a href="https://arxiv.org/pdf/2405.01004">arXiv 2405.01004</a></li>
+    <li>[R46] Meshtastic LoRa range/bitrate — <a href="https://adrelien.com/meshtastic-diy-how-to-build-your-own-meshtatic-node-esp32-lora-radio/">DIY guide</a></li>
+    <li>[R47] ESP32+SX1278 India pricing — <a href="https://compoindia.com/product/esp32-lora-sx1278-0-96-inch-blue-oled-display-bt-wifi-module-for-arduino/">Compo India</a></li>
+    <li>[R48] IN865 band plan, 1% duty, 30 dBm — <a href="https://www.ensembletech.in/lora-frequency-bands-india/">Ensemble Tech</a>; QMesh — <a href="https://hackaday.io/project/161491-qmesh-a-lora-based-voice-mesh-network">Hackaday</a>; codec2_talkie — <a href="https://github.com/sh123/codec2_talkie">GitHub</a></li>
+    <li>[R49] J-Alert TTS multilingual alerts — <a href="https://en.wikipedia.org/wiki/J-Alert">reference</a></li>
+    <li>[R50] Bhashini / NLTM (₹450 crore) — <a href="https://indiaai.gov.in/missions/national-mission-on-natural-language-translation-bhashini">IndiaAI</a></li>
+    <li>[R51] RTranslator (offline STT→MT→TTS, Apache-2.0) — <a href="https://github.com/niedev/RTranslator">GitHub</a></li>
+    <li>[R52] MMS-TTS CC-BY-NC license — <a href="https://github.com/facebookresearch/fairseq/blob/main/examples/mms/README.md">fairseq MMS README</a></li>
+    <li>[R53] int8 quantization ≈ free for ASR — <a href="https://arxiv.org/abs/2511.08093">arXiv 2511.08093</a>, <a href="https://arxiv.org/html/2408.03979">arXiv 2408.03979</a></li>
+  </ol>
+
+  <p class="small" style="margin-top:10px">Repo: private GitHub <code>itantra</code> — research dossiers, this document, deck, eval harness, and code, committed continuously.</p>
+</div>
+
+</body>
+</html>
