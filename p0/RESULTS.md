@@ -48,6 +48,43 @@ the domain is conversational/alert text — Unishox2/SCSU pay for generic any-sc
 generality. Do not claim a general-purpose win. Hindi at 5.33 sits near the 4.98
 entropy bound; the residual gap is order-0 Huffman vs context modeling.
 
+### Measured rivals + the v2 arithmetic experiment (same held-out sentences)
+
+| Lang | Chars | UTF-8 b/c | SCSU b/c | Unishox2 b/c | VarnaCode v1 b/c | v2 arith b/c |
+|---|---|---|---|---|---|---|
+| en | 167 | 8.00 | 8.00 | 4.98 | **4.65** | 4.65 |
+| hi | 139 | 21.01 | 8.17 | 8.23 | **5.41** | 5.29 |
+| bn | 143 | 21.76 | 8.50 | 8.50 | **5.09** | 5.09 |
+| ta | 194 | 21.94 | 8.25 | 8.45 | **4.49** | 4.49 |
+| te | 170 | 21.84 | 8.33 | 8.61 | **5.08** | 5.04 |
+| gu | 101 | 21.31 | 8.32 | 8.55 | **5.39** | 5.39 |
+| mr | 102 | 21.65 | 8.16 | 8.24 | **5.25** | 5.33 |
+| kn | 114 | 21.89 | 8.28 | 8.42 | **5.40** | 5.33 |
+| ml | 131 | 22.17 | 8.24 | 8.67 | **4.82** | 4.70 |
+| or | 105 | 22.02 | 8.46 | 8.46 | **5.18** | 5.18 |
+
+- SCSU and Unishox2 are now **measured in-repo** (`bench_compression.py` `rivals()`, pips
+  `scsu` 1.1.1 + `unishox2-py3`), not cited: on our short alert sentences they cost
+  **8.2–8.7 bits/char** — slightly worse than the JOSS paper's 7.3–7.8 on longer prose
+  (per-string setup amortizes worse on ~50-char sentences). VarnaCode v1 wins every
+  language, including English (4.65 vs Unishox2's 4.98).
+- **v2 arithmetic-coding experiment (`varnacode2.py`): rejected.** A static range coder
+  over the identical char+bigram frequencies averages **5.05 vs v1's 5.08 bits/char** —
+  a 0.03 win, far under the 0.25 keep-bar. The bigram symbols already absorb most
+  order-0 Huffman inefficiency; arithmetic would add decoder complexity on three
+  platforms (Python/Kotlin/C) for ~0.5%. v1 Huffman stays the wire format; the
+  experiment stays in-repo with its own lossless self-check (70 cases).
+
+### AES-GCM envelope (version-2 frames)
+
+Optional pre-shared-key encryption around the VarnaCode payload:
+`payload = nonce(12) + AES-128-GCM ciphertext (+16 B tag)`, with the frame header bytes
+(ver|lang|prio, seq) as AAD — header tampering fails authentication even if CRC is
+recomputed. Overhead **+28 B**: an encrypted Hindi sentence ≈ **73 B**, still ~104×
+under AMR-NB's 7,625 B. Implemented in `p0/frame.py` and Android `Frame.kt`;
+cross-language vectors (fixed PSK/nonce) prove Python-encrypted frames decrypt on
+Android and re-pack byte-identical.
+
 ## Pipeline smoke test (measured on this machine, CPU)
 
 Loop: Hindi text -> Piper VITS (hi_IN-pratham-medium) -> wav -> STT -> text, 4 sentences.

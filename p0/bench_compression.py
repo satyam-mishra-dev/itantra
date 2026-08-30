@@ -59,6 +59,41 @@ def bench():
     return rows
 
 
+def rivals():
+    """Measured rivals on the same held-out sentences: SCSU + Unishox2 (real
+    encoders, not cited numbers) + the v2 arithmetic-coding experiment.
+    Needs the scratchpad venv (scsu, unishox2 pips); prints skip note otherwise."""
+    import codecs
+    try:
+        import scsu  # noqa: F401  (registers the codec)
+        import unishox2
+    except ImportError as e:
+        return f'(rivals skipped: {e})'
+    import varnacode2 as v2
+    rows = []
+    for lang, sents in TEST.items():
+        chars = sum(len(s) for s in sents)
+        utf8 = sum(len(s.encode('utf-8')) for s in sents)
+        sc = sum(len(codecs.encode(s, 'SCSU')) for s in sents)
+        un = sum(len(unishox2.compress(s)[0]) for s in sents)
+        v1 = sum(len(vc.encode(s, lang)) for s in sents)
+        ar = sum(len(v2.encode(s, lang)) for s in sents)
+        for s in sents:  # losslessness of the experiment, per sentence
+            assert v2.decode(v2.encode(s, lang), lang) == s, (lang, s)
+        rows.append((lang, chars, utf8 * 8 / chars, sc * 8 / chars, un * 8 / chars,
+                     v1 * 8 / chars, ar * 8 / chars))
+    lines = [
+        '| Lang | Chars | UTF-8 b/c | SCSU b/c | Unishox2 b/c | VarnaCode v1 b/c | v2 arith b/c |',
+        '|---|---|---|---|---|---|---|',
+    ]
+    for r in rows:
+        lines.append('| {} | {} | {:.2f} | {:.2f} | {:.2f} | **{:.2f}** | {:.2f} |'.format(*r))
+    avg1 = sum(r[5] for r in rows) / len(rows)
+    avg2 = sum(r[6] for r in rows) / len(rows)
+    lines.append(f'\navg v1 {avg1:.2f} vs v2-arith {avg2:.2f} bits/char (v2 wins by {avg1 - avg2:.2f})')
+    return '\n'.join(lines)
+
+
 if __name__ == '__main__':
     rows = bench()
     lines = [
@@ -68,4 +103,6 @@ if __name__ == '__main__':
     for r in rows:
         lines.append('| {} | {} | {} | {} | {:.2f} | {:.1f}× | {} | {:.0f}× | {:.1f}× | {} | {} |'.format(*r))
     print('\n'.join(lines))
-    # RESULTS.md is hand-curated; paste this table in under the v1 heading.
+    print()
+    print(rivals())
+    # RESULTS.md is hand-curated; paste these tables in under the v1 heading.

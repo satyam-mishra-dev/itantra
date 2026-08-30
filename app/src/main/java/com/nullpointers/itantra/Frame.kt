@@ -7,6 +7,7 @@ package com.nullpointers.itantra
  */
 object Frame {
     const val VER = 0
+    const val VER_ENC = 2 // version 2 = AES-GCM envelope: payload = nonce(12)+ciphertext+tag(16)
     const val NORMAL = 0
     const val ALERT = 1
     const val ACK = 2
@@ -25,11 +26,30 @@ object Frame {
         return crc
     }
 
-    fun pack(vc: VarnaCode, text: String, lang: String, prio: Int = NORMAL, seq: Int = 0): ByteArray {
-        val payload = vc.encode(text, lang)
+    fun pack(vc: VarnaCode, text: String, lang: String, prio: Int = NORMAL, seq: Int = 0,
+             key: ByteArray? = null, nonce: ByteArray? = null): ByteArray {
+        var payload = vc.encode(text, lang)
+        var ver = VER
+        if (key != null) {
+            ver = VER_ENC
+            val n = nonce ?: ByteArray(12).also { java.security.SecureRandom().nextBytes(it) }
+            val c = javax.crypto.Cipher.getInstance("AES/GCM/NoPadding")
+            c.init(
+                javax.crypto.Cipher.ENCRYPT_MODE,
+                javax.crypto.spec.SecretKeySpec(key, "AES"),
+                javax.crypto.spec.GCMParameterSpec(128, n)
+            )
+            c.updateAAD(
+                byteArrayOf(
+                    ((ver shl 6) or (VarnaCode.LANGS.indexOf(lang) shl 2) or prio).toByte(),
+                    (seq and 0xFF).toByte()
+                )
+            )
+            payload = n + c.doFinal(payload)
+        }
         require(payload.size <= 0xFFFF) { "payload too large" }
         val body = ByteArray(4 + payload.size)
-        body[0] = ((VER shl 6) or (VarnaCode.LANGS.indexOf(lang) shl 2) or prio).toByte()
+        body[0] = ((ver shl 6) or (VarnaCode.LANGS.indexOf(lang) shl 2) or prio).toByte()
         body[1] = (seq and 0xFF).toByte()
         body[2] = (payload.size ushr 8).toByte()
         body[3] = (payload.size and 0xFF).toByte()
@@ -38,7 +58,7 @@ object Frame {
         return body + byteArrayOf((crc ushr 8).toByte(), (crc and 0xFF).toByte())
     }
 
-    fun unpack(vc: VarnaCode, frame: ByteArray): Msg {
+    fun unpack(vc: VarnaCode, frame: ByteArray, key: ByteArray? = null): Msg {
         require(frame.size >= 6) { "short frame" }
         val crc = ((frame[frame.size - 2].toInt() and 0xFF) shl 8) or (frame[frame.size - 1].toInt() and 0xFF)
         require(crc16(frame, frame.size - 2) == crc) { "CRC mismatch" }
@@ -46,7 +66,23 @@ object Frame {
         val plen = ((frame[2].toInt() and 0xFF) shl 8) or (frame[3].toInt() and 0xFF)
         require(frame.size - 6 == plen) { "length mismatch" }
         val lang = VarnaCode.LANGS[(b0 shr 2) and 0xF]
-        val payload = frame.copyOfRange(4, frame.size - 2)
-        return Msg(b0 shr 6, lang, b0 and 3, frame[1].toInt() and 0xFF, vc.decode(payload, lang))
+        var payload = frame.copyOfRange(4, frame.size - 2)
+        val ver = b0 shr 6
+        if (ver == VER_ENC) {
+            require(key != null) { "encrypted frame, key required" }
+            try {
+                val c = javax.crypto.Cipher.getInstance("AES/GCM/NoPadding")
+                c.init(
+                    javax.crypto.Cipher.DECRYPT_MODE,
+                    javax.crypto.spec.SecretKeySpec(key, "AES"),
+                    javax.crypto.spec.GCMParameterSpec(128, payload, 0, 12)
+                )
+                c.updateAAD(byteArrayOf(frame[0], frame[1]))
+                payload = c.doFinal(payload, 12, payload.size - 12)
+            } catch (e: Exception) {
+                throw IllegalArgumentException("auth failed")
+            }
+        }
+        return Msg(ver, lang, b0 and 3, frame[1].toInt() and 0xFF, vc.decode(payload, lang))
     }
 }

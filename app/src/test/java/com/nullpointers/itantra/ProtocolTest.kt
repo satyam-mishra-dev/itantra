@@ -77,6 +77,34 @@ class ProtocolTest {
         } catch (_: IllegalArgumentException) { }
     }
 
+    @Test fun encryptedInteropVectors() {
+        val key = "iTantra-PSK-demo".encodeToByteArray()
+        val nonce = ByteArray(12) { it.toByte() }
+        val arr = JSONArray(res("/testvectors_enc.json"))
+        assertTrue(arr.length() > 0)
+        for (i in 0 until arr.length()) {
+            val v = arr.getJSONObject(i)
+            val bytes = v.getString("hex").chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+            // python-encrypted frame decrypts in Kotlin
+            val m = Frame.unpack(vc, bytes, key)
+            assertEquals(v.getString("text"), m.text)
+            assertEquals(Frame.VER_ENC, m.ver)
+            assertEquals(v.getInt("prio"), m.prio)
+            // Kotlin re-pack with the same PSK/nonce is byte-identical to python's
+            val ours = Frame.pack(vc, v.getString("text"), v.getString("lang"), v.getInt("prio"), v.getInt("seq"), key, nonce)
+            assertEquals(v.getString("hex"), ours.joinToString("") { "%02x".format(it) })
+            // wrong key and missing key both refused
+            try {
+                Frame.unpack(vc, bytes, "0123456789abcdef".encodeToByteArray())
+                fail("wrong key accepted")
+            } catch (_: IllegalArgumentException) { }
+            try {
+                Frame.unpack(vc, bytes)
+                fail("no-key unpack of encrypted frame accepted")
+            } catch (_: IllegalArgumentException) { }
+        }
+    }
+
     @Test fun pythonInteropVectors() {
         val arr = JSONArray(res("/testvectors.json"))
         for (i in 0 until arr.length()) {

@@ -59,4 +59,17 @@ vec_path = os.path.join(HERE, '..', 'src', 'test', 'resources', 'testvectors.jso
 with open(vec_path, 'w', encoding='utf-8') as f:
     json.dump(vectors, f, ensure_ascii=False)
 
-print(f'exported {len(books)} codebooks, {len(vectors)} vectors')
+# Encrypted (version-2) vectors — fixed PSK + nonce so Kotlin re-pack is byte-identical.
+KEY = b'iTantra-PSK-demo'
+NONCE = bytes(range(12))
+encv = []
+for i, lang in enumerate(('en', 'hi', 'ta')):
+    for prio in (frame.NORMAL, frame.ALERT):
+        encv.append({'lang': lang, 'text': SAMPLES[lang], 'prio': prio, 'seq': 90 + i,
+                     'hex': frame.pack(SAMPLES[lang], lang, prio=prio, seq=90 + i,
+                                       key=KEY, nonce=NONCE).hex()})
+enc_path = os.path.join(HERE, '..', 'src', 'test', 'resources', 'testvectors_enc.json')
+with open(enc_path, 'w', encoding='utf-8') as f:
+    json.dump(encv, f, ensure_ascii=False)
+
+print(f'exported {len(books)} codebooks, {len(vectors)} vectors, {len(encv)} encrypted vectors')
