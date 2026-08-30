@@ -21,9 +21,9 @@
   <g>
     <circle cx="160" cy="360" r="56" fill="none" stroke="#16324a" stroke-width="7"/>
     <polyline points="130,360 148,378 192,336" fill="none" stroke="#16324a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-    <text x="270" y="330" font-size="36" font-weight="bold" fill="#16324a">Models proven tonight, on CPU</text>
-    <text x="270" y="376" font-size="29" fill="#33526b">Hindi loop measured: TTS RTF 0.049,</text>
-    <text x="270" y="414" font-size="29" fill="#33526b">STT RTF 0.055–0.119 · round-trip CER 1.6%</text>
+    <text x="270" y="330" font-size="40" font-weight="bold" fill="#16324a">Models measured, not estimated</text>
+    <text x="270" y="376" font-size="34" fill="#33526b">Hindi loop measured: TTS RTF 0.049,</text>
+    <text x="270" y="414" font-size="34" fill="#33526b">STT RTF 0.055–0.119 · round-trip CER 1.6%</text>
   </g>
 
   <!-- item 2 -->
@@ -33,18 +33,18 @@
       <line x1="132" y1="496" x2="132" y2="510"/><line x1="160" y1="496" x2="160" y2="510"/><line x1="188" y1="496" x2="188" y2="510"/>
       <line x1="132" y1="606" x2="132" y2="620"/><line x1="160" y1="606" x2="160" y2="620"/><line x1="188" y1="606" x2="188" y2="620"/>
     </g>
-    <text x="270" y="536" font-size="36" font-weight="bold" fill="#16324a">Every part is a maintained OSS project</text>
-    <text x="270" y="582" font-size="29" fill="#33526b">sherpa-onnx 14.5k★ · IndicConformer (MIT)</text>
-    <text x="270" y="620" font-size="29" fill="#33526b">Piper · Silero · Oboe — we integrate, not invent</text>
+    <text x="270" y="536" font-size="40" font-weight="bold" fill="#16324a">Every part is a maintained OSS project</text>
+    <text x="270" y="582" font-size="34" fill="#33526b">sherpa-onnx 14.5k★ · IndicConformer (MIT)</text>
+    <text x="270" y="620" font-size="34" fill="#33526b">Piper · Silero · Oboe — we integrate, not invent</text>
   </g>
 
   <!-- item 3 -->
   <g>
     <path d="M 160 716 l 48 28 v 56 l -48 28 l -48 -28 v -56 z" fill="none" stroke="#16324a" stroke-width="7" stroke-linejoin="round"/>
     <line x1="160" y1="744" x2="160" y2="800" stroke="#16324a" stroke-width="6" stroke-linecap="round"/>
-    <text x="270" y="742" font-size="36" font-weight="bold" fill="#16324a">Fallback ladder at every layer</text>
-    <text x="270" y="788" font-size="29" fill="#33526b">official int8 exports · eSpeak-NG voice ·</text>
-    <text x="270" y="826" font-size="29" fill="#33526b">hotspot default when Wi-Fi Direct flakes</text>
+    <text x="270" y="742" font-size="40" font-weight="bold" fill="#16324a">Fallback ladder at every layer</text>
+    <text x="270" y="788" font-size="34" fill="#33526b">official int8 exports · eSpeak-NG voice ·</text>
+    <text x="270" y="826" font-size="34" fill="#33526b">hotspot default when Wi-Fi Direct flakes</text>
   </g>
 
   <line x1="90" y1="900" x2="1110" y2="900" stroke="#a9c4de" stroke-width="3"/>
@@ -56,9 +56,9 @@
   <!-- item 4 -->
   <g>
     <text x="118" y="1240" font-size="72" font-weight="bold" fill="#16324a">₹0</text>
-    <text x="270" y="1196" font-size="36" font-weight="bold" fill="#16324a">Zero recurring cost</text>
-    <text x="270" y="1242" font-size="29" fill="#33526b">no SIM, no data plan, no server, no license —</text>
-    <text x="270" y="1280" font-size="29" fill="#33526b">runs on phones people already own</text>
+    <text x="270" y="1196" font-size="40" font-weight="bold" fill="#16324a">Zero recurring cost</text>
+    <text x="270" y="1242" font-size="34" fill="#33526b">no SIM, no data plan, no server, no license —</text>
+    <text x="270" y="1280" font-size="34" fill="#33526b">runs on phones people already own</text>
   </g>
 
   <!-- item 5 -->
@@ -69,17 +69,17 @@
       <line x1="180" y1="1450" x2="180" y2="1408"/>
       <path d="M 116 1360 l 34 -26 l 34 26" stroke-width="6"/>
     </g>
-    <text x="270" y="1396" font-size="36" font-weight="bold" fill="#16324a">Scales by design</text>
-    <text x="270" y="1442" font-size="29" fill="#33526b">model family covers all 22 scheduled languages;</text>
-    <text x="270" y="1480" font-size="29" fill="#33526b">frames ride any bearer — BT today, satellite tomorrow</text>
+    <text x="270" y="1396" font-size="40" font-weight="bold" fill="#16324a">Scales by design</text>
+    <text x="270" y="1442" font-size="34" fill="#33526b">model family covers all 22 scheduled languages;</text>
+    <text x="270" y="1480" font-size="34" fill="#33526b">frames ride any bearer — BT today, satellite tomorrow</text>
   </g>
 
   <!-- item 6 -->
   <g>
     <path d="M 160 1540 l 44 20 v 40 c 0 34 -20 54 -44 66 c -24 -12 -44 -32 -44 -66 v -40 z" fill="none" stroke="#16324a" stroke-width="7" stroke-linejoin="round"/>
     <polyline points="140,1600 156,1616 184,1580" fill="none" stroke="#16324a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-    <text x="270" y="1580" font-size="36" font-weight="bold" fill="#16324a">Sovereign &amp; aligned</text>
-    <text x="270" y="1624" font-size="29" fill="#33526b">Bhashini-lineage MIT models · IN865 band ·</text>
-    <text x="270" y="1662" font-size="29" fill="#33526b">completes ISRO's DMS radio stack</text>
+    <text x="270" y="1580" font-size="40" font-weight="bold" fill="#16324a">Sovereign &amp; aligned</text>
+    <text x="270" y="1624" font-size="34" fill="#33526b">Bhashini-lineage MIT models · IN865 band ·</text>
+    <text x="270" y="1662" font-size="34" fill="#33526b">completes ISRO's DMS radio stack</text>
   </g>
 </svg>
