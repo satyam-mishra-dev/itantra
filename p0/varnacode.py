@@ -7,6 +7,13 @@ else as a 21-bit codepoint, so it round-trips ANY string losslessly.
 Stdlib only.
 """
 import heapq
+import json
+import os
+
+# v1: corpus-trained codebooks (chars + top bigrams as multi-char symbols),
+# built by build_codebooks.py from Wikipedia + the embedded domain corpus.
+_BOOKS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'codebooks.json')
+_BOOKS = json.load(open(_BOOKS_PATH, encoding='utf-8')) if os.path.exists(_BOOKS_PATH) else {}
 
 # 4-bit language ids — order is the wire format, do not reorder (frame.py depends on it)
 LANGS = ['en', 'hi', 'bn', 'ta', 'te', 'gu', 'mr', 'kn', 'ml', 'or']
@@ -107,7 +114,10 @@ ESC, EOF = object(), object()
 
 def _freqs(lang):
     f = {}
-    if lang in CORPUS:
+    if lang in _BOOKS:  # v1 corpus-trained
+        f.update(_BOOKS[lang]['chars'])
+        f.update(_BOOKS[lang]['bigrams'])
+    elif lang in CORPUS:
         for c in CORPUS[lang]:
             f[c] = f.get(c, 0) + 1
     else:
@@ -152,12 +162,20 @@ def _table(lang):
 def encode(text, lang):
     enc, _ = _table(lang)
     bits = []
-    for ch in text:
+    i = 0
+    while i < len(text):
+        pair = text[i:i + 2]
+        if len(pair) == 2 and pair in enc and len(enc[pair]) < len(enc.get(text[i], 'x' * 99)) + len(enc.get(text[i + 1], 'x' * 99)):
+            bits.append(enc[pair])  # bigram symbol wins only when actually shorter
+            i += 2
+            continue
+        ch = text[i]
         if ch in enc:
             bits.append(enc[ch])
         else:
             bits.append(enc[ESC])
             bits.append(format(ord(ch), '021b'))  # 21 bits covers all of Unicode
+        i += 1
     bits.append(enc[EOF])
     s = ''.join(bits)
     s += '0' * (-len(s) % 8)
