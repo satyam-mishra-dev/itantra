@@ -2,3 +2,5 @@
 __pycache__/
 models/
 *.wav
+fleurs/
+corpus_cache/

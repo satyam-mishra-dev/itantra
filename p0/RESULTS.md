@@ -120,3 +120,44 @@ pipeline demo; sherpa-onnx `OfflineRecognizer.from_nemo_ctc`, 2 threads, desktop
   **140 MB** and loads in 0.8 s (no bn reference audio locally, so size/load only).
 - Per-language phone budget confirmed: ~140 MB STT (int8) + ~63 MB Piper TTS ≈ **203 MB**,
   vs the idea doc's ≤230 MB/language budget. ✓
+
+## P6: real-speech evaluation (FLEURS test, human speakers, measured)
+
+Data: google/fleurs test split, first 20 utterances/language (streamed, cached in
+`fleurs/`, not committed). Normalization applied to ref AND hyp before scoring:
+NFC -> strip danda/punct -> collapse whitespace -> casefold. Model: IndicConformer
+int8 (140 MB), sherpa-onnx `from_nemo_ctc`, 2 threads, desktop CPU.
+
+| Lang | Utts | Audio | CER | WER | RTF |
+|---|---|---|---|---|---|
+| hi | 20 | 235 s | 2.9% | 8.9% | 0.062 |
+| bn | 20 | 279 s | 4.0% | 16.4% | 0.063 |
+| ta | 20 | 277 s | 13.9% | 31.3% | 0.059 |
+| te | 20 | 227 s | 7.8% | 26.3% | 0.057 |
+| ml | 20 | 284 s | 9.2% | 37.6% | 0.059 |
+
+Honest read: synthetic Piper speech round-trip CER was 0.8-1.6% (P0/P4); real spontaneous-adjacent read speech is harder, and
+the numbers above are the ones to defend. Published IndicWhisper/IndicConformer
+baselines run ~13 WER on Hindi benchmarks — same territory. CER stays the headline
+metric for agglutinative scripts (arXiv 2203.16601).
+
+### Noise robustness (babble 85% + white 15%, additive at target SNR)
+
+We also tested a GTCRN speech-enhancement front-end (0.5 MB, RTF 0.031) before STT.
+
+| Lang | Clean | 20 dB | 10 dB | 5 dB |
+|---|---|---|---|---|
+| hi (noisy) | 2.9% | 8.0% | 11.8% | 17.9% |
+| hi + GTCRN | 2.9% | 12.1% | 26.7% | 29.9% |
+| ta (noisy) | 13.9% | 13.8% | 17.1% | 22.8% |
+| ta + GTCRN | 13.9% | 15.0% | 18.5% | 24.1% |
+
+**Denoiser verdict (evidence-driven): ship WITHOUT a denoiser.** GTCRN made CER
+*worse* at every SNR tested (hi @ 10 dB: 11.8% → 26.7%; ta @ 10 dB: 17.1% → 18.5%) —
+off-the-shelf speech-enhancement artifacts hurt Conformer ASR more than the noise they
+remove. IndicConformer's own noise robustness (trained on spontaneous, real-world
+IndicVoices audio) is the better defense; enhancement, if ever added, belongs on the
+*playback* side for human ears, not in front of the recognizer. We measured the obvious
+trick, it backfired, and the pipeline stays simpler for it.
+
+Chart: `chart-noise.png` (both curves — noisy vs denoised — so the verdict is visible).
