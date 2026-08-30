@@ -104,4 +104,33 @@ try:
 except ImportError:
     print('note: AES-GCM tests skipped (pip install cryptography)')
 
+# Prosody byte (ver flag bit 0): 0 bytes absent, 1 byte present, firmware-transparent
+pf = frame.pack(SAMPLES['ta'], 'ta', prio=frame.ALERT, seq=3, prosody=0x26)
+assert len(pf) == len(frame.pack(SAMPLES['ta'], 'ta', prio=frame.ALERT, seq=3)) + 1
+n += 1
+d = frame.unpack(pf)
+assert d['prosody'] == 0x26 and (d['ver'] & frame.VER_PRO) and d['text'] == SAMPLES['ta']
+n += 1
+assert frame.unpack(frame.pack(SAMPLES['ta'], 'ta'))['prosody'] is None  # backward compat
+n += 1
+try:
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM  # noqa: F401
+    KEY2 = b'iTantra-PSK-demo'
+    epf = frame.pack(SAMPLES['hi'], 'hi', prio=frame.ALERT, seq=4, key=KEY2, prosody=0x11)
+    d = frame.unpack(epf, key=KEY2)
+    assert d['prosody'] == 0x11 and d['ver'] == (frame.VER_ENC | frame.VER_PRO)
+    n += 1
+    # tamper the prosody byte AND fix the CRC — only GCM AAD auth can catch it
+    bad = bytearray(epf)
+    bad[4] ^= 0x01
+    body = bytes(bad[:-2])
+    fixed = body + frame.struct.pack('>H', frame.crc16(body))
+    try:
+        frame.unpack(fixed, key=KEY2)
+        raise AssertionError('prosody tamper with fixed CRC not detected')
+    except ValueError:
+        n += 1
+except ImportError:
+    pass
+
 print(f'OK — {n} assertions passed')

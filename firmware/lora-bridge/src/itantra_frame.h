@@ -3,6 +3,9 @@
 //
 // Layout (big-endian):
 //   byte 0    : ver(2) | lang(4) | priority(2)
+//               ver bit0 = 1-byte prosody code leads the payload region
+//               (counted in plen); ver bit1 = AES-GCM envelope. Framing is
+//               unchanged either way — this parser relays both transparently.
 //   byte 1    : seq
 //   bytes 2-3 : payload length
 //   payload

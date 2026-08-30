@@ -35,9 +35,16 @@ int main(void) {
 '''
 
 
+try:
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM  # noqa: F401
+    KEY = b'iTantra-PSK-demo'
+except ImportError:
+    KEY = None
+
+
 def python_accepts(b):
     try:
-        frame.unpack(b)
+        frame.unpack(b, key=KEY)  # plain frames ignore the key
         return True
     except (ValueError, KeyError, IndexError):
         return False
@@ -64,6 +71,20 @@ def main():
                 cases.append(bytes(bad))
                 bad = bytearray(good); bad[-1] ^= 0xFF  # CRC flip
                 cases.append(bytes(bad))
+        # prosody-flagged frames (ver bit 0): the relay must carry them transparently
+        pro = frame.pack('घाट खाली करें', 'hi', frame.ALERT, seq=200, prosody=0x26)
+        cases.append(pro)                                # valid
+        cases.append(pro[:-1])                           # truncated
+        bad = bytearray(pro)
+        bad[4] ^= 0xFF                                   # flip prosody byte -> CRC catches
+        cases.append(bytes(bad))
+        if KEY:  # encrypted + prosody (ver bits 0+1)
+            epro = frame.pack('घाट खाली करें', 'hi', frame.ALERT, seq=201, key=KEY,
+                              nonce=bytes(range(12)), prosody=0x26)
+            cases.append(epro)                           # valid (relay checks CRC only)
+            bad = bytearray(epro)
+            bad[-1] ^= 0xFF
+            cases.append(bytes(bad))                     # CRC flip
         cases.append(b'')          # empty
         cases.append(b'\x00\x01')  # short
         # C parser caps frames at ITANTRA_MAX_FRAME=255; python doesn't. Only

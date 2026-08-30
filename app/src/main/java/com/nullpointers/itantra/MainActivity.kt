@@ -198,17 +198,18 @@ class MainActivity : Activity() {
                 sttMs = -1
                 text = input.text.toString()
             }
+            val prosody = if (samples.isNotEmpty()) Prosody.encode(samples) else null
             runOnUiThread {
                 if (text.isBlank()) { status.text = getString(R.string.nothing_to_send); return@runOnUiThread }
                 input.setText("")
-                send(text, l, sttMs, samples.size / 16000.0)
+                send(text, l, sttMs, samples.size / 16000.0, prosody)
             }
         }.start()
     }
 
-    private fun send(text: String, l: String, sttMs: Long, audioSec: Double) {
+    private fun send(text: String, l: String, sttMs: Long, audioSec: Double, prosody: Int? = null) {
         val prio = if (alertBox.isChecked) Frame.ALERT else Frame.NORMAL
-        val frame = Frame.pack(vc, text, l, prio, seq++)
+        val frame = Frame.pack(vc, text, l, prio, seq++, prosody = prosody)
         Thread {
             val n = transports.sumOf { it.send(frame) }
             runOnUiThread {
@@ -247,14 +248,17 @@ class MainActivity : Activity() {
             }
         }
         val engine = speech.ttsFor(msg.lang)
+        val pp = msg.prosody?.let { Prosody.ttsParams(it) }
         Thread {
             val label: String
             if (engine != null) {
-                val audio = engine.generate(msg.text, 0, 1.0f)
+                val audio = engine.generate(msg.text, 0, pp?.speed ?: 1.0f)
                 val firstAudioMs = SystemClock.elapsedRealtime() - tRecv
                 LastStats.ttsFirstAudioMs = firstAudioMs
-                label = "tts-first-audio ${firstAudioMs}ms"
-                repeat(if (alert) 2 else 1) { playPcm(audio.samples, audio.sampleRate, alert) }
+                label = "tts-first-audio ${firstAudioMs}ms" + (pp?.let { ", ${it.urgency}" } ?: "")
+                repeat(maxOf(if (alert) 2 else 1, pp?.repeats ?: 1)) {
+                    playPcm(audio.samples, audio.sampleRate, alert, pp?.gain ?: 1.0f)
+                }
             } else {
                 label = "platform-tts"
                 val parts = (ttsLocales[msg.lang] ?: "en_IN").split('_')
@@ -267,9 +271,10 @@ class MainActivity : Activity() {
         }.start()
     }
 
-    private fun playPcm(samples: FloatArray, sampleRate: Int, alert: Boolean) {
+    private fun playPcm(samples: FloatArray, sampleRate: Int, alert: Boolean, gain: Float = 1.0f) {
+        // ponytail: gain >1 hard-clips — acceptable siren effect for urgent frames
         val shorts = ShortArray(samples.size) {
-            (samples[it].coerceIn(-1f, 1f) * 32767).toInt().toShort()
+            ((samples[it] * gain).coerceIn(-1f, 1f) * 32767).toInt().toShort()
         }
         track?.release()
         val t = AudioTrack.Builder()
