@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">iTantra</string>
+    <string name="starting">starting…</string>
+    <string name="recording">recording…</string>
+    <string name="no_peers">no peers connected — same Wi-Fi/hotspot?</string>
+    <string name="input_hint">message text (P1 stub — STT lands in P2)</string>
+    <string name="alert_label">ALERT (max volume, repeats)</string>
+    <string name="ptt_label">HOLD TO TALK</string>
+</resources>
