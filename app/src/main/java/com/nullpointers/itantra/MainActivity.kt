@@ -40,7 +40,7 @@ class MainActivity : Activity() {
     )
 
     private lateinit var vc: VarnaCode
-    private lateinit var speech: SpeechEngine
+    @Volatile private var speech: SpeechEngine? = null
     private lateinit var transports: List<Transport>
     private lateinit var transcript: TextView
     private lateinit var status: TextView
@@ -54,13 +54,15 @@ class MainActivity : Activity() {
     private var vadActive = false
     private var pttT0 = 0L
     private var seq = 0
+    // Mutual NSD discovery gives two sockets to the same peer; NSD+BT gives two bearers.
+    // De-dup received frames by content hash. ponytail: 64-deep LRU, plenty for a walkie-talkie.
+    private val seen = ArrayDeque<Int>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         vc = VarnaCode(assets.open("codebooks.json").readBytes().decodeToString())
-        speech = SpeechEngine(this)
         transcript = findViewById(R.id.transcript)
         status = findViewById(R.id.status)
         langSpinner = findViewById(R.id.lang)
@@ -71,19 +73,24 @@ class MainActivity : Activity() {
         langSpinner.setSelection(1) // Hindi default
 
         tts = TextToSpeech(this) { }
-        vad = try {
-            Vad(
-                assetManager = assets,
-                config = VadModelConfig(
-                    sileroVadModelConfig = SileroVadModelConfig(
-                        model = "silero_vad.onnx",
-                        minSilenceDuration = 0.5f,
-                        maxSpeechDuration = 15f,
-                    ),
-                    sampleRate = 16000,
+        // Heavy natives (sherpa-onnx JNI + VAD model) load off the main thread —
+        // blocking here starved PttService.startForeground() past its ANR deadline.
+        Thread {
+            speech = SpeechEngine(this)
+            vad = try {
+                Vad(
+                    assetManager = assets,
+                    config = VadModelConfig(
+                        sileroVadModelConfig = SileroVadModelConfig(
+                            model = "silero_vad.onnx",
+                            minSilenceDuration = 0.5f,
+                            maxSpeechDuration = 15f,
+                        ),
+                        sampleRate = 16000,
+                    )
                 )
-            )
-        } catch (t: Throwable) { null }
+            } catch (t: Throwable) { null }
+        }.start()
 
         transports = listOf(
             NsdTransport(this, ::onFrameBytes) { s -> runOnUiThread { status.text = s } },
@@ -142,7 +149,7 @@ class MainActivity : Activity() {
         val l = lang()
         pttT0 = SystemClock.elapsedRealtime()
         // VAD streaming path only makes sense with a real STT engine
-        vadActive = vad != null && speech.sttFor(l) != null
+        vadActive = vad != null && speech?.sttFor(l) != null
         val v = vad
         if (vadActive && v != null) {
             v.reset()
@@ -164,9 +171,10 @@ class MainActivity : Activity() {
             val seg = v.front().samples
             v.pop()
             Thread {
-                val engine = speech.sttFor(l) ?: return@Thread
+                val sp = speech ?: return@Thread
+                val engine = sp.sttFor(l) ?: return@Thread
                 val t0 = SystemClock.elapsedRealtime()
-                val text = speech.recognize(engine, seg)
+                val text = sp.recognize(engine, seg)
                 val ms = SystemClock.elapsedRealtime() - t0
                 if (text.isNotBlank()) runOnUiThread { send(text, l, ms, seg.size / 16000.0) }
             }.start()
@@ -187,11 +195,12 @@ class MainActivity : Activity() {
         // fallback: whole-clip decode, or typed text when no model pack
         val t0 = SystemClock.elapsedRealtime()
         Thread {
-            val engine = speech.sttFor(l)
+            val sp = speech
+            val engine = sp?.sttFor(l)
             val sttMs: Long
             val text: String
-            if (engine != null && samples.isNotEmpty()) {
-                val out = speech.recognize(engine, samples)
+            if (sp != null && engine != null && samples.isNotEmpty()) {
+                val out = sp.recognize(engine, samples)
                 sttMs = SystemClock.elapsedRealtime() - t0
                 text = out.ifBlank { input.text.toString() }
             } else {
@@ -223,6 +232,12 @@ class MainActivity : Activity() {
     }
 
     private fun onFrameBytes(bytes: ByteArray) {
+        val h = bytes.contentHashCode()
+        synchronized(seen) {
+            if (h in seen) return
+            seen.addLast(h)
+            if (seen.size > 64) seen.removeFirst()
+        }
         val tRecv = SystemClock.elapsedRealtime()
         val msg = try { Frame.unpack(vc, bytes) } catch (e: Exception) {
             runOnUiThread { append("✗ bad frame: ${e.message}") }; return
@@ -247,7 +262,7 @@ class MainActivity : Activity() {
                 )
             }
         }
-        val engine = speech.ttsFor(msg.lang)
+        val engine = speech?.ttsFor(msg.lang)
         val pp = msg.prosody?.let { Prosody.ttsParams(it) }
         Thread {
             val label: String
