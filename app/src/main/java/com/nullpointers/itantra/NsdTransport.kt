@@ -18,7 +18,7 @@ class NsdTransport(
     private val ctx: Context,
     private val onFrame: (ByteArray) -> Unit,
     private val onStatus: (String) -> Unit,
-) {
+) : Transport {
     private val tag = "iTantraNsd"
     private val serviceType = "_itantra._tcp."
     private val myName = "iTantra-" + android.os.Build.MODEL.replace(' ', '_') + "-" + (1000..9999).random()
@@ -28,7 +28,7 @@ class NsdTransport(
     private var regListener: NsdManager.RegistrationListener? = null
     private var discListener: NsdManager.DiscoveryListener? = null
 
-    fun start() {
+    override fun start() {
         val srv = ServerSocket(0)
         server = srv
         Thread {
@@ -82,15 +82,7 @@ class NsdTransport(
         sockets.add(s)
         Thread {
             try {
-                val din = DataInputStream(s.getInputStream())
-                val hdr = ByteArray(4)
-                while (true) {
-                    din.readFully(hdr)
-                    val plen = ((hdr[2].toInt() and 0xFF) shl 8) or (hdr[3].toInt() and 0xFF)
-                    val rest = ByteArray(plen + 2)
-                    din.readFully(rest)
-                    onFrame(hdr + rest)
-                }
+                pumpFrames(DataInputStream(s.getInputStream()), onFrame)
             } catch (_: Exception) {
                 sockets.remove(s)
                 onStatus("peer disconnected")
@@ -98,7 +90,7 @@ class NsdTransport(
         }.start()
     }
 
-    fun send(frame: ByteArray): Int {
+    override fun send(frame: ByteArray): Int {
         var sent = 0
         for (s in sockets) {
             try {
@@ -111,7 +103,7 @@ class NsdTransport(
         return sent
     }
 
-    fun stop() {
+    override fun stop() {
         try { discListener?.let { nsd?.stopServiceDiscovery(it) } } catch (_: Exception) {}
         try { regListener?.let { nsd?.unregisterService(it) } } catch (_: Exception) {}
         try { server?.close() } catch (_: Exception) {}

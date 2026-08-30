@@ -44,6 +44,12 @@
         android:text="@string/alert_label" />
 
     <Button
+        android:id="@+id/eval"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/eval_button" />
+
+    <Button
         android:id="@+id/ptt"
         android:layout_width="match_parent"
         android:layout_height="96dp"

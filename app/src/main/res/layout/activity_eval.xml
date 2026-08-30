@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+<LinearLayout
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="12dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/eval_title"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/packStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:typeface="monospace"
+        android:textSize="12sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/eval_read_this"
+        android:textStyle="bold" />
+
+    <Spinner
+        android:id="@+id/evalLang"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/refSentence"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:padding="8dp" />
+
+    <Button
+        android:id="@+id/readPtt"
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:text="@string/eval_hold_to_read" />
+
+    <TextView
+        android:id="@+id/evalResult"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:typeface="monospace"
+        android:textSize="14sp" />
+
+    <Button
+        android:id="@+id/cpuSample"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/eval_cpu_button" />
+
+    <TextView
+        android:id="@+id/cpuStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:typeface="monospace" />
+</LinearLayout>
+</ScrollView>
