@@ -7,12 +7,14 @@ package com.nullpointers.itantra
  */
 object Frame {
     const val VER = 0
-    const val VER_ENC = 2 // version 2 = AES-GCM envelope: payload = nonce(12)+ciphertext+tag(16)
+    const val VER_PRO = 1 // ver flag bit 0: 1-byte prosody code leads the payload region (counted in plen)
+    const val VER_ENC = 2 // ver flag bit 1: AES-GCM envelope: payload = nonce(12)+ciphertext+tag(16)
     const val NORMAL = 0
     const val ALERT = 1
     const val ACK = 2
 
-    data class Msg(val ver: Int, val lang: String, val prio: Int, val seq: Int, val text: String)
+    data class Msg(val ver: Int, val lang: String, val prio: Int, val seq: Int, val text: String,
+                   val prosody: Int? = null)
 
     fun crc16(data: ByteArray, len: Int = data.size): Int {
         var crc = 0xFFFF
@@ -27,11 +29,11 @@ object Frame {
     }
 
     fun pack(vc: VarnaCode, text: String, lang: String, prio: Int = NORMAL, seq: Int = 0,
-             key: ByteArray? = null, nonce: ByteArray? = null): ByteArray {
+             key: ByteArray? = null, nonce: ByteArray? = null, prosody: Int? = null): ByteArray {
         var payload = vc.encode(text, lang)
-        var ver = VER
+        val ver = (if (key != null) VER_ENC else 0) or (if (prosody != null) VER_PRO else 0)
+        val b0 = ((ver shl 6) or (VarnaCode.LANGS.indexOf(lang) shl 2) or prio).toByte()
         if (key != null) {
-            ver = VER_ENC
             val n = nonce ?: ByteArray(12).also { java.security.SecureRandom().nextBytes(it) }
             val c = javax.crypto.Cipher.getInstance("AES/GCM/NoPadding")
             c.init(
@@ -40,16 +42,15 @@ object Frame {
                 javax.crypto.spec.GCMParameterSpec(128, n)
             )
             c.updateAAD(
-                byteArrayOf(
-                    ((ver shl 6) or (VarnaCode.LANGS.indexOf(lang) shl 2) or prio).toByte(),
-                    (seq and 0xFF).toByte()
-                )
+                byteArrayOf(b0, (seq and 0xFF).toByte()) +
+                    (prosody?.let { byteArrayOf(it.toByte()) } ?: ByteArray(0))
             )
             payload = n + c.doFinal(payload)
         }
+        if (prosody != null) payload = byteArrayOf(prosody.toByte()) + payload
         require(payload.size <= 0xFFFF) { "payload too large" }
         val body = ByteArray(4 + payload.size)
-        body[0] = ((ver shl 6) or (VarnaCode.LANGS.indexOf(lang) shl 2) or prio).toByte()
+        body[0] = b0
         body[1] = (seq and 0xFF).toByte()
         body[2] = (payload.size ushr 8).toByte()
         body[3] = (payload.size and 0xFF).toByte()
@@ -68,7 +69,13 @@ object Frame {
         val lang = VarnaCode.LANGS[(b0 shr 2) and 0xF]
         var payload = frame.copyOfRange(4, frame.size - 2)
         val ver = b0 shr 6
-        if (ver == VER_ENC) {
+        var prosody: Int? = null
+        if (ver and VER_PRO != 0) {
+            require(payload.isNotEmpty()) { "prosody flag with empty payload" }
+            prosody = payload[0].toInt() and 0xFF
+            payload = payload.copyOfRange(1, payload.size)
+        }
+        if (ver and VER_ENC != 0) {
             require(key != null) { "encrypted frame, key required" }
             try {
                 val c = javax.crypto.Cipher.getInstance("AES/GCM/NoPadding")
@@ -77,12 +84,15 @@ object Frame {
                     javax.crypto.spec.SecretKeySpec(key, "AES"),
                     javax.crypto.spec.GCMParameterSpec(128, payload, 0, 12)
                 )
-                c.updateAAD(byteArrayOf(frame[0], frame[1]))
+                c.updateAAD(
+                    byteArrayOf(frame[0], frame[1]) +
+                        (prosody?.let { byteArrayOf(it.toByte()) } ?: ByteArray(0))
+                )
                 payload = c.doFinal(payload, 12, payload.size - 12)
             } catch (e: Exception) {
                 throw IllegalArgumentException("auth failed")
             }
         }
-        return Msg(ver, lang, b0 and 3, frame[1].toInt() and 0xFF, vc.decode(payload, lang))
+        return Msg(ver, lang, b0 and 3, frame[1].toInt() and 0xFF, vc.decode(payload, lang), prosody)
     }
 }

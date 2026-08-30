@@ -55,6 +55,10 @@ for i, (lang, text) in enumerate(SAMPLES.items()):
         vectors.append({'lang': lang, 'text': text, 'prio': prio, 'seq': i,
                         'hex': frame.pack(text, lang, prio=prio, seq=i).hex()})
 
+# prosody-flagged plain vector (ver bit 0)
+vectors.append({'lang': 'ta', 'text': SAMPLES['ta'], 'prio': frame.ALERT, 'seq': 31, 'pro': 0x26,
+                'hex': frame.pack(SAMPLES['ta'], 'ta', prio=frame.ALERT, seq=31, prosody=0x26).hex()})
+
 vec_path = os.path.join(HERE, '..', 'src', 'test', 'resources', 'testvectors.json')
 with open(vec_path, 'w', encoding='utf-8') as f:
     json.dump(vectors, f, ensure_ascii=False)
@@ -68,6 +72,11 @@ for i, lang in enumerate(('en', 'hi', 'ta')):
         encv.append({'lang': lang, 'text': SAMPLES[lang], 'prio': prio, 'seq': 90 + i,
                      'hex': frame.pack(SAMPLES[lang], lang, prio=prio, seq=90 + i,
                                        key=KEY, nonce=NONCE).hex()})
+# encrypted + prosody (ver bits 0+1): prosody outside ciphertext, inside AAD
+encv.append({'lang': 'hi', 'text': SAMPLES['hi'], 'prio': frame.ALERT, 'seq': 99, 'pro': 0x26,
+             'hex': frame.pack(SAMPLES['hi'], 'hi', prio=frame.ALERT, seq=99,
+                               key=KEY, nonce=NONCE, prosody=0x26).hex()})
+
 enc_path = os.path.join(HERE, '..', 'src', 'test', 'resources', 'testvectors_enc.json')
 with open(enc_path, 'w', encoding='utf-8') as f:
     json.dump(encv, f, ensure_ascii=False)

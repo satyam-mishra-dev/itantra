@@ -77,6 +77,18 @@ class ProtocolTest {
         } catch (_: IllegalArgumentException) { }
     }
 
+    @Test fun prosodyByteRoundTrip() {
+        val f = Frame.pack(vc, samples.getValue("ta"), "ta", Frame.ALERT, 3, prosody = 0x26)
+        val plain = Frame.pack(vc, samples.getValue("ta"), "ta", Frame.ALERT, 3)
+        assertEquals(plain.size + 1, f.size)  // costs exactly 1 byte
+        val m = Frame.unpack(vc, f)
+        assertEquals(0x26, m.prosody)
+        assertEquals(samples.getValue("ta"), m.text)
+        assertNull(Frame.unpack(vc, plain).prosody)  // absent -> null, backward compatible
+        assertEquals(1.18f, Prosody.ttsParams(0x03).speed)  // PANIC -> faster
+        assertEquals(2, Prosody.ttsParams(0x03).repeats)
+    }
+
     @Test fun encryptedInteropVectors() {
         val key = "iTantra-PSK-demo".encodeToByteArray()
         val nonce = ByteArray(12) { it.toByte() }
@@ -88,10 +100,12 @@ class ProtocolTest {
             // python-encrypted frame decrypts in Kotlin
             val m = Frame.unpack(vc, bytes, key)
             assertEquals(v.getString("text"), m.text)
-            assertEquals(Frame.VER_ENC, m.ver)
+            assertTrue("enc bit set", m.ver and Frame.VER_ENC != 0)
             assertEquals(v.getInt("prio"), m.prio)
+            val pro = v.optInt("pro", -1).takeIf { it >= 0 }
+            assertEquals(pro, m.prosody)
             // Kotlin re-pack with the same PSK/nonce is byte-identical to python's
-            val ours = Frame.pack(vc, v.getString("text"), v.getString("lang"), v.getInt("prio"), v.getInt("seq"), key, nonce)
+            val ours = Frame.pack(vc, v.getString("text"), v.getString("lang"), v.getInt("prio"), v.getInt("seq"), key, nonce, pro)
             assertEquals(v.getString("hex"), ours.joinToString("") { "%02x".format(it) })
             // wrong key and missing key both refused
             try {
@@ -115,8 +129,10 @@ class ProtocolTest {
             assertEquals(v.getString("lang"), m.lang)
             assertEquals(v.getInt("prio"), m.prio)
             assertEquals(v.getInt("seq"), m.seq)
+            val pro = v.optInt("pro", -1).takeIf { it >= 0 }
+            assertEquals(pro, m.prosody)
             // and our own pack must be byte-identical to python's
-            val ours = Frame.pack(vc, v.getString("text"), v.getString("lang"), v.getInt("prio"), v.getInt("seq"))
+            val ours = Frame.pack(vc, v.getString("text"), v.getString("lang"), v.getInt("prio"), v.getInt("seq"), prosody = pro)
             assertEquals(v.getString("hex"), ours.joinToString("") { "%02x".format(it) })
         }
     }
