@@ -1,0 +1,46 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+body{margin:0;background:#fff}
+.mermaid, .mermaid *{font-family:Helvetica,Arial,sans-serif !important}
+</style></head><body>
+<pre class="mermaid">
+%%{init: {"theme":"base","themeVariables":{
+  "fontFamily":"Helvetica, Arial, sans-serif","fontSize":"15px",
+  "primaryColor":"#ffffff","primaryTextColor":"#16324a","primaryBorderColor":"#90a4ae",
+  "lineColor":"#455a64","clusterBkg":"#fafcfe","clusterBorder":"#b0bec5","edgeLabelBackground":"#ffffff"},
+  "flowchart":{"nodeSpacing":16,"rankSpacing":30,"curve":"basis","useMaxWidth":false,"htmlLabels":true,"padding":14}}}%%
+flowchart TB
+  subgraph S["📱 SENDER PHONE · push-to-talk<br/>&nbsp;"]
+    direction LR
+    M["🎙️ <b>Mic</b><br/>Oboe · 16 kHz"] --> V["<b>Silero VAD</b><br/>pauses → sentences"]
+    V --> ST["<b>STT · IndicConformer int8</b><br/>sherpa-onnx · 10 languages"]
+    ST --> G["<b>Confidence gate</b><br/>+ text normalize"]
+    G --> VC["<b>VarnaCode + frame</b><br/>~45 bytes / sentence"]
+  end
+  subgraph L["🔗 LOW-BITRATE LINK — one frame, any bearer<br/>&nbsp;"]
+    direction LR
+    W["<b>Wi-Fi hotspot</b><br/>NSD/mDNS + TCP"] ~~~ B["<b>Bluetooth RFCOMM</b><br/>zero infrastructure"] ~~~ LO["<b>ESP32 LoRa · IN865</b><br/>1–10 km · ₹1,650"]
+  end
+  subgraph R["📱 RECEIVER PHONE<br/>&nbsp;"]
+    direction LR
+    FD["<b>Frame decode</b><br/>CRC-16 · store-&-fwd"] --> VD["<b>VarnaCode⁻¹</b><br/>lang from header"]
+    VD --> T["<b>TTS · FastPitch / Piper</b><br/>sentence-streamed"]
+    T --> P["🔊 <b>Playback</b><br/>+ transcript"]
+    P --> AL["⚠️ <b>ALERT</b><br/>max volume · non-stop"]
+  end
+  S == "45-byte frames" ==> L
+  L == "any bearer" ==> R
+  classDef blue fill:#eef4fb,stroke:#1565c0,stroke-width:2px
+  classDef green fill:#f0f9f0,stroke:#2e7d32,stroke-width:2px
+  classDef orange fill:#fdf3ec,stroke:#e65100,stroke-width:2px
+  classDef red fill:#fdecea,stroke:#c62828,stroke-width:2.5px,color:#b71c1c
+  classDef gold fill:#fffdf2,stroke:#f9a825,stroke-width:2px
+  class M,V,ST,G,VC blue
+  class W,B green
+  class LO gold
+  class FD,VD,T,P orange
+  class AL red
+</pre>
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({startOnLoad:true});
+</script></body></html>
