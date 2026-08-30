@@ -1,7 +1,6 @@
 package com.nullpointers.itantra
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -9,21 +8,24 @@ import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioFormat
 import android.media.AudioManager
-import android.media.AudioRecord
 import android.media.AudioTrack
-import android.media.MediaRecorder
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
 import android.speech.tts.TextToSpeech
 import android.view.MotionEvent
 import android.widget.*
+import com.k2fsa.sherpa.onnx.SileroVadModelConfig
+import com.k2fsa.sherpa.onnx.Vad
+import com.k2fsa.sherpa.onnx.VadModelConfig
 import java.util.Locale
 
 /**
- * P2: real on-device STT/TTS via sherpa-onnx when model packs are present
- * (SpeechEngine), typed-text / platform-TTS fallback when not. Transcript
- * lines carry per-stage latency stamps — the seed of Evaluation Mode.
+ * P3: Silero VAD chunks long PTT holds into sentences — sentence 1 is
+ * recognized and transmitted while sentence 2 is still being spoken (the PS's
+ * "detect pauses, form sentences, stream instantly"). Dual bearers: Wi-Fi
+ * (NSD/TCP) + Bluetooth RFCOMM. Real STT/TTS when model packs exist,
+ * typed-text / platform-TTS fallback otherwise.
  */
 class MainActivity : Activity() {
 
@@ -39,7 +41,7 @@ class MainActivity : Activity() {
 
     private lateinit var vc: VarnaCode
     private lateinit var speech: SpeechEngine
-    private lateinit var transport: NsdTransport
+    private lateinit var transports: List<Transport>
     private lateinit var transcript: TextView
     private lateinit var status: TextView
     private lateinit var langSpinner: Spinner
@@ -48,6 +50,9 @@ class MainActivity : Activity() {
     private var tts: TextToSpeech? = null
     private var track: AudioTrack? = null
     private var pcm: PcmRecorder? = null
+    private var vad: Vad? = null
+    private var vadActive = false
+    private var pttT0 = 0L
     private var seq = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,19 +71,43 @@ class MainActivity : Activity() {
         langSpinner.setSelection(1) // Hindi default
 
         tts = TextToSpeech(this) { }
+        vad = try {
+            Vad(
+                assetManager = assets,
+                config = VadModelConfig(
+                    sileroVadModelConfig = SileroVadModelConfig(
+                        model = "silero_vad.onnx",
+                        minSilenceDuration = 0.5f,
+                        maxSpeechDuration = 15f,
+                    ),
+                    sampleRate = 16000,
+                )
+            )
+        } catch (t: Throwable) { null }
 
-        transport = NsdTransport(this, ::onFrameBytes) { s -> runOnUiThread { status.text = s } }
-        transport.start()
+        transports = listOf(
+            NsdTransport(this, ::onFrameBytes) { s -> runOnUiThread { status.text = s } },
+            BtTransport(this, ::onFrameBytes) { s -> runOnUiThread { status.text = s } },
+        )
+        transports.forEach { it.start() }
 
-        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), 1)
-        }
+        val wanted = mutableListOf<String>()
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED)
+            wanted += Manifest.permission.RECORD_AUDIO
         if (Build.VERSION.SDK_INT >= 33 &&
-            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 2)
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
+            wanted += Manifest.permission.POST_NOTIFICATIONS
+        if (Build.VERSION.SDK_INT >= 31 &&
+            checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED)
+            wanted += Manifest.permission.BLUETOOTH_CONNECT
+        if (wanted.isNotEmpty()) requestPermissions(wanted.toTypedArray(), 1)
+
+        val svc = Intent(this, PttService::class.java)
+        if (Build.VERSION.SDK_INT >= 26) startForegroundService(svc) else startService(svc)
+
+        findViewById<Button>(R.id.eval).setOnClickListener {
+            startActivity(Intent(this, EvalActivity::class.java))
         }
-        val i = Intent(this, PttService::class.java)
-        if (Build.VERSION.SDK_INT >= 26) startForegroundService(i) else startService(i)
 
         val ptt = findViewById<Button>(R.id.ptt)
         ptt.setOnTouchListener { v, ev ->
@@ -94,11 +123,40 @@ class MainActivity : Activity() {
 
     private fun lang(): String = langCodes[langSpinner.selectedItemPosition]
 
-    @SuppressLint("MissingPermission")
     private fun pttDown() {
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) return
-        pcm = PcmRecorder().also { it.start() }
+        val l = lang()
+        pttT0 = SystemClock.elapsedRealtime()
+        // VAD streaming path only makes sense with a real STT engine
+        vadActive = vad != null && speech.sttFor(l) != null
+        val v = vad
+        if (vadActive && v != null) {
+            v.reset()
+            pcm = PcmRecorder { chunk ->
+                synchronized(v) {
+                    v.acceptWaveform(chunk)
+                    drainVad(v, l)
+                }
+            }.also { it.start() }
+        } else {
+            pcm = PcmRecorder().also { it.start() }
+        }
         status.text = getString(R.string.recording)
+    }
+
+    /** Emit every completed speech segment: recognize + transmit while the button is still held. */
+    private fun drainVad(v: Vad, l: String) {
+        while (!v.empty()) {
+            val seg = v.front().samples
+            v.pop()
+            Thread {
+                val engine = speech.sttFor(l) ?: return@Thread
+                val t0 = SystemClock.elapsedRealtime()
+                val text = speech.recognize(engine, seg)
+                val ms = SystemClock.elapsedRealtime() - t0
+                if (text.isNotBlank()) runOnUiThread { send(text, l, ms, seg.size / 16000.0) }
+            }.start()
+        }
     }
 
     private fun pttUp() {
@@ -106,6 +164,13 @@ class MainActivity : Activity() {
         pcm = null
         val samples = rec.stop()
         val l = lang()
+        val v = vad
+        if (vadActive && v != null) {
+            synchronized(v) { v.flush(); drainVad(v, l) }
+            status.text = getString(R.string.sent_vad)
+            return
+        }
+        // fallback: whole-clip decode, or typed text when no model pack
         val t0 = SystemClock.elapsedRealtime()
         Thread {
             val engine = speech.sttFor(l)
@@ -116,7 +181,7 @@ class MainActivity : Activity() {
                 sttMs = SystemClock.elapsedRealtime() - t0
                 text = out.ifBlank { input.text.toString() }
             } else {
-                sttMs = -1 // no model pack — typed-text stub
+                sttMs = -1
                 text = input.text.toString()
             }
             runOnUiThread {
@@ -131,10 +196,10 @@ class MainActivity : Activity() {
         val prio = if (alertBox.isChecked) Frame.ALERT else Frame.NORMAL
         val frame = Frame.pack(vc, text, l, prio, seq++)
         Thread {
-            val n = transport.send(frame)
+            val n = transports.sumOf { it.send(frame) }
             runOnUiThread {
                 val stt = if (sttMs >= 0)
-                    ", stt ${sttMs}ms" + if (audioSec > 0) " (RTF %.2f)".format(sttMs / 1000.0 / audioSec) else ""
+                    ", stt ${sttMs}ms" + if (audioSec > 0.05) " (RTF %.2f)".format(sttMs / 1000.0 / audioSec) else ""
                 else ", typed"
                 append("→ [$n peer(s), ${frame.size} B$stt] $text")
                 if (n == 0) status.text = getString(R.string.no_peers)
@@ -154,7 +219,6 @@ class MainActivity : Activity() {
         val am = getSystemService(AUDIO_SERVICE) as AudioManager
         val alert = msg.prio == Frame.ALERT
         if (alert) {
-            // PS requirement: alerts at highest volume, non-interruptible.
             am.setStreamVolume(AudioManager.STREAM_MUSIC, am.getStreamMaxVolume(AudioManager.STREAM_MUSIC), 0)
             am.setStreamVolume(AudioManager.STREAM_ALARM, am.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0)
             if (Build.VERSION.SDK_INT >= 26) {
@@ -174,6 +238,7 @@ class MainActivity : Activity() {
             if (engine != null) {
                 val audio = engine.generate(msg.text, 0, 1.0f)
                 val firstAudioMs = SystemClock.elapsedRealtime() - tRecv
+                LastStats.ttsFirstAudioMs = firstAudioMs
                 label = "tts-first-audio ${firstAudioMs}ms"
                 repeat(if (alert) 2 else 1) { playPcm(audio.samples, audio.sampleRate, alert) }
             } else {
@@ -210,52 +275,7 @@ class MainActivity : Activity() {
         track = t
         t.write(shorts, 0, shorts.size)
         t.play()
-        // block until done so alert repeats are sequential; short messages, short waits
         Thread.sleep((samples.size * 1000L / sampleRate) + 100)
-    }
-
-    /** 16 kHz mono PCM capture while PTT is held. */
-    private inner class PcmRecorder {
-        private val chunks = ArrayList<ShortArray>()
-        @Volatile private var running = false
-        private var record: AudioRecord? = null
-        private var worker: Thread? = null
-
-        @SuppressLint("MissingPermission")
-        fun start() {
-            val minBuf = AudioRecord.getMinBufferSize(
-                16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT
-            )
-            val r = AudioRecord(
-                MediaRecorder.AudioSource.VOICE_RECOGNITION, 16000,
-                AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, minBuf * 4
-            )
-            record = r
-            if (r.state != AudioRecord.STATE_INITIALIZED) return
-            running = true
-            r.startRecording()
-            worker = Thread {
-                val buf = ShortArray(1600)
-                while (running) {
-                    val n = r.read(buf, 0, buf.size)
-                    if (n > 0) synchronized(chunks) { chunks.add(buf.copyOf(n)) }
-                }
-            }.also { it.start() }
-        }
-
-        fun stop(): FloatArray {
-            running = false
-            worker?.join(300)
-            try { record?.stop() } catch (_: Exception) {}
-            record?.release()
-            synchronized(chunks) {
-                val total = chunks.sumOf { it.size }
-                val out = FloatArray(total)
-                var i = 0
-                for (c in chunks) for (s in c) out[i++] = s / 32768f
-                return out
-            }
-        }
     }
 
     private fun append(line: String) {
@@ -263,9 +283,10 @@ class MainActivity : Activity() {
     }
 
     override fun onDestroy() {
-        transport.stop()
+        transports.forEach { it.stop() }
         tts?.shutdown()
         track?.release()
+        vad?.release()
         stopService(Intent(this, PttService::class.java))
         super.onDestroy()
     }
