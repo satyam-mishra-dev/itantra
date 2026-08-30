@@ -322,7 +322,7 @@
   <h3>7.1 STT (all offline, all open)</h3>
   <table>
     <tr><th>Component</th><th>Model</th><th>License</th><th>Size (int8)</th><th>Notes</th></tr>
-    <tr><td>Primary ASR ×9 Indic</td><td>AI4Bharat IndicConformer (per-language ~120M)</td><td>MIT</td><td>~120–150 MB/lang <span class="tag" style="background:var(--warn)">EST</span></td><td>Official int8 ONNX export; all 22 languages; trained on spontaneous IndicVoices speech — matches PTT acoustics</td></tr>
+    <tr><td>Primary ASR ×9 Indic</td><td>AI4Bharat IndicConformer (per-language ~120M)</td><td>MIT</td><td><b>140 MB/lang int8 (measured</b>; 493 MB fp32; CER cost +0.8 pt, RTF 0.059)</td><td>Official int8 ONNX export; all 22 languages; trained on spontaneous IndicVoices speech — matches PTT acoustics</td></tr>
     <tr><td>English ASR</td><td>whisper.cpp tiny/base (GGML q5)</td><td>MIT</td><td>39–74 MB</td><td>Faster-than-real-time on ARM; battle-tested Android AAR</td></tr>
     <tr><td>VAD</td><td>Silero VAD</td><td>MIT</td><td>~1–6 MB</td><td>&lt;1 ms per 30 ms chunk; sentence segmentation inside PTT holds</td></tr>
     <tr><td>Dev-time referee</td><td>IndicWhisper (Vistaar)</td><td>MIT</td><td>—</td><td>Not shipped; used to sanity-check IndicConformer accuracy per language</td></tr>
@@ -341,7 +341,7 @@
 
   <h3>7.3 Footprint strategy (rubric: 20% efficiency)</h3>
   <ul>
-    <li><b>APK ships thin</b> (~60 MB: app + sherpa-onnx runtime + eSpeak-NG + Silero + English tiny) — Indic language packs (~180–230 MB = STT+TTS per language) are <b>download-on-demand, sideload-able via SD card/USB-OTG</b> for zero-internet provisioning (a disaster-prep step, like downloading offline maps).</li>
+    <li><b>APK ships thin</b> (measured: 54.9 MB with the full sherpa-onnx speech runtime) — Indic language packs (<b>measured ~203 MB</b> = 140 MB int8 STT + 63 MB Piper TTS) are <b>download-on-demand, sideload-able via SD card/USB-OTG</b> for zero-internet provisioning (a disaster-prep step, like downloading offline maps).</li>
     <li><b>int8 everywhere:</b> quantization is measured as near-free — 45–57% size cut at ±1 WER point across every study surveyed. <span class="src">[R53]</span></li>
     <li><b>Idle discipline:</b> when not in PTT, only the VAD-armed mic loop runs (sub-1% CPU); models are memory-mapped and lazily loaded per selected language, not all 10 at once.</li>
   </ul>
