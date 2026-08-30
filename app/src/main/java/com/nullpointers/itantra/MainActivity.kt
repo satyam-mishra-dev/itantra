@@ -108,6 +108,20 @@ class MainActivity : Activity() {
         findViewById<Button>(R.id.eval).setOnClickListener {
             startActivity(Intent(this, EvalActivity::class.java))
         }
+        findViewById<Button>(R.id.connectIp).setOnClickListener {
+            val box = EditText(this).apply {
+                hint = getString(R.string.connect_hint)
+                setText("192.168.43.1:${NsdTransport.FIXED_PORT}")
+            }
+            android.app.AlertDialog.Builder(this)
+                .setTitle(R.string.connect_button)
+                .setView(box)
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    (transports.first() as NsdTransport).manualConnect(box.text.toString())
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
+        }
 
         val ptt = findViewById<Button>(R.id.ptt)
         ptt.setOnTouchListener { v, ev ->

@@ -43,11 +43,23 @@
         android:layout_height="wrap_content"
         android:text="@string/alert_label" />
 
-    <Button
-        android:id="@+id/eval"
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/eval_button" />
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/eval"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/eval_button" />
+        <Button
+            android:id="@+id/connectIp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/connect_button" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/ptt"

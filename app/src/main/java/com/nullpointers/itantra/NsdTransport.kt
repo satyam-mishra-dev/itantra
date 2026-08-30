@@ -19,6 +19,7 @@ class NsdTransport(
     private val onFrame: (ByteArray) -> Unit,
     private val onStatus: (String) -> Unit,
 ) : Transport {
+    companion object { const val FIXED_PORT = 47474 }
     private val tag = "iTantraNsd"
     private val serviceType = "_itantra._tcp."
     private val myName = "iTantra-" + android.os.Build.MODEL.replace(' ', '_') + "-" + (1000..9999).random()
@@ -29,7 +30,8 @@ class NsdTransport(
     private var discListener: NsdManager.DiscoveryListener? = null
 
     override fun start() {
-        val srv = ServerSocket(0)
+        // Fixed port so "connect by IP" and adb-forward setups are predictable; random fallback if taken.
+        val srv = try { ServerSocket(FIXED_PORT) } catch (_: Exception) { ServerSocket(0) }
         server = srv
         Thread {
             try {
@@ -86,6 +88,20 @@ class NsdTransport(
             } catch (_: Exception) {
                 sockets.remove(s)
                 onStatus("peer disconnected")
+            }
+        }.start()
+    }
+
+    /** Demo-day fallback when mDNS won't cross (OEM hotspots, emulators): dial a peer directly. */
+    fun manualConnect(hostPort: String) {
+        val host = hostPort.substringBefore(':').trim()
+        val port = hostPort.substringAfter(':', FIXED_PORT.toString()).trim().toIntOrNull() ?: FIXED_PORT
+        Thread {
+            try {
+                attach(Socket(host, port))
+                onStatus("connected to $host:$port")
+            } catch (e: Exception) {
+                onStatus("connect failed: ${e.message}")
             }
         }.start()
     }

@@ -17,4 +17,6 @@
     <string name="cpu_sampling">sampling… keep the app idle</string>
     <string name="no_stt_pack">no STT model pack for this language — sideload it first (see list above)</string>
     <string name="sideload_hint">sideload: adb push &lt;pack&gt;/ /sdcard/Android/data/com.nullpointers.itantra/files/models/&lt;lang&gt;/</string>
+    <string name="connect_button">CONNECT BY IP</string>
+    <string name="connect_hint">peer IP[:port] — hotspot host is usually 192.168.43.1</string>
 </resources>
