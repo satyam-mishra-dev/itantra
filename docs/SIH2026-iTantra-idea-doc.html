@@ -313,6 +313,14 @@
     <h4>6 · India's national language AI — running with zero internet</h4>
     <p>Every model is <b>MIT-licensed, Indian-government-lineage</b>: IndicConformer STT and AI4Bharat FastPitch TTS come from the MeitY/C-DAC-funded, Bhashini-ecosystem AI4Bharat lab — but Bhashini itself is a cloud API. iTantra bundles the underlying open checkpoints <b>on-device</b>: "built on India's national language AI infrastructure, working where the internet doesn't." Roadmap (flagged, not promised): the same text-relay architecture makes <b>cross-language relay</b> — speak Hindi, heard in Tamil — a model-swap away (RTranslator proves offline MT on-device is feasible). <span class="src">[R50, R51]</span></p>
   </div>
+
+  <h3>Wave-2 wow factors — built and tested, not proposed</h3>
+  <div class="boxg">
+    <p><b>7 · Prosody-over-text (1 byte).</b> The known sacrifice of STT→TTS transmission is that panic sounds like a memo — the STCTS paper spends 312–592 bps re-adding prosody. iTantra analyzes the sender's pitch/energy/rate during PTT and sends a <b>single urgency byte</b>; the receiver's TTS speaks urgent messages faster, louder, twice. <i>Panic survives 45 bytes — for 8 bits.</i> (p0/prosody.py, calm/panic classification self-checks green.)</p>
+    <p><b>8 · The analog-radio modem (AFSK).</b> Bell-202-style software modem: any iTantra frame becomes ~0.3 s of audio tones that survive a 300–3,400 Hz voice channel at 6 dB SNR — so a phone held to <b>any existing analog walkie-talkie, VHF set, or ham radio becomes a digital Indic text bearer</b>. No hardware at all: the "low-bitrate link" can be sound itself. (p0/afsk.py, round-trip + noisy-channel tests green.)</p>
+    <p><b>9 · Digital roll-call.</b> A voice question broadcast once ("is everyone safe?") — every phone answers with a one-tap <b>9-byte ACK</b> (SAFE / NEED_HELP / SOS), aggregated live: an evacuation headcount over bytes, no internet, in the sarpanch's own language. Every deployed mustering product found is internet/QR-based. (p0/rollcall.py, worst-status-wins tally tests green.)</p>
+    <p><b>10 · CAP/SACHET last-mile bridge.</b> A CAP 1.2 parser turns official NDMA alert XML into a spoken, language-selected, severity-mapped ALERT frame — the national warning system re-broadcast into the offline village net. SACHET solves broadcast-to-connected-phones; iTantra carries it the last unconnected mile. (p0/cap_bridge.py, NDMA-style sample → Odia ALERT frame test green.)</p>
+  </div>
 </div>
 
 <!-- ============================ S7 MODEL PLAN ============================ -->
