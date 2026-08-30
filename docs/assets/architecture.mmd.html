@@ -1,6 +1,8 @@
 <!doctype html><html><head><meta charset="utf-8"><style>
 body{margin:0;background:#fff}
 .mermaid, .mermaid *{font-family:Arial,Helvetica,sans-serif !important}
+.mermaid .cluster-label{transform:translateY(-34px)}
+.mermaid .cluster-label *{font-weight:bold !important;letter-spacing:1px}
 </style></head><body>
 <pre class="mermaid">
 %%{init: {"theme":"base","themeVariables":{
@@ -9,17 +11,17 @@ body{margin:0;background:#fff}
   "lineColor":"#455a64","clusterBkg":"#fafcfe","clusterBorder":"#b0bec5","edgeLabelBackground":"#ffffff"},
   "flowchart":{"nodeSpacing":22,"rankSpacing":30,"curve":"basis","useMaxWidth":false,"htmlLabels":true,"padding":14}}}%%
 flowchart TB
-  subgraph S["SENDER PHONE — push-to-talk<br/>&nbsp;<br/>&nbsp;"]
+  subgraph S["SENDER PHONE — push-to-talk"]
     direction LR
     M["<b>Mic · 16 kHz</b>"] --> V["<b>Silero VAD → sentences</b>"]
     V --> ST["<b>STT · IndicConformer int8 · 10 langs</b>"]
     ST --> VC["<b>VarnaCode → 45-byte frame</b>"]
   end
-  subgraph L["LOW-BITRATE LINK — one frame, any bearer<br/>&nbsp;<br/>&nbsp;"]
+  subgraph L["LOW-BITRATE LINK"]
     direction LR
     W["<b>Wi-Fi · NSD + TCP</b>"] ~~~ B["<b>Bluetooth RFCOMM</b>"] ~~~ LO["<b>LoRa IN865 · 1–10 km</b>"]
   end
-  subgraph R["RECEIVER PHONE<br/>&nbsp;<br/>&nbsp;"]
+  subgraph R["RECEIVER PHONE"]
     direction LR
     FD["<b>Decode · CRC-16</b>"] --> VD["<b>VarnaCode⁻¹</b>"] --> T["<b>TTS · FastPitch / Piper</b>"] --> AL["<b>Playback · ALERT max-volume</b>"]
   end
