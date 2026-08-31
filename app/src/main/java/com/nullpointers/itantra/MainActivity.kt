@@ -16,6 +16,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
 import android.speech.tts.TextToSpeech
+import android.util.Log
 import android.view.MotionEvent
 import android.widget.*
 import com.k2fsa.sherpa.onnx.SileroVadModelConfig
@@ -63,6 +64,9 @@ class MainActivity : Activity() {
     // Mutual NSD discovery gives two sockets to the same peer; NSD+BT gives two bearers.
     // De-dup received frames by content hash. ponytail: 64-deep LRU, plenty for a walkie-talkie.
     private val seen = ArrayDeque<Int>()
+    private lateinit var arq: Arq
+    private val metaOf = HashMap<Int, TextView>()   // seq → byte chip, gets a ✓ on ACK
+    private val LINK = "iTantraLink"                // logcat tag: tx/rx/ack with epoch ms for latency measurement
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,6 +110,15 @@ class MainActivity : Activity() {
             BtTransport(this, ::onFrameBytes) { s -> runOnUiThread { setStatus(s) } },
         )
         transports.forEach { it.start() }
+        arq = Arq(
+            tx = { f -> transports.sumOf { it.send(f) } },
+            makeAck = { s -> Frame.pack(vc, "", "hi", Frame.ACK, s) },
+        )
+        arq.acked = { s ->
+            Log.i(LINK, "ack seq=$s t=${System.currentTimeMillis()}")
+            runOnUiThread { metaOf[s]?.let { if (!it.text.endsWith("✓")) it.append(" ✓") } }
+        }
+        Thread { while (true) { Thread.sleep(500); arq.tick() } }.apply { isDaemon = true }.start()
 
         val wanted = mutableListOf<String>()
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED)
@@ -238,21 +251,28 @@ class MainActivity : Activity() {
     private fun send(text: String, l: String, sttMs: Long, audioSec: Double, prosody: Int? = null) {
         val prio = if (alertBox.isChecked) Frame.ALERT else Frame.NORMAL
         alertBox.isChecked = false // one-shot: never let the next casual message inherit max-volume
-        val frame = Frame.pack(vc, text, l, prio, seq++, prosody = prosody)
+        val s = seq++ and 0xFF
+        val frame = Frame.pack(vc, text, l, prio, s, prosody = prosody)
         Thread {
-            val n = transports.sumOf { it.send(frame) }
+            Log.i(LINK, "tx seq=$s bytes=${frame.size} t=${System.currentTimeMillis()}")
+            val n = arq.send(s, frame)
             runOnUiThread {
                 val stt = if (sttMs >= 0)
                     " · STT ${sttMs} ms" + if (audioSec > 0.05) " · RTF %.2f".format(sttMs / 1000.0 / audioSec) else ""
                 else " · typed"
-                bubble(text, "${frame.size} B" + (if (prio == Frame.ALERT) " · ALERT" else "") + stt +
-                    (if (n == 0) " · no peer" else ""), prio == Frame.ALERT, incoming = false)
+                metaOf[s] = bubble(text, "${frame.size} B" + (if (prio == Frame.ALERT) " · ALERT" else "") + stt +
+                    (if (n == 0) " · queued" else ""), prio == Frame.ALERT, incoming = false)
                 setStatus(if (n == 0) getString(R.string.no_peers) else "connected")
             }
         }.start()
     }
 
     private fun onFrameBytes(bytes: ByteArray) {
+        if (bytes.size < 2) return
+        val (prio, s) = Arq.peek(bytes)
+        if (prio == Frame.ACK) { arq.onAck(s); return }
+        Log.i(LINK, "rx seq=$s bytes=${bytes.size} t=${System.currentTimeMillis()}")
+        arq.ackFor(prio, s)   // before dedupe: a retransmit whose first ACK was lost still gets ACKed
         val h = bytes.contentHashCode()
         synchronized(seen) {
             if (h in seen) return
@@ -341,8 +361,8 @@ class MainActivity : Activity() {
     /** Chip shows connection state; a live peer is never overwritten by late advertise/discovery events. */
     private fun setStatus(s: String) {
         when {
-            s.startsWith("connected to ") -> peer = shortPeer(s.removePrefix("connected to "))
-            s.startsWith("BT connected: ") -> peer = shortPeer(s.removePrefix("BT connected: "))
+            s.startsWith("connected to ") -> { peer = shortPeer(s.removePrefix("connected to ")); Thread { arq.flush() }.start() }
+            s.startsWith("BT connected: ") -> { peer = shortPeer(s.removePrefix("BT connected: ")); Thread { arq.flush() }.start() }
             s.startsWith("peer ") || s.startsWith("BT peer") -> peer = null
         }
         val link = s.startsWith("connected") || s.startsWith("advertising") || s.startsWith("BT connected") ||
@@ -367,7 +387,7 @@ class MainActivity : Activity() {
     private fun dp(x: Int) = (x * resources.displayMetrics.density).toInt()
 
     /** Chat bubble + muted byte chip — the chip is the on-stage wow moment (45 B per sentence). */
-    private fun bubble(text: String, meta: String, alert: Boolean, incoming: Boolean) {
+    private fun bubble(text: String, meta: String, alert: Boolean, incoming: Boolean): TextView {
         emptyHint.visibility = View.GONE
         // side keys on direction only; ALERT changes colour, never alignment
         val side = if (incoming) Gravity.START else Gravity.END
@@ -392,7 +412,7 @@ class MainActivity : Activity() {
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
             ).apply { gravity = side }
         })
-        col.addView(TextView(this).apply {
+        val chip = TextView(this).apply {
             this.text = meta
             textSize = 12f
             setTextColor(getColor(if (kind == ALERTK) R.color.red else R.color.textSecondary))
@@ -401,9 +421,11 @@ class MainActivity : Activity() {
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
             ).apply { gravity = side; topMargin = dp(3) }
-        })
+        }
+        col.addView(chip)
         transcriptBox.addView(col)
         scroll.post { scroll.fullScroll(View.FOCUS_DOWN) }
+        return chip
     }
 
     private companion object { const val SENT = 0; const val RECV = 1; const val ALERTK = 2 }
