@@ -237,6 +237,7 @@ class MainActivity : Activity() {
 
     private fun send(text: String, l: String, sttMs: Long, audioSec: Double, prosody: Int? = null) {
         val prio = if (alertBox.isChecked) Frame.ALERT else Frame.NORMAL
+        alertBox.isChecked = false // one-shot: never let the next casual message inherit max-volume
         val frame = Frame.pack(vc, text, l, prio, seq++, prosody = prosody)
         Thread {
             val n = transports.sumOf { it.send(frame) }
@@ -245,7 +246,7 @@ class MainActivity : Activity() {
                     " · STT ${sttMs} ms" + if (audioSec > 0.05) " · RTF %.2f".format(sttMs / 1000.0 / audioSec) else ""
                 else " · typed"
                 bubble(text, "${frame.size} B" + (if (prio == Frame.ALERT) " · ALERT" else "") + stt +
-                    (if (n == 0) " · no peer" else ""), if (prio == Frame.ALERT) ALERTK else SENT)
+                    (if (n == 0) " · no peer" else ""), prio == Frame.ALERT, incoming = false)
                 setStatus(if (n == 0) getString(R.string.no_peers) else "connected")
             }
         }.start()
@@ -260,7 +261,7 @@ class MainActivity : Activity() {
         }
         val tRecv = SystemClock.elapsedRealtime()
         val msg = try { Frame.unpack(vc, bytes) } catch (e: Exception) {
-            runOnUiThread { bubble("corrupt frame dropped", "${bytes.size} B · CRC/decode failed", RECV) }; return
+            runOnUiThread { bubble("corrupt frame dropped", "${bytes.size} B · CRC/decode failed", alert = false, incoming = true) }; return
         }
         runOnUiThread { speak(msg, bytes.size, tRecv) }
     }
@@ -304,7 +305,7 @@ class MainActivity : Activity() {
             }
             runOnUiThread {
                 bubble(msg.text, "$size B" + (if (alert) " · ALERT" else "") + " · ${msg.lang} · $label",
-                    if (alert) ALERTK else RECV)
+                    alert, incoming = true)
             }
         }.start()
     }
@@ -335,22 +336,42 @@ class MainActivity : Activity() {
         Thread.sleep((samples.size * 1000L / sampleRate) + 100)
     }
 
+    private var peer: String? = null
+
+    /** Chip shows connection state; a live peer is never overwritten by late advertise/discovery events. */
     private fun setStatus(s: String) {
-        val connected = s.startsWith("connected")
-        status.text = when {
-            connected -> "● connected"
-            s.startsWith("advertising") -> getString(R.string.starting)
-            else -> s
+        when {
+            s.startsWith("connected to ") -> peer = shortPeer(s.removePrefix("connected to "))
+            s.startsWith("BT connected: ") -> peer = shortPeer(s.removePrefix("BT connected: "))
+            s.startsWith("peer ") || s.startsWith("BT peer") -> peer = null
         }
-        status.setTextColor(getColor(if (connected) R.color.green else R.color.textSecondary))
+        val link = s.startsWith("connected") || s.startsWith("advertising") || s.startsWith("BT connected") ||
+            s.startsWith("peer ") || s.startsWith("BT peer") || s.startsWith("discovery")
+        val p = peer
+        status.text = when {
+            !link -> s
+            p != null -> "● connected · $p"
+            else -> getString(R.string.starting)
+        }
+        status.setTextColor(getColor(if (link && p != null) R.color.green else R.color.textSecondary))
+    }
+
+    /** "iTantra-sdk_gphone64_arm64-4269" → "sdk gphone64"; "192.168.43.1:47474" → "192.168.43.1". Whole words only. */
+    private fun shortPeer(name: String): String {
+        val n = name.removePrefix("iTantra-")
+        if (n.count { it == '.' } == 3) return n.substringBefore(':')
+        return n.replace('_', ' ').split(' ', '-').filter { it.isNotBlank() && it.toIntOrNull() == null }
+            .take(2).joinToString(" ")
     }
 
     private fun dp(x: Int) = (x * resources.displayMetrics.density).toInt()
 
     /** Chat bubble + muted byte chip — the chip is the on-stage wow moment (45 B per sentence). */
-    private fun bubble(text: String, meta: String, kind: Int) {
+    private fun bubble(text: String, meta: String, alert: Boolean, incoming: Boolean) {
         emptyHint.visibility = View.GONE
-        val side = if (kind == RECV) Gravity.START else Gravity.END
+        // side keys on direction only; ALERT changes colour, never alignment
+        val side = if (incoming) Gravity.START else Gravity.END
+        val kind = if (alert) ALERTK else if (incoming) RECV else SENT
         val col = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(
