@@ -161,3 +161,88 @@ IndicVoices audio) is the better defense; enhancement, if ever added, belongs on
 trick, it backfired, and the pipeline stays simpler for it.
 
 Chart: `chart-noise.png` (both curves — noisy vs denoised — so the verdict is visible).
+
+
+## P7: low-bitrate link simulation (`linksim.py`, `test_linksim.py`, `chart-linksim.png`)
+
+A 60-second conversation (10 held-out sentences, alternating speakers, 1 s pauses; a sentence
+becomes sendable when the speaker stops) is serialized over modelled bearers as VarnaCode frames,
+UTF-8 text frames, Codec2-450 audio and AMR-NB audio (audio chunked to the bearer MTU, 6-byte
+frame header per packet). Stop-and-wait ARQ: 9-byte ACK, timeout = RTT + ACK airtime, retransmit
+until acknowledged. LoRa airtime uses the Semtech formula (125 kHz, CR 4/5, explicit header);
+**IN865's 1% duty cycle is modelled as a 99× rest after every transmission** — the regulatory
+reality the firmware also enforces. Deterministic seeds; `python linksim.py` regenerates everything.
+
+**Keeps real time** = last sentence delivered within 5 s of the conversation ending.
+
+| Bearer | Encoding | mean latency | p95 | last byte at | keeps real time? |
+|---|---|---|---|---|---|
+| LoRa SF12 | VarnaCode | 857.4 s | 1520.7 s | 1767 s | ✗ backlog 1707 s |
+| LoRa SF12 | UTF-8 | 2874.7 s | 5203.8 s | 6436 s | ✗ backlog 6376 s |
+| LoRa SF12 | Codec2-450 | 7674.7 s | 12699.4 s | 14902 s | ✗ backlog 14842 s |
+| LoRa SF12 | AMR-NB | 207058.4 s | 340698.7 s | 399351 s | ✗ backlog 399291 s |
+| LoRa SF9 | VarnaCode | 97.8 s | 171.8 s | 247 s | ✗ backlog 187 s |
+| LoRa SF9 | UTF-8 | 280.8 s | 541.0 s | 670 s | ✗ backlog 610 s |
+| LoRa SF9 | Codec2-450 | 780.1 s | 1298.0 s | 1560 s | ✗ backlog 1500 s |
+| LoRa SF9 | AMR-NB | 21299.8 s | 35037.8 s | 41116 s | ✗ backlog 41056 s |
+| LoRa SF7 | VarnaCode | 11.7 s | 20.0 s | 77 s | ✗ backlog 17 s |
+| LoRa SF7 | UTF-8 | 49.1 s | 100.5 s | 171 s | ✗ backlog 111 s |
+| LoRa SF7 | Codec2-450 | 205.2 s | 343.3 s | 436 s | ✗ backlog 376 s |
+| LoRa SF7 | AMR-NB | 6061.3 s | 9970.0 s | 11754 s | ✗ backlog 11694 s |
+| LoRa SF7 no duty cap | VarnaCode | 0.2 s | 0.2 s | 57 s | ✓ |
+| LoRa SF7 no duty cap | UTF-8 | 0.3 s | 0.3 s | 57 s | ✓ |
+| LoRa SF7 no duty cap | Codec2-450 | 0.8 s | 0.8 s | 58 s | ✓ |
+| LoRa SF7 no duty cap | AMR-NB | 78.9 s | 126.3 s | 204 s | ✗ backlog 144 s |
+| dying link 300 bps | VarnaCode | 1.3 s | 1.4 s | 58 s | ✓ |
+| dying link 300 bps | UTF-8 | 5.7 s | 8.5 s | 66 s | ✗ backlog 6 s |
+| dying link 300 bps | Codec2-450 | 38.7 s | 60.3 s | 127 s | ✗ backlog 67 s |
+| dying link 300 bps | AMR-NB | 1636.8 s | 2689.6 s | 3208 s | ✗ backlog 3148 s |
+| AFSK 1200 baud | VarnaCode | 0.3 s | 0.3 s | 57 s | ✓ |
+| AFSK 1200 baud | UTF-8 | 0.9 s | 1.2 s | 58 s | ✓ |
+| AFSK 1200 baud | Codec2-450 | 2.2 s | 2.4 s | 60 s | ✓ |
+| AFSK 1200 baud | AMR-NB | 289.3 s | 472.5 s | 610 s | ✗ backlog 550 s |
+| GSM CSD 9.6 kbps | VarnaCode | 0.3 s | 0.3 s | 57 s | ✓ |
+| GSM CSD 9.6 kbps | UTF-8 | 0.3 s | 0.4 s | 57 s | ✓ |
+| GSM CSD 9.6 kbps | Codec2-450 | 0.8 s | 1.0 s | 58 s | ✓ |
+| GSM CSD 9.6 kbps | AMR-NB | 85.4 s | 137.3 s | 217 s | ✗ backlog 157 s |
+| Bluetooth SPP 100 kbps | VarnaCode | 0.0 s | 0.0 s | 57 s | ✓ |
+| Bluetooth SPP 100 kbps | UTF-8 | 0.0 s | 0.0 s | 57 s | ✓ |
+| Bluetooth SPP 100 kbps | Codec2-450 | 0.1 s | 0.1 s | 57 s | ✓ |
+| Bluetooth SPP 100 kbps | AMR-NB | 1.0 s | 1.1 s | 58 s | ✓ |
+
+### What this means (honestly)
+- On the **300 bps "dying link"** only VarnaCode keeps the conversation real-time (1.3 s mean latency);
+  UTF-8 already backlogs, Codec2 audio lands 39 s late on average, AMR is unusable (27 min behind).
+- **AFSK through a voice radio** (1200 baud): text is real-time at 0.3 s; AMR audio backlogs 9 minutes.
+- **LoRa under the 1% duty cycle is a burst channel, not a talk channel — for any encoding.** Ten
+  sentences in one minute exceeds the regulatory airtime budget: VarnaCode drains the burst in
+  ~4 min at SF9 (sustained ≈ 2 sentences/min, matching the firmware README), UTF-8 in 11 min,
+  Codec2 in 26 min, AMR in **11 hours**. The claim to make on stage: *VarnaCode makes LoRa usable
+  for messages, and is the only encoding within an order of magnitude of usable.* Without the duty
+  cap (licensed / ISRO-class link, row "no duty cap") SF7 carries text in 0.2 s and still cannot carry AMR.
+- Bluetooth/GSM-CSD are not the bottleneck for any text encoding — the interesting engineering is
+  entirely below 10 kbps, which is where iTantra lives.
+
+### ARQ under loss (VarnaCode frames, stop-and-wait, seed 1)
+
+| Bearer | loss | delivered | packets sent (retx) | mean latency | goodput |
+|---|---|---|---|---|---|
+| LoRa SF9 | 0% | 10/10 | 10 (+0) | 97.8 s | 15 bps |
+| LoRa SF9 | 5% | 10/10 | 15 (+5) | 144.9 s | 9 bps |
+| LoRa SF9 | 10% | 10/10 | 16 (+6) | 159.7 s | 9 bps |
+| LoRa SF9 | 20% | 10/10 | 17 (+7) | 208.4 s | 8 bps |
+| dying link 300 bps | 0% | 10/10 | 10 (+0) | 1.3 s | 62 bps |
+| dying link 300 bps | 5% | 10/10 | 15 (+5) | 2.3 s | 60 bps |
+| dying link 300 bps | 10% | 10/10 | 16 (+6) | 2.5 s | 60 bps |
+| dying link 300 bps | 20% | 10/10 | 17 (+7) | 2.7 s | 62 bps |
+| AFSK 1200 baud | 0% | 10/10 | 10 (+0) | 0.3 s | 63 bps |
+| AFSK 1200 baud | 5% | 10/10 | 15 (+5) | 0.6 s | 62 bps |
+| AFSK 1200 baud | 10% | 10/10 | 16 (+6) | 0.6 s | 62 bps |
+| AFSK 1200 baud | 20% | 10/10 | 17 (+7) | 0.7 s | 63 bps |
+
+Every sentence is delivered at every loss rate (lossless by construction: retransmit until ACK).
+On LoRa each retransmit costs another 99× rest, so loss hurts latency ~10× more there than on a
+duty-free bearer — one more reason to keep frames tiny: fewer bits on air = fewer chances to lose them.
+`test_linksim.py`: 24 assertions (airtime formula vs firmware README, latency monotonic in payload size
+on every bearer, latency falls with bitrate, real-time verdicts, lossless ARQ with retransmit counts,
+BER-induced retransmits, duty-cycle rest math).
