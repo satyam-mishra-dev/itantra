@@ -3,68 +3,150 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="12dp">
+    android:background="@color/ground"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp">
 
-    <TextView
-        android:id="@+id/status"
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/starting"
-        android:textStyle="italic" />
+        android:gravity="center_vertical">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="@color/navy" />
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxWidth="220dp"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:background="@drawable/chip_bg"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:text="@string/starting"
+            android:textSize="13sp"
+            android:textColor="@color/textSecondary" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/tagline"
+        android:textSize="13sp"
+        android:textColor="@color/textSecondary" />
 
     <Spinner
         android:id="@+id/lang"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp" />
+        android:layout_height="52dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/card_bg"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp" />
 
     <ScrollView
+        android:id="@+id/scroll"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="8dp">
-        <TextView
-            android:id="@+id/transcript"
+        android:layout_marginTop="10dp"
+        android:fillViewport="true"
+        android:scrollbars="none">
+        <LinearLayout
+            android:id="@+id/transcriptBox"
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textIsSelectable="true" />
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/emptyHint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="48dp"
+                android:gravity="center"
+                android:lineSpacingExtra="4dp"
+                android:padding="24dp"
+                android:text="@string/empty_state"
+                android:textSize="15sp"
+                android:textColor="@color/textSecondary" />
+        </LinearLayout>
     </ScrollView>
 
     <EditText
         android:id="@+id/input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/card_bg"
+        android:padding="14dp"
         android:hint="@string/input_hint"
-        android:inputType="text" />
-
-    <CheckBox
-        android:id="@+id/alert"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/alert_label" />
+        android:textSize="16sp"
+        android:textColor="@color/textPrimary"
+        android:textColorHint="@color/textSecondary"
+        android:inputType="text"
+        android:imeOptions="actionDone" />
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <Button
-            android:id="@+id/eval"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical">
+        <CheckBox
+            android:id="@+id/alert"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="@string/eval_button" />
+            android:text="@string/alert_label"
+            android:textStyle="bold"
+            android:textColor="@color/red"
+            android:buttonTint="@color/red" />
         <Button
             android:id="@+id/connectIp"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/connect_button" />
+            android:text="@string/connect_button"
+            android:textColor="@color/navy" />
+        <Button
+            android:id="@+id/eval"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/eval_button"
+            android:textColor="@color/navy" />
     </LinearLayout>
 
     <Button
         android:id="@+id/ptt"
-        android:layout_width="match_parent"
-        android:layout_height="96dp"
+        android:layout_width="190dp"
+        android:layout_height="190dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="4dp"
+        android:background="@drawable/ptt_button"
+        android:elevation="8dp"
+        android:stateListAnimator="@null"
         android:text="@string/ptt_label"
-        android:textSize="20sp" />
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/pttHint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="@string/ptt_hint"
+        android:textSize="12sp"
+        android:textColor="@color/textSecondary" />
 </LinearLayout>
