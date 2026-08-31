@@ -35,7 +35,7 @@ class NsdTransport(
         server = srv
         Thread {
             try {
-                while (!srv.isClosed) attach(srv.accept())
+                while (!srv.isClosed) srv.accept().let { attach(it, it.inetAddress.hostAddress ?: "peer") }
             } catch (_: Exception) { }
         }.start()
 
@@ -61,8 +61,7 @@ class NsdTransport(
                     override fun onServiceResolved(r: NsdServiceInfo) {
                         Thread {
                             try {
-                                attach(Socket(r.host, r.port))
-                                onStatus("connected to ${r.serviceName}")
+                                attach(Socket(r.host, r.port), r.serviceName)
                             } catch (e: Exception) {
                                 Log.w(tag, "connect failed", e)
                             }
@@ -80,8 +79,10 @@ class NsdTransport(
         nsd!!.discoverServices(serviceType, NsdManager.PROTOCOL_DNS_SD, discListener)
     }
 
-    private fun attach(s: Socket) {
+    /** Both directions announce the peer — the accept() side used to stay on "searching…" while receiving. */
+    private fun attach(s: Socket, label: String) {
         sockets.add(s)
+        onStatus("connected to $label")
         Thread {
             try {
                 pumpFrames(DataInputStream(s.getInputStream()), onFrame)
@@ -98,8 +99,7 @@ class NsdTransport(
         val port = hostPort.substringAfter(':', FIXED_PORT.toString()).trim().toIntOrNull() ?: FIXED_PORT
         Thread {
             try {
-                attach(Socket(host, port))
-                onStatus("connected to $host:$port")
+                attach(Socket(host, port), "$host:$port")
             } catch (e: Exception) {
                 onStatus("connect failed: ${e.message}")
             }

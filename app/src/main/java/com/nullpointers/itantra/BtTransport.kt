@@ -51,7 +51,6 @@ class BtTransport(
                     val s = d.createRfcommSocketToServiceRecord(uuid)
                     s.connect()
                     attach(s)
-                    onStatus("BT connected: ${d.name ?: d.address}")
                 } catch (_: Exception) { }
             }
         }.start()
@@ -59,6 +58,7 @@ class BtTransport(
 
     private fun attach(s: BluetoothSocket) {
         sockets.add(s)
+        onStatus("BT connected: " + (try { s.remoteDevice.name } catch (_: SecurityException) { null } ?: s.remoteDevice.address))
         Thread {
             try {
                 pumpFrames(DataInputStream(s.inputStream), onFrame)
