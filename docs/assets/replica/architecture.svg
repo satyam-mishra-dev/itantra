@@ -1,218 +1,116 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="2100" height="1200" viewBox="0 0 2100 1200" font-family="Arial, Helvetica, sans-serif">
 <defs>
-  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-    <path d="M 0 1 L 9 5 L 0 9" fill="none" stroke="#37474f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-  </marker>
-  <marker id="arR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-    <path d="M 0 1 L 9 5 L 0 9" fill="none" stroke="#c62828" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M 0 1 L 9 5 L 0 9" fill="none" stroke="#37474f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
   </marker>
 </defs>
 <rect width="2100" height="1200" fill="#ffffff"/>
 
 <!-- ============ SENDER PHONE ============ -->
-<rect x="40" y="70" width="960" height="530" rx="22" fill="#f6f9fd" stroke="#1976d2" stroke-width="3"/>
-<rect x="64" y="52" width="290" height="40" rx="8" fill="#ffffff" stroke="#1976d2" stroke-width="2"/>
-<rect x="78" y="60" width="14" height="24" rx="3" fill="none" stroke="#1976d2" stroke-width="2.4"/>
-<text x="104" y="80" font-size="23" font-weight="bold" fill="#1976d2" letter-spacing="1.5">SENDER PHONE · PTT</text>
+<rect x="60" y="80" width="1980" height="290" rx="24" fill="#f6f9fd" stroke="#1976d2" stroke-width="3.5"/>
+<rect x="90" y="56" width="400" height="48" rx="10" fill="#ffffff" stroke="#1976d2" stroke-width="2.5"/>
+<rect x="108" y="66" width="16" height="28" rx="3" fill="none" stroke="#1976d2" stroke-width="2.8"/>
+<text x="138" y="90" font-size="28" font-weight="bold" fill="#1976d2" letter-spacing="2">SENDER PHONE · PTT</text>
 
-<!-- node: Mic -->
-<g transform="translate(120,140)">
-  <rect x="34" y="0" width="30" height="46" rx="15" fill="none" stroke="#37474f" stroke-width="4"/>
-  <path d="M 22 30 a 27 27 0 0 0 54 0" fill="none" stroke="#37474f" stroke-width="4" stroke-linecap="round"/>
-  <line x1="49" y1="57" x2="49" y2="72" stroke="#37474f" stroke-width="4" stroke-linecap="round"/>
-  <text x="49" y="108" font-size="25" font-weight="bold" fill="#263238" text-anchor="middle">Mic 16 kHz</text>
-  <text x="49" y="136" font-size="20" fill="#607d8b" text-anchor="middle">Oboe capture</text>
+<g transform="translate(220,150)">
+  <rect x="35" y="0" width="30" height="46" rx="15" fill="none" stroke="#37474f" stroke-width="5"/>
+  <path d="M 22 30 a 28 28 0 0 0 56 0" fill="none" stroke="#37474f" stroke-width="5" stroke-linecap="round"/>
+  <line x1="50" y1="58" x2="50" y2="74" stroke="#37474f" stroke-width="5" stroke-linecap="round"/>
+  <text x="50" y="140" font-size="36" font-weight="bold" fill="#263238" text-anchor="middle">Mic · 16 kHz</text>
 </g>
-<!-- node: VAD -->
-<g transform="translate(330,140)">
-  <polyline points="8,38 26,38 36,10 48,66 60,22 70,50 80,38 98,38" fill="none" stroke="#37474f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="53" y="108" font-size="25" font-weight="bold" fill="#263238" text-anchor="middle">Silero VAD</text>
-  <text x="53" y="136" font-size="20" fill="#607d8b" text-anchor="middle">pause → sentence</text>
+<g transform="translate(700,150)">
+  <polyline points="0,40 22,40 34,8 48,72 62,20 74,54 86,40 104,40" fill="none" stroke="#37474f" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="52" y="140" font-size="36" font-weight="bold" fill="#263238" text-anchor="middle">Silero VAD</text>
 </g>
-<!-- node: STT -->
-<g transform="translate(545,140)">
-  <rect x="24" y="12" width="52" height="52" rx="7" fill="none" stroke="#37474f" stroke-width="4"/>
-  <g stroke="#37474f" stroke-width="3" stroke-linecap="round">
-    <line x1="36" y1="4" x2="36" y2="12"/><line x1="50" y1="4" x2="50" y2="12"/><line x1="64" y1="4" x2="64" y2="12"/>
-    <line x1="36" y1="64" x2="36" y2="72"/><line x1="50" y1="64" x2="50" y2="72"/><line x1="64" y1="64" x2="64" y2="72"/>
-    <line x1="16" y1="24" x2="24" y2="24"/><line x1="16" y1="38" x2="24" y2="38"/><line x1="16" y1="52" x2="24" y2="52"/>
-    <line x1="76" y1="24" x2="84" y2="24"/><line x1="76" y1="38" x2="84" y2="38"/><line x1="76" y1="52" x2="84" y2="52"/>
+<g transform="translate(1180,150)">
+  <rect x="24" y="12" width="52" height="52" rx="7" fill="none" stroke="#37474f" stroke-width="5"/>
+  <g stroke="#37474f" stroke-width="3.5" stroke-linecap="round">
+    <line x1="36" y1="2" x2="36" y2="12"/><line x1="50" y1="2" x2="50" y2="12"/><line x1="64" y1="2" x2="64" y2="12"/>
+    <line x1="36" y1="64" x2="36" y2="74"/><line x1="50" y1="64" x2="50" y2="74"/><line x1="64" y1="64" x2="64" y2="74"/>
+    <line x1="14" y1="24" x2="24" y2="24"/><line x1="14" y1="38" x2="24" y2="38"/><line x1="14" y1="52" x2="24" y2="52"/>
+    <line x1="76" y1="24" x2="86" y2="24"/><line x1="76" y1="38" x2="86" y2="38"/><line x1="76" y1="52" x2="86" y2="52"/>
   </g>
-  <text x="50" y="108" font-size="25" font-weight="bold" fill="#263238" text-anchor="middle">IndicConformer</text>
-  <text x="50" y="136" font-size="20" fill="#607d8b" text-anchor="middle">STT int8 · 10 langs</text>
+  <text x="50" y="140" font-size="36" font-weight="bold" fill="#263238" text-anchor="middle">IndicConformer STT</text>
 </g>
-<!-- node: VarnaCode -->
-<g transform="translate(780,140)">
-  <g stroke="#1976d2" stroke-width="4" stroke-linecap="round" fill="none">
-    <path d="M 28 14 l -20 24 l 20 24"/><path d="M 72 14 l 20 24 l -20 24"/>
+<g transform="translate(1680,150)">
+  <g stroke="#1976d2" stroke-width="5" stroke-linecap="round" fill="none">
+    <path d="M 28 12 l -22 26 l 22 26"/><path d="M 72 12 l 22 26 l -22 26"/>
   </g>
-  <text x="50" y="47" font-size="22" font-weight="bold" fill="#1976d2" text-anchor="middle">अ</text>
-  <text x="50" y="108" font-size="25" font-weight="bold" fill="#0d47a1" text-anchor="middle">VarnaCode</text>
-  <text x="50" y="136" font-size="20" fill="#607d8b" text-anchor="middle">~45-byte frame</text>
+  <text x="50" y="48" font-size="26" font-weight="bold" fill="#1976d2" text-anchor="middle">अ</text>
+  <text x="50" y="140" font-size="36" font-weight="bold" fill="#0d47a1" text-anchor="middle">VarnaCode → 45 B</text>
 </g>
-<!-- row arrows -->
-<g stroke="#37474f" stroke-width="2.4" fill="none" marker-end="url(#ar)">
-  <line x1="230" y1="178" x2="322" y2="178"/>
-  <line x1="446" y1="178" x2="538" y2="178"/>
-  <line x1="660" y1="178" x2="768" y2="178"/>
+<g stroke="#37474f" stroke-width="3" fill="none" marker-end="url(#ar)">
+  <line x1="470" y1="190" x2="640" y2="190"/>
+  <line x1="960" y1="190" x2="1120" y2="190"/>
+  <line x1="1500" y1="190" x2="1620" y2="190"/>
 </g>
-<g font-size="16" fill="#546e7a" text-anchor="middle">
-  <text x="276" y="168">PCM</text><text x="492" y="168">sentence</text><text x="714" y="168">text</text>
-</g>
-<!-- second row: prosody + AES -->
-<g transform="translate(560,330)">
-  <path d="M 14 44 q 12 -40 24 0 t 24 0 t 24 0 t 24 0" fill="none" stroke="#37474f" stroke-width="4" stroke-linecap="round"/>
-  <text x="62" y="92" font-size="25" font-weight="bold" fill="#263238" text-anchor="middle">Prosody byte</text>
-  <text x="62" y="120" font-size="20" fill="#607d8b" text-anchor="middle">urgency · pitch · rate</text>
-</g>
-<g transform="translate(790,330)">
-  <rect x="30" y="30" width="44" height="36" rx="6" fill="none" stroke="#37474f" stroke-width="4"/>
-  <path d="M 38 30 v -10 a 14 14 0 0 1 28 0 v 10" fill="none" stroke="#37474f" stroke-width="4"/>
-  <text x="52" y="92" font-size="25" font-weight="bold" fill="#263238" text-anchor="middle">AES-128-GCM</text>
-  <text x="52" y="120" font-size="20" fill="#607d8b" text-anchor="middle">optional · +28 B</text>
-</g>
-<g stroke="#37474f" stroke-width="2.2" fill="none" marker-end="url(#ar)">
-  <path d="M 622 330 C 622 300, 760 300, 800 284"/>
-  <path d="M 842 330 C 842 310, 838 300, 834 284"/>
-</g>
-<text x="110" y="370" font-size="18" fill="#546e7a">frame header:</text>
-<text x="110" y="396" font-size="18" fill="#546e7a">lang · priority · seq · CRC-16</text>
-<text x="110" y="440" font-size="18" fill="#546e7a">sentence 1 transmits while</text>
-<text x="110" y="466" font-size="18" fill="#546e7a">sentence 2 is still being spoken</text>
-<text x="110" y="540" font-size="17" fill="#90a4ae">↓ frames leave the phone on any bearer below</text>
 
 <!-- ============ LOW-BITRATE LINK ============ -->
-<rect x="40" y="660" width="960" height="500" rx="22" fill="#f6fbf6" stroke="#2e7d32" stroke-width="3"/>
-<rect x="64" y="642" width="300" height="40" rx="8" fill="#ffffff" stroke="#2e7d32" stroke-width="2"/>
-<g fill="none" stroke="#2e7d32" stroke-width="2.4" stroke-linecap="round">
-  <circle cx="86" cy="662" r="3.2" fill="#2e7d32" stroke="none"/><path d="M 93 655 a 10 10 0 0 1 0 14"/><path d="M 100 648 a 20 20 0 0 1 0 28"/>
+<rect x="60" y="480" width="1980" height="290" rx="24" fill="#f6fbf6" stroke="#2e7d32" stroke-width="3.5"/>
+<rect x="90" y="456" width="540" height="48" rx="10" fill="#ffffff" stroke="#2e7d32" stroke-width="2.5"/>
+<g fill="none" stroke="#2e7d32" stroke-width="2.8" stroke-linecap="round">
+  <circle cx="116" cy="480" r="4" fill="#2e7d32" stroke="none"/><path d="M 124 472 a 12 12 0 0 1 0 16"/><path d="M 132 464 a 24 24 0 0 1 0 32"/>
 </g>
-<text x="118" y="670" font-size="23" font-weight="bold" fill="#2e7d32" letter-spacing="1.5">LOW-BITRATE LINK</text>
-<text x="520" y="716" font-size="19" fill="#2e7d32" text-anchor="middle" font-style="italic">one 45-byte frame · any bearer · 169× lighter than cellular voice</text>
+<text x="156" y="490" font-size="28" font-weight="bold" fill="#2e7d32" letter-spacing="2">LOW-BITRATE LINK · any bearer</text>
 
-<g transform="translate(90,760)">
-  <path d="M 14 42 a 46 46 0 0 1 72 0 M 30 58 a 24 24 0 0 1 40 0" fill="none" stroke="#37474f" stroke-width="4" stroke-linecap="round"/><circle cx="50" cy="72" r="5" fill="#37474f"/>
-  <text x="50" y="112" font-size="25" font-weight="bold" fill="#263238" text-anchor="middle">Wi-Fi hotspot</text>
-  <text x="50" y="140" font-size="20" fill="#607d8b" text-anchor="middle">NSD/mDNS + TCP</text>
+<g transform="translate(220,550)">
+  <path d="M 8 42 a 52 52 0 0 1 84 0 M 26 60 a 28 28 0 0 1 48 0" fill="none" stroke="#37474f" stroke-width="5" stroke-linecap="round"/><circle cx="50" cy="76" r="6" fill="#37474f"/>
+  <text x="50" y="140" font-size="36" font-weight="bold" fill="#263238" text-anchor="middle">Wi-Fi hotspot</text>
 </g>
-<g transform="translate(330,760)">
-  <path d="M 40 8 v 68 l 22 -18 l -44 -32 l 44 -32 l -22 -18" fill="none" stroke="#37474f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="50" y="112" font-size="25" font-weight="bold" fill="#263238" text-anchor="middle">Bluetooth</text>
-  <text x="50" y="140" font-size="20" fill="#607d8b" text-anchor="middle">RFCOMM · no infra</text>
+<g transform="translate(700,550)">
+  <path d="M 44 6 v 74 l 24 -20 l -48 -34 l 48 -34 l -24 -20" fill="none" stroke="#37474f" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="50" y="140" font-size="36" font-weight="bold" fill="#263238" text-anchor="middle">Bluetooth</text>
 </g>
-<g transform="translate(570,760)">
-  <g fill="none" stroke="#37474f" stroke-width="4" stroke-linecap="round">
-    <line x1="50" y1="78" x2="50" y2="36"/><path d="M 32 78 l 18 -30 l 18 30"/><path d="M 30 26 a 28 28 0 0 1 40 0"/><path d="M 18 14 a 46 46 0 0 1 64 0"/>
+<g transform="translate(1180,550)">
+  <g fill="none" stroke="#37474f" stroke-width="5" stroke-linecap="round">
+    <line x1="50" y1="82" x2="50" y2="38"/><path d="M 30 82 l 20 -32 l 20 32"/><path d="M 28 28 a 31 31 0 0 1 44 0"/><path d="M 14 14 a 51 51 0 0 1 72 0"/>
   </g>
-  <text x="50" y="112" font-size="25" font-weight="bold" fill="#263238" text-anchor="middle">ESP32 LoRa</text>
-  <text x="50" y="140" font-size="20" fill="#607d8b" text-anchor="middle">IN865 · 1–10 km · ₹1,650</text>
+  <text x="50" y="140" font-size="36" font-weight="bold" fill="#263238" text-anchor="middle">ESP32 LoRa</text>
 </g>
-<g transform="translate(810,760)">
-  <path d="M 8 44 q 14 -34 28 0 t 28 0 t 28 0" fill="none" stroke="#37474f" stroke-width="4" stroke-linecap="round"/>
-  <rect x="34" y="52" width="32" height="26" rx="4" fill="none" stroke="#37474f" stroke-width="4"/>
-  <text x="50" y="112" font-size="25" font-weight="bold" fill="#263238" text-anchor="middle">AFSK modem</text>
-  <text x="50" y="140" font-size="20" fill="#607d8b" text-anchor="middle">0.3 s of audio · any radio</text>
+<g transform="translate(1680,550)">
+  <path d="M 2 44 q 16 -38 32 0 t 32 0 t 32 0" fill="none" stroke="#37474f" stroke-width="5" stroke-linecap="round"/>
+  <rect x="32" y="54" width="36" height="28" rx="5" fill="none" stroke="#37474f" stroke-width="5"/>
+  <text x="50" y="140" font-size="36" font-weight="bold" fill="#263238" text-anchor="middle">AFSK · any radio</text>
 </g>
-<rect x="90" y="960" width="860" height="150" rx="14" fill="#ffffff" stroke="#a5d6a7" stroke-width="2"/>
-<g font-size="18" fill="#37474f">
-  <text x="112" y="998" font-weight="bold">ARQ &amp; store-and-forward</text>
-  <text x="112" y="1028">seq-numbered frames · ACK / retransmit on lossy bearers · queued while the peer is away</text>
-  <text x="112" y="1058">LoRa duty-cycle guard 1 % · ~116 sentences / hour at SF9 · CRC-16 on every frame</text>
-  <text x="112" y="1088" fill="#607d8b">Measured: 45 B VarnaCode vs 7,625 B AMR-NB vs 40,000 B raw voice per sentence</text>
-</g>
-
-<!-- sender -> link connector -->
-<g stroke="#37474f" stroke-width="3" fill="none" marker-end="url(#ar)">
-  <path d="M 520 600 L 520 654"/>
-</g>
-<text x="540" y="636" font-size="18" fill="#455a64" font-style="italic">45-byte frames</text>
 
 <!-- ============ RECEIVER PHONE ============ -->
-<rect x="1080" y="70" width="980" height="1090" rx="22" fill="#fff9f4" stroke="#ef6c00" stroke-width="3"/>
-<rect x="1104" y="52" width="300" height="40" rx="8" fill="#ffffff" stroke="#ef6c00" stroke-width="2"/>
-<rect x="1118" y="60" width="14" height="24" rx="3" fill="none" stroke="#ef6c00" stroke-width="2.4"/>
-<text x="1144" y="80" font-size="23" font-weight="bold" fill="#ef6c00" letter-spacing="1.5">RECEIVER PHONE</text>
+<rect x="60" y="880" width="1980" height="290" rx="24" fill="#fff9f4" stroke="#ef6c00" stroke-width="3.5"/>
+<rect x="90" y="856" width="360" height="48" rx="10" fill="#ffffff" stroke="#ef6c00" stroke-width="2.5"/>
+<rect x="108" y="866" width="16" height="28" rx="3" fill="none" stroke="#ef6c00" stroke-width="2.8"/>
+<text x="138" y="890" font-size="28" font-weight="bold" fill="#ef6c00" letter-spacing="2">RECEIVER PHONE</text>
 
-<g transform="translate(1150,140)">
-  <rect x="26" y="20" width="48" height="34" rx="5" fill="none" stroke="#37474f" stroke-width="4"/>
-  <line x1="36" y1="37" x2="64" y2="37" stroke="#37474f" stroke-width="3" stroke-dasharray="5 4"/>
-  <text x="50" y="108" font-size="25" font-weight="bold" fill="#263238" text-anchor="middle">Frame decode</text>
-  <text x="50" y="136" font-size="20" fill="#607d8b" text-anchor="middle">CRC-16 · de-dup</text>
+<g transform="translate(220,950)">
+  <rect x="22" y="18" width="56" height="40" rx="6" fill="none" stroke="#37474f" stroke-width="5"/>
+  <line x1="34" y1="38" x2="66" y2="38" stroke="#37474f" stroke-width="4" stroke-dasharray="6 5"/>
+  <text x="50" y="140" font-size="36" font-weight="bold" fill="#263238" text-anchor="middle">Decode · CRC-16</text>
 </g>
-<g transform="translate(1390,140)">
-  <g stroke="#ef6c00" stroke-width="4" stroke-linecap="round" fill="none">
-    <path d="M 28 14 l -20 24 l 20 24"/><path d="M 72 14 l 20 24 l -20 24"/>
+<g transform="translate(700,950)">
+  <g stroke="#ef6c00" stroke-width="5" stroke-linecap="round" fill="none">
+    <path d="M 28 12 l -22 26 l 22 26"/><path d="M 72 12 l 22 26 l -22 26"/>
   </g>
-  <text x="50" y="47" font-size="22" font-weight="bold" fill="#ef6c00" text-anchor="middle">अ</text>
-  <text x="50" y="108" font-size="25" font-weight="bold" fill="#e65100" text-anchor="middle">VarnaCode⁻¹</text>
-  <text x="50" y="136" font-size="20" fill="#607d8b" text-anchor="middle">lossless · lang from header</text>
+  <text x="50" y="48" font-size="26" font-weight="bold" fill="#ef6c00" text-anchor="middle">अ</text>
+  <text x="50" y="140" font-size="36" font-weight="bold" fill="#e65100" text-anchor="middle">VarnaCode⁻¹</text>
 </g>
-<g transform="translate(1630,140)">
-  <text x="50" y="58" font-size="40" font-weight="bold" fill="#37474f" text-anchor="middle">१२</text>
-  <text x="50" y="108" font-size="25" font-weight="bold" fill="#263238" text-anchor="middle">Normalize</text>
-  <text x="50" y="136" font-size="20" fill="#607d8b" text-anchor="middle">numbers · place lexicon</text>
+<g transform="translate(1180,950)">
+  <polyline points="4,40 24,40 48,18 48,64 24,40" fill="none" stroke="#37474f" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M 62 28 a 16 16 0 0 1 0 24 M 76 16 a 34 34 0 0 1 0 48" fill="none" stroke="#37474f" stroke-width="5" stroke-linecap="round"/>
+  <text x="50" y="140" font-size="36" font-weight="bold" fill="#263238" text-anchor="middle">TTS · Piper / FastPitch</text>
 </g>
-<g transform="translate(1880,140)">
-  <polyline points="8,38 26,38 46,20 46,60 26,38" fill="none" stroke="#37474f" stroke-width="4" stroke-linejoin="round"/>
-  <path d="M 58 28 a 14 14 0 0 1 0 22 M 70 18 a 30 30 0 0 1 0 42" fill="none" stroke="#37474f" stroke-width="4" stroke-linecap="round"/>
-  <text x="50" y="108" font-size="25" font-weight="bold" fill="#263238" text-anchor="middle">TTS</text>
-  <text x="50" y="136" font-size="20" fill="#607d8b" text-anchor="middle">FastPitch / Piper</text>
+<g transform="translate(1680,950)">
+  <path d="M 50 4 l 40 68 h -80 z" fill="none" stroke="#c62828" stroke-width="5" stroke-linejoin="round"/><line x1="50" y1="28" x2="50" y2="48" stroke="#c62828" stroke-width="5" stroke-linecap="round"/><circle cx="50" cy="60" r="3" fill="#c62828"/>
+  <text x="50" y="140" font-size="36" font-weight="bold" fill="#b71c1c" text-anchor="middle">Playback · ALERT</text>
 </g>
-<g stroke="#37474f" stroke-width="2.4" fill="none" marker-end="url(#ar)">
-  <line x1="1260" y1="178" x2="1382" y2="178"/>
-  <line x1="1500" y1="178" x2="1622" y2="178"/>
-  <line x1="1740" y1="178" x2="1872" y2="178"/>
-</g>
-
-<!-- lower receiver row -->
-<g transform="translate(1150,400)">
-  <circle cx="50" cy="40" r="26" fill="none" stroke="#37474f" stroke-width="4"/><path d="M 40 40 l 8 8 l 14 -18" fill="none" stroke="#37474f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="50" y="108" font-size="25" font-weight="bold" fill="#263238" text-anchor="middle">Voice-note playback</text>
-  <text x="50" y="136" font-size="20" fill="#607d8b" text-anchor="middle">sentence-streamed · transcript shown</text>
-</g>
-<g transform="translate(1520,400)">
-  <path d="M 50 8 l 36 62 h -72 z" fill="none" stroke="#c62828" stroke-width="4" stroke-linejoin="round"/><line x1="50" y1="30" x2="50" y2="48" stroke="#c62828" stroke-width="4" stroke-linecap="round"/><circle cx="50" cy="58" r="2.5" fill="#c62828"/>
-  <text x="50" y="108" font-size="25" font-weight="bold" fill="#b71c1c" text-anchor="middle">ALERT mode</text>
-  <text x="50" y="136" font-size="20" fill="#8d3b36" text-anchor="middle">max volume · non-stop · ×2</text>
-</g>
-<g transform="translate(1880,400)">
-  <path d="M 14 62 a 40 40 0 0 1 72 0" fill="none" stroke="#37474f" stroke-width="4" stroke-linecap="round"/><line x1="50" y1="62" x2="72" y2="34" stroke="#37474f" stroke-width="4" stroke-linecap="round"/>
-  <text x="50" y="108" font-size="25" font-weight="bold" fill="#263238" text-anchor="middle">Evaluation Mode</text>
-  <text x="50" y="136" font-size="20" fill="#607d8b" text-anchor="middle">CER · RTF · latency, live</text>
-</g>
-<g stroke="#37474f" stroke-width="2.4" fill="none" marker-end="url(#ar)">
-  <path d="M 1930 280 C 1930 330, 1300 330, 1220 392"/>
-</g>
-<g stroke="#c62828" stroke-width="2.4" fill="none" marker-end="url(#arR)">
-  <path d="M 1930 280 C 1930 340, 1620 340, 1580 392"/>
-</g>
-<text x="1560" y="330" font-size="16" fill="#546e7a" font-style="italic">priority = ALERT</text>
-
-<!-- roll-call / CAP strip -->
-<rect x="1130" y="600" width="880" height="200" rx="14" fill="#ffffff" stroke="#ffcc80" stroke-width="2"/>
-<g font-size="18" fill="#37474f">
-  <text x="1152" y="640" font-weight="bold">Extra frames on the same protocol</text>
-  <text x="1152" y="672"><tspan font-weight="bold">Roll-call:</tspan> question broadcast once → 9-byte SAFE / NEED HELP / SOS replies → live headcount</text>
-  <text x="1152" y="702"><tspan font-weight="bold">CAP / SACHET bridge:</tspan> official NDMA alert XML → spoken ALERT in the village language</text>
-  <text x="1152" y="732"><tspan font-weight="bold">Prosody:</tspan> PANIC frames play faster, louder and twice — even without the ALERT flag</text>
-  <text x="1152" y="762" fill="#607d8b">walkie-talkie off ⇒ the phone behaves 100 % normally</text>
-</g>
-
-<!-- runtime strip -->
-<rect x="1130" y="840" width="880" height="270" rx="14" fill="#fafafa" stroke="#b0bec5" stroke-width="2" stroke-dasharray="7 5"/>
-<g font-size="18" fill="#37474f">
-  <text x="1152" y="880" font-weight="bold">On-device runtime (both phones)</text>
-  <text x="1152" y="914">sherpa-onnx · ONNX Runtime — one JNI surface for STT, TTS and VAD</text>
-  <text x="1152" y="944">Kotlin foreground service + audio focus (Android 14+) · 54 MB APK</text>
-  <text x="1152" y="974">language packs ~200 MB (int8 STT 140 MB + Piper 63 MB), sideloadable</text>
-  <text x="1152" y="1004">eSpeak-NG fallback — no language is ever silent</text>
-  <text x="1152" y="1034" fill="#607d8b">MIT / Apache models · zero network calls · Bhashini-lineage AI4Bharat</text>
-  <text x="1152" y="1080" fill="#e65100" font-weight="bold">Measured: real-speech CER hi 2.9 % · RTF 0.06 · TTS RTF 0.049</text>
-</g>
-
-<!-- link -> receiver connector -->
 <g stroke="#37474f" stroke-width="3" fill="none" marker-end="url(#ar)">
-  <path d="M 1000 900 C 1040 900, 1040 178, 1074 178"/>
+  <line x1="480" y1="990" x2="630" y2="990"/>
+  <line x1="900" y1="990" x2="1090" y2="990"/>
+  <line x1="1520" y1="990" x2="1620" y2="990"/>
 </g>
-<text x="1010" y="560" font-size="18" fill="#455a64" font-style="italic" transform="rotate(-90 1010 560)">any bearer</text>
+
+<!-- band connectors -->
+<g stroke="#37474f" stroke-width="4" fill="none" marker-end="url(#ar)">
+  <line x1="1050" y1="370" x2="1050" y2="474"/>
+  <line x1="1050" y1="770" x2="1050" y2="874"/>
+</g>
+<text x="1075" y="430" font-size="26" fill="#455a64" font-style="italic">45-byte frames</text>
+<text x="1075" y="830" font-size="26" fill="#455a64" font-style="italic">any bearer</text>
 </svg>

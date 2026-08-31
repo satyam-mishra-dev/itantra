@@ -18,10 +18,9 @@
 <g transform="translate(660,140)" fill="none" stroke="#16324a" stroke-width="8" stroke-linecap="round">
   <rect x="26" y="26" width="72" height="72" rx="8"/><line x1="44" y1="10" x2="44" y2="26"/><line x1="62" y1="10" x2="62" y2="26"/><line x1="80" y1="10" x2="80" y2="26"/><line x1="44" y1="98" x2="44" y2="114"/><line x1="62" y1="98" x2="62" y2="114"/><line x1="80" y1="98" x2="80" y2="114"/>
 </g>
-<g font-size="27" fill="#16324a" text-anchor="middle">
-  <text x="720" y="312">Real-speech CER 2.9 % (Hindi),</text>
-  <text x="720" y="350">RTF 0.06 on CPU — measured,</text>
-  <text x="720" y="388">int8 packs 140 MB per language</text>
+<g font-size="34" fill="#16324a" text-anchor="middle">
+  <text x="720" y="318">Real-speech CER 2.9 %</text>
+  <text x="720" y="366">RTF 0.06 · int8 140 MB</text>
 </g>
 
 <!-- Operational -->
@@ -29,10 +28,9 @@
 <g transform="translate(1180,140)" fill="none" stroke="#16324a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
   <path d="M 62 10 l 48 26 v 52 c 0 30 -22 50 -48 60 c -26 -10 -48 -30 -48 -60 v -52 z"/><polyline points="42,68 58,84 84,52"/>
 </g>
-<g font-size="27" fill="#16324a" text-anchor="middle">
-  <text x="1240" y="312">Fallback ladder at every layer:</text>
-  <text x="1240" y="350">official int8 exports · eSpeak-NG voice ·</text>
-  <text x="1240" y="388">hotspot + TCP when Wi-Fi Direct flakes</text>
+<g font-size="34" fill="#16324a" text-anchor="middle">
+  <text x="1240" y="318">Fallback at every layer:</text>
+  <text x="1240" y="366">int8 · eSpeak-NG · hotspot</text>
 </g>
 
 <!-- Market -->
@@ -40,10 +38,9 @@
 <g transform="translate(660,620)" fill="none" stroke="#16324a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
   <path d="M 20 50 h 30 l 46 -30 v 80 l -46 -30 h -30 z"/><path d="M 104 40 a 20 20 0 0 1 0 40"/>
 </g>
-<g font-size="27" fill="#16324a" text-anchor="middle">
-  <text x="720" y="792">₹0 recurring — no SIM, server or</text>
-  <text x="720" y="830">licence; runs on phones people own;</text>
-  <text x="720" y="868">₹1,650 LoRa node vs ₹8–25k radios</text>
+<g font-size="34" fill="#16324a" text-anchor="middle">
+  <text x="720" y="798">₹0 recurring · own phones</text>
+  <text x="720" y="846">₹1,650 node vs ₹8–25k radios</text>
 </g>
 
 <!-- Scalability -->
@@ -51,9 +48,8 @@
 <g transform="translate(1180,620)" fill="none" stroke="#16324a" stroke-width="8" stroke-linecap="round">
   <line x1="30" y1="110" x2="30" y2="70"/><line x1="62" y1="110" x2="62" y2="46"/><line x1="94" y1="110" x2="94" y2="24"/><path d="M 20 40 l 30 -22 l 24 14 l 30 -24" stroke-width="7"/>
 </g>
-<g font-size="27" fill="#16324a" text-anchor="middle">
-  <text x="1240" y="792">One model family covers all 22</text>
-  <text x="1240" y="830">scheduled languages; frames ride any</text>
-  <text x="1240" y="868">bearer — Bluetooth today, GSAT tomorrow</text>
+<g font-size="34" fill="#16324a" text-anchor="middle">
+  <text x="1240" y="798">One model family, 22 languages</text>
+  <text x="1240" y="846">any bearer — BT to GSAT</text>
 </g>
 </svg>

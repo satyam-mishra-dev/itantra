@@ -94,6 +94,26 @@ def small_logo():
     return p
 
 
+def make_pies():
+    """Before/after donuts: who a disaster alert reaches (rural literacy-bounded text vs spoken). 2.04:1."""
+    import matplotlib; matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    NAVY, ORANGE = "#16324a", "#e65100"
+    plt.rcParams.update({"font.family": "Arial", "font.size": 15})
+    fig, axes = plt.subplots(1, 2, figsize=(10.2, 5), dpi=200)
+    for ax, title, vals, labels in (
+        (axes[0], "Before: SMS / cell-broadcast text", [73.5, 26.5], ["Can read it 73.5%", "Cannot 26.5%"]),
+        (axes[1], "After: iTantra spoken alert", [98, 2], ["Can hear it ~98%", "Cannot ~2%"]),
+    ):
+        ax.pie(vals, colors=[NAVY, ORANGE], startangle=90, counterclock=False,
+               wedgeprops=dict(width=0.42, edgecolor="white"), labels=labels,
+               textprops=dict(fontsize=16, color="#1a1a2e", fontweight="bold"), labeldistance=1.12)
+        ax.set_title(title, fontsize=17, fontweight="bold", color=NAVY, pad=8)
+    fig.suptitle("Who a disaster alert reaches — rural India (literacy: NSO 2023-24; est.)", fontsize=14, color="#546e7a", y=0.03)
+    p = os.path.join(A, "pies.png"); plt.tight_layout(rect=(0, 0.06, 1, 1)); plt.savefig(p); plt.close()
+    return p
+
+
 def B(t):  return (t, True)
 def N(t):  return (t, False)
 def L(u):  return ("LINK", False, u)
@@ -153,7 +173,14 @@ set_paras(shape_by_id(s2, 113), [
     (4, [B("Live Evaluation Mode")]),
     (5, [B("Offline & Open-Source")]),
 ])
-replace_pic(s2, shape_by_id(s2, 112), os.path.join(A, "mindmap.png"))
+# close the dead gap: narrower challenges box, solutions block right under it, bigger mind-map (2.92:1)
+IN = 914400
+ch = shape_by_id(s2, 102); ch.width = int(5.95 * IN); ch.height = int(1.95 * IN)
+sol = shape_by_id(s2, 108); sol.top = int(3.95 * IN)
+sol.text_frame._txBody.find(qn("a:bodyPr")).set("anchor", "t")   # source box is centre-anchored in a tall box → gap
+mm = shape_by_id(s2, 112)
+mm.left, mm.top, mm.width, mm.height = int(6.15 * IN), int(1.55 * IN), int(7.0 * IN), int(7.0 / 2.92 * IN)
+replace_pic(s2, mm, os.path.join(A, "mindmap.png"))
 replace_pic(s2, shape_by_id(s2, 106), logo, anchor_right=True)
 
 # ---- S3
@@ -177,32 +204,37 @@ def grp(title, prob, appr, first=False):
         (1, [B("Problem: "), N(prob)]),
         (2, [B("Approach: "), N(appr)]),
     ]
-sp = [(3, [])]
 set_paras(shape_by_id(s4, 137),
     grp("Tech Feasibility : On-Device Speed", "budget phones may run slower than our desktop numbers.",
-        "int8 models (measured RTF 0.06) + streaming decode; Conformers already run RTF 0.19 on wearables.", True) + sp +
+        "int8 models (measured RTF 0.06) + streaming decode; Conformers already run RTF 0.19 on wearables.", True) +
     grp("Operational Feasibility: Model Availability", "community ONNX conversions of IndicConformer are unofficial.",
-        "our converter fixes 12 languages' ONNX metadata; fallback = AI4Bharat's official int8 export.") + sp +
+        "our converter fixes 12 languages' ONNX metadata; fallback = AI4Bharat's official int8 export.") +
     grp("Market (Demand & Adoption)", "hardware walkie-talkies cost ₹8,000–25,000 and speak one language.",
         "phones people already own + a ₹1,650 LoRa node; pilot with a coastal district committee.") +
     grp("Financial (Cost vs Revenue)", "free tools die when funding dries up.",
-        "zero recurring cost (no SIM, server, licence); NDMA/SDMA procurement; open-source self-hosting.") + sp +
+        "zero recurring cost (no SIM, server, licence); NDMA/SDMA procurement; open-source self-hosting.") +
     grp("Growth and Potential", "22 languages and many bearers to cover.",
         "one model family covers all 22; frames ride any bearer — Bluetooth today, GSAT tomorrow.") +
     grp("Bridging the Trust Gap", "a mis-recognition could become spoken misinformation.",
         "confidence gate, transcript on both screens, alert pronunciation lexicon, encrypted frames.")
 )
-for para in shape_by_id(s4, 137).text_frame.paragraphs:   # reference wraps less; 12.5pt keeps 6 groups inside the box
-    for r in para.runs:
-        r.font.size = Pt(12.5)
-# continuous 1..6 numbering regardless of renderer: explicit startAt on each numbered header
+# uniform rhythm: 12.5pt (keeps 6 groups in the box), continuous 1..6 numbering,
+# space-before only on numbered headers (no blank spacer paragraphs)
 n = 0
 for para in shape_by_id(s4, 137).text_frame.paragraphs:
-    pPr = para._p.find(qn("a:pPr"))
-    num = pPr.find(qn("a:buAutoNum")) if pPr is not None else None
+    for r in para.runs:
+        r.font.size = Pt(12.5)
+    pPr = para._p.get_or_add_pPr()
+    num = pPr.find(qn("a:buAutoNum"))
     if num is not None:
         n += 1
         num.set("startAt", str(n))
+    for tag in ("a:spcBef", "a:spcAft"):
+        el = pPr.find(qn(tag))
+        if el is not None:
+            pPr.remove(el)
+    bef = etree.SubElement(pPr, qn("a:spcBef")); pPr.insert(0, bef)
+    etree.SubElement(bef, qn("a:spcPts")).set("val", "1000" if num is not None and n > 1 else "0")
 replace_pic(s4, shape_by_id(s4, 142), os.path.join(A, "projection.png"))
 replace_pic(s4, shape_by_id(s4, 140), os.path.join(A, "feasibility.png"))
 replace_pic(s4, shape_by_id(s4, 138), logo, anchor_right=True)
@@ -222,9 +254,11 @@ set_paras(shape_by_id(s5, 158), [
     (3, [B("Sovereign Stack:"), N(" Indian models (Bhashini / AI4Bharat), Indian band plan (IN865), no foreign cloud.")]),
     (4, [B("Resilient:"), N(" int8-efficient; LoRa nodes run days on a power bank — deployable on solar in a total blackout.")]),
 ])
-replace_pic(s5, shape_by_id(s5, 154), os.path.join(A, "pies.png"))
+replace_pic(s5, shape_by_id(s5, 154), make_pies())
 replace_pic(s5, shape_by_id(s5, 157), os.path.join(A, "bytes.png"))
-replace_pic(s5, shape_by_id(s5, 153), logo, anchor_right=True)
+lg = shape_by_id(s5, 153)          # same lockup/geometry as slides 1–4/6 (10.85,-0.05 2.42×1.23 in)
+lg.left, lg.top, lg.width, lg.height = int(10.85 * IN), int(-0.05 * IN), int(2.42 * IN), int(1.23 * IN)
+replace_pic(s5, lg, logo, anchor_right=True)
 
 # ---- S6
 refs = [
