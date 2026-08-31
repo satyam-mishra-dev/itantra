@@ -1,14 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="navy">#16324A</color>
+    <color name="navy2">#1E4D7A</color>
     <color name="orange">#E65100</color>
+    <color name="orangeSoft">#FDE9DD</color>
+    <color name="orangeRing">#A6E65100</color>
     <color name="red">#C62828</color>
     <color name="redTint">#FDECEA</color>
     <color name="green">#2E7D32</color>
+    <color name="greenTint">#E6F4EA</color>
     <color name="ground">#F4F7FB</color>
+    <color name="surfaceTop">#E6EFFA</color>
+    <color name="surfaceMid">#F6F9FD</color>
+    <color name="surfaceBot">#FFFFFF</color>
     <color name="card">#FFFFFF</color>
+    <color name="tile">#E8F0FA</color>
     <color name="sentTint">#E8EEF6</color>
-    <color name="stroke">#E2E8F0</color>
+    <color name="stroke">#E5E9F0</color>
     <color name="textPrimary">#1A1A2E</color>
     <color name="textSecondary">#6B7280</color>
+    <color name="label">#858597</color>
+    <color name="onHero">#FFFFFF</color>
+    <color name="onHeroMuted">#CCFFFFFF</color>
+    <color name="heroCircle">#14FFFFFF</color>
+    <color name="iconTint">#16324A</color>
+    <color name="heroChip">#2EFFFFFF</color>
 </resources>

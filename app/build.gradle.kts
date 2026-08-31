@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId = "com.nullpointers.itantra"
-        minSdk = 24
+        minSdk = 26 // res/font (Outfit) needs 26; Android 8 (2017) is the floor of "low-end phones sold today"
         targetSdk = 34
         versionCode = 1
         versionName = "0.2"

@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.ITantra" parent="android:Theme.Material.NoActionBar">
-        <item name="android:windowBackground">@color/ground</item>
+        <item name="android:windowBackground">@drawable/bg_surface</item>
         <item name="android:colorAccent">@color/orange</item>
         <item name="android:textColorPrimary">@color/textPrimary</item>
         <item name="android:textColorSecondary">@color/textSecondary</item>
-        <item name="android:statusBarColor">@color/ground</item>
+        <item name="android:statusBarColor">@color/navy</item>
+        <item name="android:navigationBarColor">@color/surfaceBot</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:textViewStyle">@style/ITantra.TextView</item>
+        <item name="android:buttonStyle">@style/ITantra.Button</item>
+        <item name="android:editTextStyle">@style/ITantra.EditText</item>
     </style>
 </resources>
