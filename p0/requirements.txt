@@ -1,0 +1,9 @@
+cryptography==50.0.1
+datasets==5.0.1
+jiwer==4.0.0
+matplotlib==3.11.1
+numpy==2.5.2
+onnxruntime==1.29.0
+sherpa-onnx-core==1.13.6
+soundfile==0.14.0
+vosk==0.3.44
