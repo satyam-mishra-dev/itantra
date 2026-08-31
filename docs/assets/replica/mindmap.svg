@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2920" height="1000" viewBox="0 0 2920 1000" font-family="Arial, Helvetica, sans-serif">
+<defs>
+  <linearGradient id="gBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BFE6FF"/><stop offset="1" stop-color="#5CC3F5"/></linearGradient>
+  <linearGradient id="gPurple" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E4D3FF"/><stop offset="1" stop-color="#B58CF0"/></linearGradient>
+  <linearGradient id="gGreen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C9F5D6"/><stop offset="1" stop-color="#6FD68C"/></linearGradient>
+  <linearGradient id="gPink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFC7DE"/><stop offset="1" stop-color="#F58BB4"/></linearGradient>
+  <linearGradient id="gOrange" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD9B8"/><stop offset="1" stop-color="#F7A55A"/></linearGradient>
+  <linearGradient id="gRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFC9C4"/><stop offset="1" stop-color="#F58A80"/></linearGradient>
+  <linearGradient id="gYellow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF3B0"/><stop offset="1" stop-color="#F7D95A"/></linearGradient>
+  <linearGradient id="gLime" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E4F7B0"/><stop offset="1" stop-color="#B7DF5A"/></linearGradient>
+  <linearGradient id="gGray" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F1F3F6"/><stop offset="1" stop-color="#C9CFD8"/></linearGradient>
+</defs>
+<rect width="2920" height="1000" fill="#ffffff"/>
+<!-- center -->
+<rect x="1240" y="330" width="440" height="340" rx="34" fill="url(#gGray)" stroke="#5f6b7a" stroke-width="5"/>
+<g fill="none" stroke="#3a4552" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="1425" y="380" width="70" height="100" rx="35"/>
+  <path d="M 1400 450 a 60 60 0 0 0 120 0"/>
+  <line x1="1460" y1="510" x2="1460" y2="535"/>
+  <path d="M 1520 410 a 55 55 0 0 1 0 60 M 1548 385 a 90 90 0 0 1 0 110" />
+</g>
+<text x="1460" y="600" font-size="46" font-weight="bold" fill="#1f2937" text-anchor="middle">iTantra</text>
+<text x="1460" y="645" font-size="28" fill="#5f6b7a" text-anchor="middle">Semantic Transceiver</text>
+
+<!-- helper: pills -->
+<g font-size="46" font-weight="bold" fill="#1f2937">
+ <!-- LEFT -->
+ <rect x="230" y="70" width="560" height="96" rx="22" fill="url(#gBlue)" stroke="#1f2937" stroke-width="4"/><text x="510" y="134" text-anchor="middle">On-device STT</text>
+ <rect x="130" y="310" width="560" height="96" rx="22" fill="url(#gPurple)" stroke="#1f2937" stroke-width="4"/><text x="410" y="370" text-anchor="middle">VarnaCode</text>
+ <rect x="130" y="550" width="560" height="96" rx="22" fill="url(#gGreen)" stroke="#1f2937" stroke-width="4"/><text x="410" y="610" text-anchor="middle">Any Bearer</text>
+ <rect x="230" y="790" width="560" height="96" rx="22" fill="url(#gPink)" stroke="#1f2937" stroke-width="4"/><text x="510" y="850" text-anchor="middle">Prosody Byte</text>
+ <!-- RIGHT -->
+ <rect x="2130" y="70" width="560" height="96" rx="22" fill="url(#gOrange)" stroke="#1f2937" stroke-width="4"/><text x="2410" y="134" text-anchor="middle">Natural TTS</text>
+ <rect x="2230" y="310" width="560" height="96" rx="22" fill="url(#gRed)" stroke="#1f2937" stroke-width="4"/><text x="2510" y="370" text-anchor="middle">Alert Mode</text>
+ <rect x="2230" y="550" width="560" height="96" rx="22" fill="url(#gYellow)" stroke="#1f2937" stroke-width="4"/><text x="2510" y="610" text-anchor="middle">Evaluation Mode</text>
+ <rect x="2130" y="790" width="560" height="96" rx="22" fill="url(#gLime)" stroke="#1f2937" stroke-width="4"/><text x="2410" y="850" text-anchor="middle">Secure &amp; Offline</text>
+</g>
+<!-- sub labels -->
+<g font-size="36" fill="#374151">
+ <text x="760" y="212" text-anchor="end">IndicConformer int8 · 10 languages</text><text x="760" y="252" text-anchor="end">Silero VAD streams sentences</text>
+ <text x="660" y="452" text-anchor="end">4.45–5.41 bits/char, measured</text><text x="660" y="492" text-anchor="end">~45 bytes per sentence</text>
+ <text x="660" y="692" text-anchor="end">Wi-Fi · Bluetooth · LoRa</text><text x="660" y="732" text-anchor="end">AFSK through analog radios</text>
+ <text x="760" y="932" text-anchor="end">urgency survives the text</text><text x="760" y="972" text-anchor="end">far end: faster, louder, twice</text>
+ <text x="2160" y="212">FastPitch / Piper (MIT)</text><text x="2160" y="252">sentence-streamed · eSpeak fallback</text>
+ <text x="2260" y="452">max volume · non-interruptible</text><text x="2260" y="492">CAP / SACHET bridge</text>
+ <text x="2260" y="692">live CER · RTF · latency</text><text x="2260" y="732">real-speech Hindi CER 2.9%</text>
+ <text x="2160" y="932">AES-128-GCM · 73 B encrypted</text><text x="2160" y="972">zero network calls</text>
+</g>
+<!-- dashed sub-label ticks -->
+<g stroke="#6b7280" stroke-width="4" stroke-dasharray="12 10" fill="none">
+ <path d="M 790 166 v 40 h -20"/><path d="M 790 206 v 40 h -20"/>
+ <path d="M 690 406 v 40 h -20"/><path d="M 690 446 v 40 h -20"/>
+ <path d="M 690 646 v 40 h -20"/><path d="M 690 686 v 40 h -20"/>
+ <path d="M 790 886 v 40 h -20"/><path d="M 790 926 v 40 h -20"/>
+ <path d="M 2130 166 v 40 h 20"/><path d="M 2130 206 v 40 h 20"/>
+ <path d="M 2230 406 v 40 h 20"/><path d="M 2230 446 v 40 h 20"/>
+ <path d="M 2230 646 v 40 h 20"/><path d="M 2230 686 v 40 h 20"/>
+ <path d="M 2130 886 v 40 h 20"/><path d="M 2130 926 v 40 h 20"/>
+</g>
+<!-- connectors to center -->
+<g stroke="#6b7280" stroke-width="5" stroke-dasharray="14 12" fill="none">
+ <path d="M 790 118 C 1000 118, 1050 400, 1240 400"/>
+ <path d="M 690 358 C 900 358, 1000 460, 1240 460"/>
+ <path d="M 690 598 C 900 598, 1000 540, 1240 540"/>
+ <path d="M 790 838 C 1000 838, 1050 600, 1240 600"/>
+ <path d="M 2130 118 C 1920 118, 1870 400, 1680 400"/>
+ <path d="M 2230 358 C 2020 358, 1920 460, 1680 460"/>
+ <path d="M 2230 598 C 2020 598, 1920 540, 1680 540"/>
+ <path d="M 2130 838 C 1920 838, 1870 600, 1680 600"/>
+</g>
+</svg>

@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2800" height="1000" viewBox="0 0 2800 1000" font-family="Arial, Helvetica, sans-serif">
+<rect width="2800" height="1000" fill="#fbfaf8"/>
+<text x="1400" y="120" font-size="72" font-weight="bold" fill="#1f2937" text-anchor="middle">Proposed Tech Stack</text>
+<g font-size="34" font-weight="bold" fill="#1f2937" letter-spacing="2">
+  <text x="470" y="230" text-anchor="middle">APP</text>
+  <text x="1400" y="230" text-anchor="middle">SPEECH AI</text>
+  <text x="2330" y="230" text-anchor="middle">LINK &amp; SECURITY</text>
+</g>
+<g stroke="#d6d3d1" stroke-width="3"><line x1="935" y1="200" x2="935" y2="900"/><line x1="1865" y1="200" x2="1865" y2="900"/></g>
+
+<!-- APP column: Kotlin, Oboe, Android fg service -->
+<g transform="translate(140,300)">
+  <path d="M 10 10 h 120 l -60 60 l 60 60 h -120 z" fill="#7F52FF"/><path d="M 10 10 l 120 0 l -120 120 z" fill="#E44857" opacity="0.9"/>
+  <text x="70" y="180" font-size="30" fill="#1f2937" text-anchor="middle">Kotlin</text>
+  <text x="70" y="216" font-size="24" fill="#6b7280" text-anchor="middle">native Android</text>
+</g>
+<g transform="translate(410,300)">
+  <rect x="44" y="6" width="52" height="84" rx="26" fill="none" stroke="#3ddc84" stroke-width="12"/>
+  <path d="M 24 60 a 46 46 0 0 0 92 0" fill="none" stroke="#3ddc84" stroke-width="12" stroke-linecap="round"/>
+  <line x1="70" y1="106" x2="70" y2="130" stroke="#3ddc84" stroke-width="12" stroke-linecap="round"/>
+  <text x="70" y="180" font-size="30" fill="#1f2937" text-anchor="middle">Oboe audio</text>
+  <text x="70" y="216" font-size="24" fill="#6b7280" text-anchor="middle">16 kHz capture</text>
+</g>
+<g transform="translate(680,300)">
+  <rect x="20" y="8" width="100" height="120" rx="14" fill="none" stroke="#1f2937" stroke-width="10"/>
+  <circle cx="70" cy="112" r="6" fill="#1f2937"/><rect x="42" y="30" width="56" height="50" rx="6" fill="#1976d2"/>
+  <text x="70" y="180" font-size="30" fill="#1f2937" text-anchor="middle">Foreground svc</text>
+  <text x="70" y="216" font-size="24" fill="#6b7280" text-anchor="middle">Android 14+</text>
+</g>
+<g transform="translate(300,600)">
+  <rect x="14" y="14" width="112" height="112" rx="18" fill="none" stroke="#1f2937" stroke-width="10"/>
+  <g stroke="#e65100" stroke-width="10" stroke-linecap="round"><line x1="40" y1="70" x2="100" y2="70"/><line x1="70" y1="40" x2="70" y2="100"/></g>
+  <text x="70" y="180" font-size="30" fill="#1f2937" text-anchor="middle">Evaluation Mode</text>
+  <text x="70" y="216" font-size="24" fill="#6b7280" text-anchor="middle">CER · RTF · latency live</text>
+</g>
+
+<!-- SPEECH AI column -->
+<g transform="translate(1000,300)">
+  <g fill="#ff6f00"><circle cx="70" cy="30" r="16"/><circle cx="30" cy="100" r="16"/><circle cx="110" cy="100" r="16"/></g>
+  <g stroke="#ff6f00" stroke-width="8" stroke-linecap="round"><line x1="70" y1="30" x2="30" y2="100"/><line x1="70" y1="30" x2="110" y2="100"/><line x1="30" y1="100" x2="110" y2="100"/></g>
+  <text x="70" y="180" font-size="30" fill="#1f2937" text-anchor="middle">sherpa-onnx</text>
+  <text x="70" y="216" font-size="24" fill="#6b7280" text-anchor="middle">ONNX Runtime</text>
+</g>
+<g transform="translate(1270,300)">
+  <rect x="26" y="26" width="88" height="88" rx="10" fill="none" stroke="#1f2937" stroke-width="10"/>
+  <g stroke="#1f2937" stroke-width="8" stroke-linecap="round">
+    <line x1="46" y1="8" x2="46" y2="26"/><line x1="70" y1="8" x2="70" y2="26"/><line x1="94" y1="8" x2="94" y2="26"/>
+    <line x1="46" y1="114" x2="46" y2="132"/><line x1="70" y1="114" x2="70" y2="132"/><line x1="94" y1="114" x2="94" y2="132"/>
+    <line x1="8" y1="46" x2="26" y2="46"/><line x1="8" y1="70" x2="26" y2="70"/><line x1="8" y1="94" x2="26" y2="94"/>
+    <line x1="114" y1="46" x2="132" y2="46"/><line x1="114" y1="70" x2="132" y2="70"/><line x1="114" y1="94" x2="132" y2="94"/>
+  </g>
+  <text x="70" y="82" font-size="30" font-weight="bold" fill="#1976d2" text-anchor="middle">अ</text>
+  <text x="70" y="180" font-size="30" fill="#1f2937" text-anchor="middle">IndicConformer</text>
+  <text x="70" y="216" font-size="24" fill="#6b7280" text-anchor="middle">int8 · MIT</text>
+</g>
+<g transform="translate(1540,300)">
+  <polyline points="10,70 40,70 76,36 76,104 40,70" fill="#e65100" stroke="#e65100" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M 94 52 a 26 26 0 0 1 0 36 M 114 34 a 52 52 0 0 1 0 72" fill="none" stroke="#e65100" stroke-width="10" stroke-linecap="round"/>
+  <text x="70" y="180" font-size="30" fill="#1f2937" text-anchor="middle">Piper / FastPitch</text>
+  <text x="70" y="216" font-size="24" fill="#6b7280" text-anchor="middle">Indic TTS · MIT</text>
+</g>
+<g transform="translate(1130,600)">
+  <polyline points="6,70 30,70 44,30 62,110 80,50 96,90 110,70 134,70" fill="none" stroke="#6a1b9a" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="70" y="180" font-size="30" fill="#1f2937" text-anchor="middle">Silero VAD</text>
+  <text x="70" y="216" font-size="24" fill="#6b7280" text-anchor="middle">sentence streaming</text>
+</g>
+<g transform="translate(1400,600)">
+  <g stroke="#1976d2" stroke-width="10" stroke-linecap="round" fill="none"><path d="M 40 20 l -26 50 l 26 50"/><path d="M 100 20 l 26 50 l -26 50"/></g>
+  <text x="70" y="82" font-size="34" font-weight="bold" fill="#1976d2" text-anchor="middle">क</text>
+  <text x="70" y="180" font-size="30" fill="#1f2937" text-anchor="middle">VarnaCode</text>
+  <text x="70" y="216" font-size="24" fill="#6b7280" text-anchor="middle">Indic entropy coder</text>
+</g>
+
+<!-- LINK & SECURITY column -->
+<g transform="translate(1930,300)">
+  <path d="M 10 58 a 66 66 0 0 1 120 0 M 34 82 a 34 34 0 0 1 72 0" fill="none" stroke="#1976d2" stroke-width="10" stroke-linecap="round"/><circle cx="70" cy="106" r="9" fill="#1976d2"/>
+  <text x="70" y="180" font-size="30" fill="#1f2937" text-anchor="middle">NSD + TCP</text>
+  <text x="70" y="216" font-size="24" fill="#6b7280" text-anchor="middle">hotspot, no internet</text>
+</g>
+<g transform="translate(2200,300)">
+  <path d="M 62 6 v 128 l 40 -32 l -80 -60 l 80 -60 l -40 -32" fill="none" stroke="#0a3d91" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="70" y="180" font-size="30" fill="#1f2937" text-anchor="middle">Bluetooth</text>
+  <text x="70" y="216" font-size="24" fill="#6b7280" text-anchor="middle">RFCOMM · zero infra</text>
+</g>
+<g transform="translate(2470,300)">
+  <g fill="none" stroke="#2e7d32" stroke-width="10" stroke-linecap="round"><line x1="70" y1="130" x2="70" y2="60"/><path d="M 40 130 l 30 -50 l 30 50"/><path d="M 38 44 a 46 46 0 0 1 64 0"/><path d="M 16 22 a 76 76 0 0 1 108 0"/></g>
+  <text x="70" y="180" font-size="30" fill="#1f2937" text-anchor="middle">ESP32 LoRa</text>
+  <text x="70" y="216" font-size="24" fill="#6b7280" text-anchor="middle">IN865 · RadioLib</text>
+</g>
+<g transform="translate(2060,600)">
+  <rect x="20" y="56" width="100" height="74" rx="10" fill="#1f2937"/><path d="M 40 56 v -20 a 30 30 0 0 1 60 0 v 20" fill="none" stroke="#1f2937" stroke-width="10"/><circle cx="70" cy="92" r="9" fill="#fbfaf8"/>
+  <text x="70" y="180" font-size="30" fill="#1f2937" text-anchor="middle">AES-128-GCM</text>
+  <text x="70" y="216" font-size="24" fill="#6b7280" text-anchor="middle">73-byte frames</text>
+</g>
+<g transform="translate(2330,600)">
+  <path d="M 8 70 q 16 -50 32 0 t 32 0 t 32 0 t 32 0" fill="none" stroke="#c62828" stroke-width="10" stroke-linecap="round"/>
+  <text x="70" y="180" font-size="30" fill="#1f2937" text-anchor="middle">AFSK modem</text>
+  <text x="70" y="216" font-size="24" fill="#6b7280" text-anchor="middle">any analog radio</text>
+</g>
+</svg>
