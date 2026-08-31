@@ -1,0 +1,15 @@
+### gsm:gsm
+--------- beginning of main
+08-31 09:39:30.768  6803  7011 I iTantraLink: tx seq=0 bytes=45 t=1788149370768
+08-31 09:39:30.864  6803  6882 I iTantraLink: ack seq=0 t=1788149370864
+08-31 09:39:37.020  6803  7039 I iTantraLink: tx seq=1 bytes=34 t=1788149377020
+08-31 09:39:37.042  6803  6881 I iTantraLink: ack seq=1 t=1788149377042
+08-31 09:39:43.578  6803  7085 I iTantraLink: tx seq=2 bytes=55 t=1788149383578
+08-31 09:39:43.630  6803  6881 I iTantraLink: ack seq=2 t=1788149383630
+--------- beginning of main
+08-31 09:39:30.873  7912  8001 I iTantraLink: rx seq=0 bytes=45 t=1788149370866
+08-31 09:39:30.874  7912  7990 I iTantraLink: rx seq=0 bytes=45 t=1788149370868
+08-31 09:39:37.025  7912  7990 I iTantraLink: rx seq=1 bytes=34 t=1788149377025
+08-31 09:39:37.028  7912  8001 I iTantraLink: rx seq=1 bytes=34 t=1788149377028
+08-31 09:39:43.590  7912  8001 I iTantraLink: rx seq=2 bytes=55 t=1788149383590
+08-31 09:39:43.591  7912  7990 I iTantraLink: rx seq=2 bytes=55 t=1788149383591
