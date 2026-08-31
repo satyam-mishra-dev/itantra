@@ -164,24 +164,28 @@ def chart(res, path='chart-linksim.png'):
                          'axes.titleweight': 'bold', 'figure.facecolor': 'white'})
     colors = {'VarnaCode': '#e65100', 'UTF-8': '#1565c0', 'Codec2-450': '#78909c', 'AMR-NB': '#b0bec5'}
     order = sorted(BEARERS, key=lambda b: b.bps)
-    names = [b.name.replace(' ', '\n', 1) for b in order]
+    short = {'LoRa SF12': 'LoRa\nSF12', 'LoRa SF9': 'LoRa\nSF9', 'LoRa SF7': 'LoRa\nSF7',
+             'LoRa SF7 no duty cap': 'LoRa SF7\nno duty cap', 'dying link 300 bps': 'dying link\n300 bps',
+             'AFSK 1200 baud': 'AFSK\n1200 bd', 'GSM CSD 9.6 kbps': 'GSM CSD\n9.6 kbps',
+             'Bluetooth SPP 100 kbps': 'Bluetooth\n100 kbps'}
+    names = [short.get(b.name, b.name) for b in order]
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(13, 5), dpi=200)
     x = range(len(order))
     for e, c in colors.items():
         a1.plot(list(x), [sum(res[(b.name, e)]['lat']) / len(res[(b.name, e)]['lat']) for b in order],
                 marker='o', lw=2.2, color=c, label=e)
         a2.bar([i + list(colors).index(e) * 0.2 - 0.3 for i in x],
-               [min(res[(b.name, e)]['end'] - CONV_SECONDS, 600) for b in order], width=0.2, color=c, label=e, zorder=3)
+               [min(max(res[(b.name, e)]['end'] - CONV_SECONDS, 0), 600) for b in order], width=0.2, color=c, label=e, zorder=3)
     a1.set_yscale('log'); a1.set_xticks(list(x)); a1.set_xticklabels(names, fontsize=9)
     a1.set_ylabel('mean sentence delivery latency (s, log)')
     a1.set_title('One 60-s conversation: latency per bearer')
     a1.grid(axis='y', color='#eceff1'); a1.legend(frameon=False)
-    a1.axhline(5, color='#2e7d32', ls='--', lw=1.5); a1.text(0.02, 5.4, 'walkie-talkie usable (< 5 s)', color='#2e7d32', fontsize=10)
+    a1.axhline(5, color='#2e7d32', ls='--', lw=1.5); a1.text(len(order) - 0.3, 5.6, 'usable (< 5 s)', color='#2e7d32', fontsize=10, ha='right')
     a2.axhline(5, color='#2e7d32', ls='--', lw=1.5)
     a2.set_xticks(list(x)); a2.set_xticklabels(names, fontsize=9)
     a2.set_ylabel('backlog after the conversation ends (s, capped at 600)')
     a2.set_title('Does the link keep up in real time?'); a2.grid(axis='y', color='#eceff1', zorder=0)
-    a2.set_yscale('symlog', linthresh=5)
+    a2.set_yscale('symlog', linthresh=5); a2.set_ylim(0, 700)
     for a in (a1, a2):
         for s in ['top', 'right']: a.spines[s].set_visible(False)
     plt.tight_layout(); plt.savefig(path); plt.close()
