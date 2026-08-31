@@ -103,14 +103,19 @@
             android:text="@string/eval_packs_title"
             android:textStyle="bold"
             android:textColor="@color/textPrimary" />
+        <LinearLayout
+            android:id="@+id/packRows"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp" />
         <TextView
             android:id="@+id/packStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:typeface="monospace"
-            android:textSize="12sp"
-            android:textColor="@color/textPrimary" />
+            android:layout_marginTop="10dp"
+            android:textSize="11sp"
+            android:textColor="@color/textSecondary" />
     </LinearLayout>
 
     <LinearLayout
@@ -118,20 +123,30 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="32dp"
         android:background="@drawable/card_bg"
         android:padding="14dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/eval_cpu_title"
+            android:textStyle="bold"
+            android:textColor="@color/textPrimary" />
         <Button
             android:id="@+id/cpuSample"
-            style="?android:attr/borderlessButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/pill_button"
+            android:stateListAnimator="@null"
             android:text="@string/eval_cpu_button"
-            android:textColor="@color/navy" />
+            android:textColor="#FFFFFF"
+            android:textStyle="bold" />
         <TextView
             android:id="@+id/cpuStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:textColor="@color/textPrimary" />
     </LinearLayout>
 </LinearLayout>

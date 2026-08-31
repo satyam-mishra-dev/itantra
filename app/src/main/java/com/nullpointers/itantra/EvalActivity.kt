@@ -5,9 +5,11 @@ import android.app.Activity
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.SystemClock
+import android.view.Gravity
 import android.view.MotionEvent
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
 import java.io.File
@@ -130,18 +132,37 @@ class EvalActivity : Activity() {
         }.start()
     }
 
+    /** One row per language: native-script name + STT/TTS status chips. */
     private fun renderPacks() {
-        val sb = StringBuilder()
+        val rows = findViewById<LinearLayout>(R.id.packRows)
+        rows.removeAllViews()
         val base = File(getExternalFilesDir(null), "models")
-        for ((i, l) in VarnaCode.LANGS.withIndex()) {
-            val stt = File(base, "$l/stt/model.onnx")
-            val tts = File(base, "$l/tts/model.onnx")
-            fun mb(f: File) = if (f.exists()) "✓ %.0fMB".format(f.length() / 1e6) else "✗"
-            // Indic glyph widths defeat monospace columns — keep the script name last.
-            sb.append("%-3s stt %-8s tts %-8s %s\n".format(l, mb(stt), mb(tts), langNames[i]))
+        val d = resources.displayMetrics.density
+        val wrap = LinearLayout.LayoutParams.WRAP_CONTENT
+        fun chip(kind: String, f: File) = TextView(this).apply {
+            val ok = f.exists()
+            text = if (ok) "$kind ✓ %.0f MB".format(f.length() / 1e6) else "$kind ✗"
+            textSize = 12f
+            setTextColor(getColor(if (ok) R.color.green else R.color.textSecondary))
+            setBackgroundResource(R.drawable.chip_bg)
+            setPadding((8 * d).toInt(), (3 * d).toInt(), (8 * d).toInt(), (3 * d).toInt())
+            layoutParams = LinearLayout.LayoutParams(wrap, wrap).apply { marginStart = (6 * d).toInt() }
         }
-        sb.append("\n").append(getString(R.string.sideload_hint))
-        packs.text = sb.toString()
+        for ((i, l) in VarnaCode.LANGS.withIndex()) {
+            rows.addView(LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                setPadding(0, (5 * d).toInt(), 0, (5 * d).toInt())
+                addView(TextView(context).apply {
+                    text = langNames[i]; textSize = 16f
+                    setTextColor(getColor(R.color.textPrimary))
+                    layoutParams = LinearLayout.LayoutParams(0, wrap, 1f)
+                })
+                addView(chip("STT", File(base, "$l/stt/model.onnx")))
+                addView(chip("TTS", File(base, "$l/tts/model.onnx")))
+            })
+        }
+        packs.text = getString(R.string.sideload_hint)
     }
 
     // ponytail: HZ=100 assumed (standard on Android kernels); calibrate if a device disagrees.
