@@ -7,7 +7,7 @@ package com.nullpointers.itantra
  * with no peer connected they wait (store-and-forward) and are flushed on reconnect.
  * Pure Kotlin: no Android imports, tested on the JVM with simulated loss.
  *
- * ponytail: single retransmit clock for all peers (first ACK wins); per-peer windows when a
+ * ponytail: first-ACK-wins across peers — a peer that was down when another peer ACKed never gets the frame; per-peer windows when a
  * real multi-peer mesh shows up.
  */
 class Arq(

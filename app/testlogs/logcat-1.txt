@@ -1,0 +1,15 @@
+### 1:1000
+--------- beginning of main
+08-31 09:41:02.131  7430  7643 I iTantraLink: tx seq=0 bytes=45 t=1788149462131
+08-31 09:41:02.179  7430  7519 I iTantraLink: ack seq=0 t=1788149462179
+08-31 09:41:07.271  7430  7671 I iTantraLink: tx seq=1 bytes=34 t=1788149467271
+08-31 09:41:07.281  7430  7506 I iTantraLink: ack seq=1 t=1788149467281
+08-31 09:41:12.940  7430  7705 I iTantraLink: tx seq=2 bytes=55 t=1788149472940
+08-31 09:41:12.947  7430  7508 I iTantraLink: ack seq=2 t=1788149472947
+--------- beginning of main
+08-31 09:41:02.152  8430  8509 I iTantraLink: rx seq=0 bytes=45 t=1788149462151
+08-31 09:41:02.154  8430  8517 I iTantraLink: rx seq=0 bytes=45 t=1788149462152
+08-31 09:41:07.281  8430  8509 I iTantraLink: rx seq=1 bytes=34 t=1788149467281
+08-31 09:41:07.281  8430  8517 I iTantraLink: rx seq=1 bytes=34 t=1788149467281
+08-31 09:41:12.946  8430  8509 I iTantraLink: rx seq=2 bytes=55 t=1788149472945
+08-31 09:41:12.946  8430  8517 I iTantraLink: rx seq=2 bytes=55 t=1788149472945
