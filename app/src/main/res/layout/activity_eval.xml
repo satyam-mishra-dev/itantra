@@ -1,72 +1,138 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/ground">
 <LinearLayout
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="12dp">
+    android:padding="16dp">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/eval_title"
-        android:textSize="18sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/packStatus"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:typeface="monospace"
-        android:textSize="12sp" />
-
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/navy" />
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/eval_read_this"
-        android:textStyle="bold" />
+        android:text="@string/eval_subtitle"
+        android:textSize="13sp"
+        android:textColor="@color/textSecondary" />
 
-    <Spinner
-        android:id="@+id/evalLang"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <TextView
-        android:id="@+id/refSentence"
+    <GridLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:padding="8dp" />
+        android:layout_marginTop="14dp"
+        android:columnCount="2"
+        android:useDefaultMargins="true">
+        <LinearLayout android:orientation="vertical" android:layout_columnWeight="1" android:layout_width="0dp" android:background="@drawable/card_bg" android:padding="14dp">
+            <TextView android:id="@+id/cerVal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textSize="30sp" android:textStyle="bold" android:textColor="@color/orange"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/stat_cer" android:textSize="12sp" android:textColor="@color/textSecondary"/>
+        </LinearLayout>
+        <LinearLayout android:orientation="vertical" android:layout_columnWeight="1" android:layout_width="0dp" android:background="@drawable/card_bg" android:padding="14dp">
+            <TextView android:id="@+id/werVal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textSize="30sp" android:textStyle="bold" android:textColor="@color/navy"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/stat_wer" android:textSize="12sp" android:textColor="@color/textSecondary"/>
+        </LinearLayout>
+        <LinearLayout android:orientation="vertical" android:layout_columnWeight="1" android:layout_width="0dp" android:background="@drawable/card_bg" android:padding="14dp">
+            <TextView android:id="@+id/rtfVal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textSize="30sp" android:textStyle="bold" android:textColor="@color/navy"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/stat_rtf" android:textSize="12sp" android:textColor="@color/textSecondary"/>
+        </LinearLayout>
+        <LinearLayout android:orientation="vertical" android:layout_columnWeight="1" android:layout_width="0dp" android:background="@drawable/card_bg" android:padding="14dp">
+            <TextView android:id="@+id/ttsVal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textSize="30sp" android:textStyle="bold" android:textColor="@color/navy"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/stat_tts" android:textSize="12sp" android:textColor="@color/textSecondary"/>
+        </LinearLayout>
+    </GridLayout>
 
-    <Button
-        android:id="@+id/readPtt"
-        android:layout_width="match_parent"
-        android:layout_height="72dp"
-        android:text="@string/eval_hold_to_read" />
-
-    <TextView
-        android:id="@+id/evalResult"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:typeface="monospace"
-        android:textSize="14sp" />
-
-    <Button
-        android:id="@+id/cpuSample"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/eval_cpu_button" />
-
-    <TextView
-        android:id="@+id/cpuStatus"
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:typeface="monospace" />
+        android:layout_marginTop="12dp"
+        android:background="@drawable/card_bg"
+        android:padding="14dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/eval_read_this"
+            android:textStyle="bold"
+            android:textColor="@color/textPrimary" />
+        <Spinner
+            android:id="@+id/evalLang"
+            android:layout_width="match_parent"
+            android:layout_height="44dp" />
+        <TextView
+            android:id="@+id/refSentence"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textColor="@color/textPrimary"
+            android:paddingTop="8dp"
+            android:paddingBottom="12dp" />
+        <Button
+            android:id="@+id/readPtt"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:background="@drawable/pill_button"
+            android:stateListAnimator="@null"
+            android:text="@string/eval_hold_to_read"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/evalResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textSize="14sp"
+            android:textColor="@color/textSecondary" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/card_bg"
+        android:padding="14dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/eval_packs_title"
+            android:textStyle="bold"
+            android:textColor="@color/textPrimary" />
+        <TextView
+            android:id="@+id/packStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:typeface="monospace"
+            android:textSize="12sp"
+            android:textColor="@color/textPrimary" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/card_bg"
+        android:padding="14dp">
+        <Button
+            android:id="@+id/cpuSample"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/eval_cpu_button"
+            android:textColor="@color/navy" />
+        <TextView
+            android:id="@+id/cpuStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textPrimary" />
+    </LinearLayout>
 </LinearLayout>
 </ScrollView>

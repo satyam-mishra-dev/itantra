@@ -4,6 +4,9 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Typeface
+import android.view.Gravity
+import android.view.View
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioFormat
@@ -42,7 +45,10 @@ class MainActivity : Activity() {
     private lateinit var vc: VarnaCode
     @Volatile private var speech: SpeechEngine? = null
     private lateinit var transports: List<Transport>
-    private lateinit var transcript: TextView
+    private lateinit var transcriptBox: LinearLayout
+    private lateinit var scroll: ScrollView
+    private lateinit var emptyHint: TextView
+    private lateinit var pttHint: TextView
     private lateinit var status: TextView
     private lateinit var langSpinner: Spinner
     private lateinit var input: EditText
@@ -63,7 +69,10 @@ class MainActivity : Activity() {
         setContentView(R.layout.activity_main)
 
         vc = VarnaCode(assets.open("codebooks.json").readBytes().decodeToString())
-        transcript = findViewById(R.id.transcript)
+        transcriptBox = findViewById(R.id.transcriptBox)
+        scroll = findViewById(R.id.scroll)
+        emptyHint = findViewById(R.id.emptyHint)
+        pttHint = findViewById(R.id.pttHint)
         status = findViewById(R.id.status)
         langSpinner = findViewById(R.id.lang)
         input = findViewById(R.id.input)
@@ -93,8 +102,8 @@ class MainActivity : Activity() {
         }.start()
 
         transports = listOf(
-            NsdTransport(this, ::onFrameBytes) { s -> runOnUiThread { status.text = s } },
-            BtTransport(this, ::onFrameBytes) { s -> runOnUiThread { status.text = s } },
+            NsdTransport(this, ::onFrameBytes) { s -> runOnUiThread { setStatus(s) } },
+            BtTransport(this, ::onFrameBytes) { s -> runOnUiThread { setStatus(s) } },
         )
         transports.forEach { it.start() }
 
@@ -133,9 +142,19 @@ class MainActivity : Activity() {
         val ptt = findViewById<Button>(R.id.ptt)
         ptt.setOnTouchListener { v, ev ->
             when (ev.action) {
-                MotionEvent.ACTION_DOWN -> { pttDown(); v.isPressed = true; true }
+                MotionEvent.ACTION_DOWN -> {
+                    pttDown(); v.isPressed = true
+                    v.animate().scaleX(1.08f).scaleY(1.08f).setDuration(120).start()
+                    pttHint.text = getString(R.string.ptt_listening)
+                    pttHint.setTextColor(getColor(R.color.orange))
+                    true
+                }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    v.isPressed = false; v.performClick(); pttUp(); true
+                    v.isPressed = false; v.performClick()
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(120).start()
+                    pttHint.text = getString(R.string.ptt_hint)
+                    pttHint.setTextColor(getColor(R.color.textSecondary))
+                    pttUp(); true
                 }
                 else -> false
             }
@@ -162,7 +181,7 @@ class MainActivity : Activity() {
         } else {
             pcm = PcmRecorder().also { it.start() }
         }
-        status.text = getString(R.string.recording)
+        setStatus(getString(R.string.recording))
     }
 
     /** Emit every completed speech segment: recognize + transmit while the button is still held. */
@@ -189,7 +208,7 @@ class MainActivity : Activity() {
         val v = vad
         if (vadActive && v != null) {
             synchronized(v) { v.flush(); drainVad(v, l) }
-            status.text = getString(R.string.sent_vad)
+            setStatus(getString(R.string.sent_vad))
             return
         }
         // fallback: whole-clip decode, or typed text when no model pack
@@ -209,7 +228,7 @@ class MainActivity : Activity() {
             }
             val prosody = if (samples.isNotEmpty()) Prosody.encode(samples) else null
             runOnUiThread {
-                if (text.isBlank()) { status.text = getString(R.string.nothing_to_send); return@runOnUiThread }
+                if (text.isBlank()) { setStatus(getString(R.string.nothing_to_send)); return@runOnUiThread }
                 input.setText("")
                 send(text, l, sttMs, samples.size / 16000.0, prosody)
             }
@@ -223,10 +242,11 @@ class MainActivity : Activity() {
             val n = transports.sumOf { it.send(frame) }
             runOnUiThread {
                 val stt = if (sttMs >= 0)
-                    ", stt ${sttMs}ms" + if (audioSec > 0.05) " (RTF %.2f)".format(sttMs / 1000.0 / audioSec) else ""
-                else ", typed"
-                append("→ [$n peer(s), ${frame.size} B$stt] $text")
-                if (n == 0) status.text = getString(R.string.no_peers)
+                    " · STT ${sttMs} ms" + if (audioSec > 0.05) " · RTF %.2f".format(sttMs / 1000.0 / audioSec) else ""
+                else " · typed"
+                bubble(text, "${frame.size} B" + (if (prio == Frame.ALERT) " · ALERT" else "") + stt +
+                    (if (n == 0) " · no peer" else ""), if (prio == Frame.ALERT) ALERTK else SENT)
+                setStatus(if (n == 0) getString(R.string.no_peers) else "connected")
             }
         }.start()
     }
@@ -240,7 +260,7 @@ class MainActivity : Activity() {
         }
         val tRecv = SystemClock.elapsedRealtime()
         val msg = try { Frame.unpack(vc, bytes) } catch (e: Exception) {
-            runOnUiThread { append("✗ bad frame: ${e.message}") }; return
+            runOnUiThread { bubble("corrupt frame dropped", "${bytes.size} B · CRC/decode failed", RECV) }; return
         }
         runOnUiThread { speak(msg, bytes.size, tRecv) }
     }
@@ -270,19 +290,22 @@ class MainActivity : Activity() {
                 val audio = engine.generate(msg.text, 0, pp?.speed ?: 1.0f)
                 val firstAudioMs = SystemClock.elapsedRealtime() - tRecv
                 LastStats.ttsFirstAudioMs = firstAudioMs
-                label = "tts-first-audio ${firstAudioMs}ms" + (pp?.let { ", ${it.urgency}" } ?: "")
+                label = "first audio ${firstAudioMs} ms" + (pp?.let { " · ${it.urgency}" } ?: "")
                 repeat(maxOf(if (alert) 2 else 1, pp?.repeats ?: 1)) {
                     playPcm(audio.samples, audio.sampleRate, alert, pp?.gain ?: 1.0f)
                 }
             } else {
-                label = "platform-tts"
+                label = "platform TTS"
                 val parts = (ttsLocales[msg.lang] ?: "en_IN").split('_')
                 runOnUiThread {
                     tts?.language = Locale(parts[0], parts[1])
                     repeat(if (alert) 2 else 1) { tts?.speak(msg.text, TextToSpeech.QUEUE_ADD, null, "m$seq-$it") }
                 }
             }
-            runOnUiThread { append("← [${if (alert) "ALERT/" else ""}${msg.lang}, $size B, $label] ${msg.text}") }
+            runOnUiThread {
+                bubble(msg.text, "$size B" + (if (alert) " · ALERT" else "") + " · ${msg.lang} · $label",
+                    if (alert) ALERTK else RECV)
+            }
         }.start()
     }
 
@@ -312,9 +335,57 @@ class MainActivity : Activity() {
         Thread.sleep((samples.size * 1000L / sampleRate) + 100)
     }
 
-    private fun append(line: String) {
-        transcript.append(line + "\n")
+    private fun setStatus(s: String) {
+        val connected = s.startsWith("connected")
+        status.text = when {
+            connected -> "● connected"
+            s.startsWith("advertising") -> getString(R.string.starting)
+            else -> s
+        }
+        status.setTextColor(getColor(if (connected) R.color.green else R.color.textSecondary))
     }
+
+    private fun dp(x: Int) = (x * resources.displayMetrics.density).toInt()
+
+    /** Chat bubble + muted byte chip — the chip is the on-stage wow moment (45 B per sentence). */
+    private fun bubble(text: String, meta: String, kind: Int) {
+        emptyHint.visibility = View.GONE
+        val side = if (kind == RECV) Gravity.START else Gravity.END
+        val col = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { gravity = side; topMargin = dp(8) }
+        }
+        col.addView(TextView(this).apply {
+            this.text = text
+            textSize = 18f
+            setTextColor(getColor(if (kind == ALERTK) R.color.red else R.color.textPrimary))
+            if (kind == ALERTK) setTypeface(null, Typeface.BOLD)
+            setBackgroundResource(when (kind) {
+                SENT -> R.drawable.bubble_sent; ALERTK -> R.drawable.bubble_alert; else -> R.drawable.bubble_recv
+            })
+            setPadding(dp(14), dp(10), dp(14), dp(10))
+            maxWidth = (resources.displayMetrics.widthPixels * 0.8).toInt()
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { gravity = side }
+        })
+        col.addView(TextView(this).apply {
+            this.text = meta
+            textSize = 12f
+            setTextColor(getColor(if (kind == ALERTK) R.color.red else R.color.textSecondary))
+            setBackgroundResource(R.drawable.chip_bg)
+            setPadding(dp(8), dp(3), dp(8), dp(3))
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { gravity = side; topMargin = dp(3) }
+        })
+        transcriptBox.addView(col)
+        scroll.post { scroll.fullScroll(View.FOCUS_DOWN) }
+    }
+
+    private companion object { const val SENT = 0; const val RECV = 1; const val ALERTK = 2 }
 
     override fun onDestroy() {
         transports.forEach { it.stop() }

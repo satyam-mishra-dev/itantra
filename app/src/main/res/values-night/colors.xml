@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="navy">#3E6B96</color>
+    <color name="redTint">#3A2020</color>
+    <color name="ground">#0F1720</color>
+    <color name="card">#1B2836</color>
+    <color name="sentTint">#22344A</color>
+    <color name="stroke">#2C3E52</color>
+    <color name="textPrimary">#ECEFF4</color>
+    <color name="textSecondary">#9CA3AF</color>
+</resources>

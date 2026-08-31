@@ -47,6 +47,10 @@ class EvalActivity : Activity() {
     private lateinit var packs: TextView
     private lateinit var cpu: TextView
     private lateinit var spinner: Spinner
+    private lateinit var cerVal: TextView
+    private lateinit var werVal: TextView
+    private lateinit var rtfVal: TextView
+    private lateinit var ttsVal: TextView
     private var pcm: PcmRecorder? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,6 +62,11 @@ class EvalActivity : Activity() {
         packs = findViewById(R.id.packStatus)
         cpu = findViewById(R.id.cpuStatus)
         spinner = findViewById(R.id.evalLang)
+        cerVal = findViewById(R.id.cerVal)
+        werVal = findViewById(R.id.werVal)
+        rtfVal = findViewById(R.id.rtfVal)
+        ttsVal = findViewById(R.id.ttsVal)
+        if (LastStats.ttsFirstAudioMs >= 0) ttsVal.text = "${LastStats.ttsFirstAudioMs} ms"
 
         spinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, langNames)
         spinner.setSelection(1)
@@ -106,13 +115,11 @@ class EvalActivity : Activity() {
                 val ms = SystemClock.elapsedRealtime() - t0
                 val audioSec = samples.size / 16000.0
                 runOnUiThread {
-                    result.text = buildString {
-                        append("hyp: $out\n")
-                        append("CER %.1f%%  ·  WER %.1f%%\n".format(Cer.cer(ref, out) * 100, Cer.wer(ref, out) * 100))
-                        append("stt ${ms}ms · audio %.1fs · RTF %.2f\n".format(audioSec, ms / 1000.0 / audioSec))
-                        if (LastStats.ttsFirstAudioMs >= 0)
-                            append("last receive→first-audio: ${LastStats.ttsFirstAudioMs}ms")
-                    }
+                    cerVal.text = "%.1f%%".format(Cer.cer(ref, out) * 100)
+                    werVal.text = "%.1f%%".format(Cer.wer(ref, out) * 100)
+                    rtfVal.text = "%.2f".format(ms / 1000.0 / audioSec)
+                    if (LastStats.ttsFirstAudioMs >= 0) ttsVal.text = "${LastStats.ttsFirstAudioMs} ms"
+                    result.text = "heard: $out\nSTT ${ms} ms for %.1f s of audio".format(audioSec)
                 }
                 out
             } else {
@@ -130,7 +137,8 @@ class EvalActivity : Activity() {
             val stt = File(base, "$l/stt/model.onnx")
             val tts = File(base, "$l/tts/model.onnx")
             fun mb(f: File) = if (f.exists()) "✓ %.0fMB".format(f.length() / 1e6) else "✗"
-            sb.append("%-3s %-9s stt %-8s tts %s\n".format(l, langNames[i], mb(stt), mb(tts)))
+            // Indic glyph widths defeat monospace columns — keep the script name last.
+            sb.append("%-3s stt %-8s tts %-8s %s\n".format(l, mb(stt), mb(tts), langNames[i]))
         }
         sb.append("\n").append(getString(R.string.sideload_hint))
         packs.text = sb.toString()
