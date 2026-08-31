@@ -107,7 +107,7 @@ para(tf, [('iTantra:', True, ORANGE),
 
 pic(s2, 'pipeline-mini.png', 0.45, 1.84, 12.40)          # 8.5:1 → 1.46in tall
 _, tf = tbox(s2, 0.45, 3.38, 12.40, 0.34)
-para(tf, [('The app grades itself on stage — live CER · RTF · latency. Measured Hindi round-trip CER: 1.6%.', True, ORANGE)],
+para(tf, [('The app grades itself on stage — live CER · RTF · latency. Measured on real human speech: Hindi CER 2.9%.', True, ORANGE)],
      size=12.5, first=True, align=PP_ALIGN.CENTER)
 
 _, tf = tbox(s2, 0.30, 3.80, 8.15, 1.40)
@@ -124,18 +124,20 @@ usp = box(s2, 8.60, 3.80, 4.30, 1.42, fill=RGBColor(0xFD, 0xF3, 0xEC), border=OR
 tf = usp.text_frame
 para(tf, [('USP', True, ORANGE)], size=13, first=True, space_after=4, align=PP_ALIGN.CENTER)
 para(tf, [('1. ', True, INK), ('Text is the codec — 169× less than cellular voice', True, INK)], size=11, space_after=5, line=1.05)
-para(tf, [('2. ', True, INK), ('VarnaCode — Indic compression at the entropy floor', True, INK)], size=11, space_after=0, line=1.05)
+para(tf, [('2. ', True, INK), ('Voice through any radio — 0.3 s of sound per sentence (AFSK)', True, INK)], size=11, space_after=0, line=1.05)
 
-_, tf = tbox(s2, 0.30, 5.28, 12.60, 1.62)
-para(tf, [('How iTantra Solves It', True, NAVY)], size=13, first=True, space_after=3)
+_, tf = tbox(s2, 0.30, 5.18, 12.60, 1.72)
+para(tf, [('How iTantra Solves It', True, NAVY)], size=13, first=True, space_after=2)
 for i, (b, rest) in enumerate([
-    ('On-device STT with pause-aware sentences: ', 'IndicConformer int8 (MIT) ×9 + Whisper English; Silero VAD streams sentences mid-hold — fully offline.'),
-    ('VarnaCode over any bearer: ', 'measured 4.45–5.36 bits/char (all 10 languages) — a sentence in ~45 B via Wi-Fi (NSD+TCP) · Bluetooth RFCOMM · ₹1,650 LoRa (km-range, IN865).'),
+    ('On-device STT, pause-aware: ', 'IndicConformer int8 (MIT) ×9 + Whisper English; Silero VAD streams sentences mid-hold — fully offline.'),
+    ('VarnaCode over any bearer: ', '4.45–5.41 bits/char measured, beats Unishox2/SCSU — ~45 B/sentence via Wi-Fi · Bluetooth · ₹1,650 LoRa (IN865).'),
     ('Natural voice out: ', 'AI4Bharat FastPitch + Piper TTS (MIT), sentence-streamed; eSpeak-NG fallback — never silent.'),
-    ('Alert mode: ', 'priority frames auto-play at max volume, non-interruptible, with a place-name pronunciation lexicon.'),
-    ('Walkie-talkie loop: ', 'two phones, push-to-talk: STT mode ↔ TTS mode; app off = normal phone (the PS verification loop).'),
+    ('Alert mode + walkie-talkie loop: ', 'priority frames at max volume, non-interruptible; push-to-talk STT ↔ TTS; app off = normal phone.'),
+    ('AES-GCM encrypted: ', 'an encrypted sentence is 73 B — still 100× under cellular voice; header tampering fails authentication.'),
+    ('Prosody survives the bottleneck: ', 'a 1-byte urgency code — panic is spoken fast, loud, twice at the far end (STCTS spends 312–592 bps; we spend 8 bits).'),
+    ('Works through ANY radio: ', 'AFSK software modem turns a frame into 0.3 s of audio — hold the phone to a ₹500 analog walkie-talkie or ham set; survives 6 dB SNR.'),
 ], 1):
-    para(tf, [(f'{i}. ', True, INK), (b, True, INK), (rest, False, INK)], size=10.5, space_after=2, line=1.0)
+    para(tf, [(f'{i}. ', True, INK), (b, True, INK), (rest, False, INK)], size=10.5, space_after=1.5, line=1.0)
 
 # ---------- SLIDE 3: TECHNICAL APPROACH ----------
 s3 = S[2]; kill_placeholder(s3)
@@ -154,17 +156,17 @@ for b, rest in [
     para(tf, [('• ', False, INK), (b, True, INK), (rest, False, INK)], size=11, space_after=3.5, line=1.02)
 para(tf, [('Methodology', True, NAVY)], size=12.5, space_after=3, space_before=5)
 for b, rest in [
-    ('P0 desktop twin measured first ', '(CER · RTF · compression) → '),
-    ('P1–P5: ', 'Android spine + Hindi loop → 10 languages + alerts → Evaluation Mode → LoRa bridge + AES-GCM.')]:
+    ('P0 desktop twin measured first ', '(CER · RTF · compression) → P1–P5: Android spine → 10 languages + alerts → Evaluation Mode → LoRa bridge + AES-GCM.'),
+    ('Wave-2 features (built, tested): ', '1-byte prosody code · AFSK any-radio modem · offline digital roll-call · CAP/SACHET last-mile bridge.')]:
     para(tf, [('• ', False, INK), (b, True, INK), (rest, False, INK)], size=11, space_after=3.5, line=1.02)
 
 pic(s3, 'architecture.png', 6.20, 1.30, 6.55)             # 1.94:1 → 3.37in tall, clears logo (starts y1.30)
 mb = box(s3, 6.20, 4.90, 6.55, 1.55, fill=RGBColor(0xF5, 0xF8, 0xFC), border=NAVY, bw=1.5)
 tf = mb.text_frame
 para(tf, [('Measured, not estimated — desktop CPU, real models', True, NAVY)], size=12.5, first=True, space_after=4, align=PP_ALIGN.CENTER)
-para(tf, [('STT RTF 0.055–0.119 · TTS RTF 0.049 · Hindi round-trip CER 1.6% / WER 7.1%', True, INK)], size=11, space_after=3, align=PP_ALIGN.CENTER)
-para(tf, [('VarnaCode v1: 4.45–5.36 bits/char across all 10 languages · 154 protocol assertions green', False, INK)], size=10.5, space_after=3, align=PP_ALIGN.CENTER)
-para(tf, [('Kotlin ↔ Python wire-compatible · Android APK builds & tests green', False, INK)], size=10.5, space_after=0, align=PP_ALIGN.CENTER)
+para(tf, [('Real human speech (FLEURS, int8 140 MB packs): CER hi 2.9% · bn 4.0% · te 7.8% · ml 9.2% · ta 13.9% · RTF 0.06 · TTS RTF 0.049', True, INK)], size=11, space_after=3, align=PP_ALIGN.CENTER)
+para(tf, [('VarnaCode 4.45–5.41 bits/char beats Unishox2/SCSU on all 10 languages (measured head-to-head) · 222 assertions', False, INK)], size=10.5, space_after=3, align=PP_ALIGN.CENTER)
+para(tf, [('AES-GCM encrypted sentence 73 B · Kotlin ↔ Python wire-compatible · APK loop proven on emulators incl. ALERT', False, INK)], size=10.5, space_after=0, align=PP_ALIGN.CENTER)
 
 # ---------- SLIDE 4: FEASIBILITY ----------
 s4 = S[3]; kill_placeholder(s4)
@@ -174,7 +176,7 @@ risks = [
     ('Community ONNX conversions', 'sherpa-onnx IndicConformer wrappers are community-made, not official k2-fsa artifacts.',
      'Per-language QA budgeted; hard fallback = direct ONNX Runtime Mobile on AI4Bharat’s official int8 export — more glue, zero conversion risk.'),
     ('STT errors become spoken misinformation', 'a mis-recognition would be confidently re-spoken at the far end.',
-     'Confidence gate (“repeat that?”), transcript shown on both screens, and a pronunciation lexicon for the highest-stakes alert content.'),
+     'Confidence gate (“repeat that?”), transcript shown on both screens, and a pronunciation lexicon for the highest-stakes alert content; 5-language real-speech CER 2.9–13.9% measured.'),
 ]
 for i, (h, pr_, ap) in enumerate(risks):
     _, tf = tbox(s4, 0.35, 1.25 + i * 1.62, 8.25, 1.55)
@@ -183,7 +185,7 @@ for i, (h, pr_, ap) in enumerate(risks):
     para(tf, [('Approach: ', True, NAVY), (ap, False, INK)], size=12, space_after=0, line=1.05)
 _, tf = tbox(s4, 0.35, 6.15, 8.25, 0.70)
 para(tf, [('Also handled: ', True, NAVY),
-          ('Wi-Fi Direct flakiness (hotspot+NSD default, BT RFCOMM backup) · Android bg-audio policy (fg-service built first, compiling) · TTS export scope (4 languages, NVIDIA-Riva recipe, eSpeak-NG meanwhile).', False, INK)],
+          ('Wi-Fi Direct flakiness (hotspot+NSD default, BT RFCOMM backup) · Android bg-audio policy (fg-service built first, compiling) · TTS export scope (4 languages, NVIDIA-Riva recipe, eSpeak-NG meanwhile) · noise: denoiser measured and rejected (hurts Conformer CER) — evidence-driven.', False, INK)],
      size=10.5, first=True, line=1.05)
 pic(s4, 'feasibility-card.png', 8.85, 1.05, 4.05)          # 0.698 → 5.81in tall
 
@@ -196,7 +198,7 @@ for b, rest in [
     ('Last-mile inclusion: ', 'voice-native comms for the ~50% of rural women and 1-in-3 rural Indians whom text alerts miss — in their own language.'),
     ('Completes ISRO’s disaster stack: ', 'the multilingual voice layer for GSAT mobile-radio / VSAT–SDMA low-bitrate links.'),
     ('Resilience economics: ', 'phones + ₹1,650 LoRa node vs ₹8,000–25,000 hardware walkie-talkie pairs.'),
-    ('Research → reality: ', 'a deployable Indian instance of 6G semantic communication.')]:
+    ('Two-way beats broadcast: ', 'Kerala 2018 — 40+ ham operators aided 2,000+ people when towers died; iTantra puts that capability on every phone.')]:
     para(tf, [('• ', False, INK), (b, True, INK), (rest, False, INK)], size=10.5, space_after=4, line=1.03)
 
 # hero number (per critique: the number is the hero, not the chart)
@@ -211,9 +213,10 @@ tf = ben.text_frame
 para(tf, [('Benefits', True, NAVY)], size=12.5, first=True, space_after=3)
 for b, rest in [
     ('Social: ', 'literacy-independent · 10 languages ≈ 85%+ of India · voice + transcript serve both impairments.'),
-    ('Economic & strategic: ', 'zero recurring cost (no SIM/server) · sovereign stack: Indian models, IN865 band, no foreign cloud.'),
-    ('Operational: ', 'int8-efficient; LoRa nodes run days on a power bank — solar-deployable in a blackout.')]:
-    para(tf, [('• ', False, INK), (b, True, INK), (rest, False, INK)], size=10, space_after=2.5, line=1.0)
+    ('Economic & strategic: ', 'zero recurring cost (no SIM/server) · sovereign: Indian models, IN865, no foreign cloud.'),
+    ('Offline roll-call: ', 'a 9-byte ACK per family = evacuation headcount with no internet.'),
+    ('Operational: ', 'int8-efficient; LoRa nodes run days on a power bank — solar-deployable.')]:
+    para(tf, [('• ', False, INK), (b, True, INK), (rest, False, INK)], size=10, space_after=2, line=1.0)
 
 pic(s5, 'chart-bitschar.png', 0.55, 3.92, 5.55)            # 1.833 → 3.03in tall, ends 6.95 edge-safe at 6.95? -> y ends 6.95; footer at 6.95
 # nudge: chart placed at 3.92 with 3.03h ends 6.95 exactly — acceptable flush with footer top.
@@ -224,7 +227,6 @@ _, tf = tbox(s6, 0.40, 1.10, 12.55, 4.90)
 refs = [
     ('Project repository: ', 'Kotlin app + evaluation harness + firmware — private; jury access on submission. ',
      'github.com/satyam-mishra-dev/itantra', 'https://github.com/satyam-mishra-dev/itantra'),
-    ('Working demo: ', 'compiling APK + measured benchmark CSVs live in the repo; demo video added on submission. ', '', ''),
     ('Cyclone Amphan outage: ', '~7,000 of 14,167 WB towers down; networks at 65–70% capacity for days (COAI). ',
      'deccanherald.com', 'https://www.deccanherald.com/india/cyclone-amphan-telecom-networks-operating-at-65-70-capacity-in-affected-districts-says-coai-840844.html'),
     ('The bitrate math: ', 'MELPe 600 bps (NATO STANAG 4591) and Codec2 450 bps vs speech-as-text ≈ 107 bps. ',
@@ -241,14 +243,16 @@ refs = [
      'arxiv.org/abs/2211.09536', 'https://arxiv.org/abs/2211.09536'),
     ('CER, not WER, for Indic ASR: ', 'WER disproportionately punishes agglutinative languages. ',
      'arxiv.org/abs/2203.16601', 'https://arxiv.org/abs/2203.16601'),
-    ('J-Alert (Japan): ', 'national disaster alerts spoken by TTS in 5 languages, validated at national scale. ',
-     'wikipedia.org/wiki/J-Alert', 'https://en.wikipedia.org/wiki/J-Alert'),
+    ('WEA message-length study (2024): ', '360-char alerts no better than 90-char (N=481) — validates the 45-byte design. ',
+     'pmc.ncbi.nlm.nih.gov/PMC11424238', 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11424238/'),
+    ('LSSC-ST semantic speech transmission (2025): ', 'needs an edge server; iTantra is fully offline. ',
+     'arxiv.org/abs/2501.05859', 'https://arxiv.org/abs/2501.05859'),
     ('IN865 LoRa legality: ', '865–867 MHz license-free, 1% duty, 30 dBm — km-range at ₹1,650/node. ',
      'ensembletech.in', 'https://www.ensembletech.in/lora-frequency-bands-india/'),
 ]
 first = True
 for i, (b, rest, ltxt, url) in enumerate(refs, 1):
-    runs = [(f'{i}. ', True, INK), (b, True, NAVY if i > 2 else ORANGE), (rest, False, INK)]
+    runs = [(f'{i}. ', True, INK), (b, True, NAVY if i > 1 else ORANGE), (rest, False, INK)]
     if ltxt: runs.append((ltxt, False, LINKBLUE, url))
     para(tf, runs, size=11.5, space_after=11, first=first, line=1.05)
     first = False
@@ -256,7 +260,7 @@ for i, (b, rest, ltxt, url) in enumerate(refs, 1):
 ab = box(s6, 0.40, 6.06, 12.55, 0.72, fill=RGBColor(0xF5, 0xF8, 0xFC), border=NAVY, bw=1.5)
 tf = ab.text_frame; tf.vertical_anchor = MSO_ANCHOR.MIDDLE
 para(tf, [('Already built: ', True, ORANGE),
-          ('154 protocol assertions green · measured Hindi loop CER 1.6% · Android APK builds (54 MB incl. speech runtime) · Kotlin ↔ Python wire-compatibility proven on 30 test vectors.', True, INK)],
+          ('222 protocol assertions · real-speech CER 2.9% Hindi · 5 language packs converted · Android APK loop proven on emulators incl. ALERT · AES-GCM + prosody byte on the wire · LoRa firmware compiles · AFSK modem, roll-call, CAP bridge tested.', True, INK)],
      size=11.5, first=True, align=PP_ALIGN.CENTER, line=1.05)
 
 # ---------- delete slide 7 ----------
