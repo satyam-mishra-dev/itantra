@@ -153,6 +153,12 @@ class EvalActivity : Activity() {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_VERTICAL
                 setPadding(0, (5 * d).toInt(), 0, (5 * d).toInt())
+                addView(android.widget.ImageView(context).apply {
+                    setImageResource(R.drawable.ic_pack)
+                    setBackgroundResource(R.drawable.tile_bg)
+                    setPadding((8 * d).toInt(), (8 * d).toInt(), (8 * d).toInt(), (8 * d).toInt())
+                    layoutParams = LinearLayout.LayoutParams((36 * d).toInt(), (36 * d).toInt()).apply { marginEnd = (12 * d).toInt() }
+                })
                 addView(TextView(context).apply {
                     text = langNames[i]; textSize = 16f
                     setTextColor(getColor(R.color.textPrimary))

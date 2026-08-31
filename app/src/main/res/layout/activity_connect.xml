@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_hero">
+
+    <View
+        android:layout_width="280dp"
+        android:layout_height="280dp"
+        android:layout_gravity="top|start"
+        android:translationX="-110dp"
+        android:translationY="-40dp"
+        android:background="@drawable/circle_translucent" />
+    <View
+        android:layout_width="380dp"
+        android:layout_height="380dp"
+        android:layout_gravity="bottom|end"
+        android:translationX="150dp"
+        android:translationY="120dp"
+        android:background="@drawable/circle_translucent" />
+    <View
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:layout_gravity="top|end"
+        android:translationX="40dp"
+        android:translationY="220dp"
+        android:background="@drawable/circle_translucent" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingStart="28dp"
+        android:paddingEnd="28dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="28dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:textColor="@color/onHero"
+            android:textSize="22sp"
+            android:fontFamily="@font/outfit_bold" />
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:src="@drawable/illustration_hero"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/entry_headline"
+            android:textColor="@color/onHero"
+            android:textSize="36sp"
+            android:lineSpacingMultiplier="0.98"
+            android:fontFamily="@font/outfit_bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/entry_sub"
+            android:textColor="@color/onHeroMuted"
+            android:textSize="16sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:text="@string/entry_speak_in"
+            android:textAllCaps="true"
+            android:letterSpacing="0.14"
+            android:textColor="@color/onHeroMuted"
+            android:textSize="11sp"
+            android:fontFamily="@font/outfit_semibold" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:scrollbars="none"
+            android:clipToPadding="false">
+            <LinearLayout
+                android:id="@+id/langRow"
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </HorizontalScrollView>
+
+        <Button
+            android:id="@+id/findPeers"
+            android:layout_width="match_parent"
+            android:layout_height="58dp"
+            android:layout_marginTop="22dp"
+            android:background="@drawable/pill_white"
+            android:stateListAnimator="@null"
+            android:text="@string/find_peers"
+            android:textColor="@color/navy"
+            android:textSize="17sp"
+            android:fontFamily="@font/outfit_semibold"
+            android:drawableStart="@drawable/ic_wifi"
+            android:drawableTint="#16324A"
+            android:drawablePadding="-24dp"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp" />
+
+        <TextView
+            android:id="@+id/connectIpLink"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="6dp"
+            android:gravity="center"
+            android:text="@string/connect_ip_link"
+            android:textColor="@color/onHero"
+            android:textSize="15sp"
+            android:fontFamily="@font/outfit_semibold"
+            android:background="?android:attr/selectableItemBackgroundBorderless" />
+    </LinearLayout>
+</FrameLayout>

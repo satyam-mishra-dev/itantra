@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="navy">#3E6B96</color>
+    <color name="navy">#1B3B5C</color>
+    <color name="navy2">#0F2740</color>
+    <color name="orangeSoft">#3D2A1F</color>
     <color name="redTint">#3A2020</color>
+    <color name="greenTint">#1E3A26</color>
     <color name="ground">#0F1720</color>
+    <color name="surfaceTop">#0F1720</color>
+    <color name="surfaceMid">#111B27</color>
+    <color name="surfaceBot">#0F1720</color>
     <color name="card">#1B2836</color>
+    <color name="tile">#24354A</color>
     <color name="sentTint">#22344A</color>
     <color name="stroke">#2C3E52</color>
     <color name="textPrimary">#ECEFF4</color>
     <color name="textSecondary">#9CA3AF</color>
+    <color name="label">#8A94A6</color>
+    <color name="iconTint">#B9C9DC</color>
 </resources>

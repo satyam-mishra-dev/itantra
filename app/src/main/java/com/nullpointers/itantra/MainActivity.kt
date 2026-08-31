@@ -34,10 +34,7 @@ import java.util.Locale
 class MainActivity : Activity() {
 
     private val langCodes = VarnaCode.LANGS
-    private val langNames = listOf(
-        "English", "हिन्दी", "বাংলা", "தமிழ்", "తెలుగు",
-        "ગુજરાતી", "मराठी", "ಕನ್ನಡ", "മലയാളം", "ଓଡ଼ିଆ"
-    )
+    private val langNames = LANG_NAMES
     private val ttsLocales = mapOf(
         "en" to "en_IN", "hi" to "hi_IN", "bn" to "bn_IN", "ta" to "ta_IN", "te" to "te_IN",
         "gu" to "gu_IN", "mr" to "mr_IN", "kn" to "kn_IN", "ml" to "ml_IN", "or" to "or_IN"
@@ -48,12 +45,14 @@ class MainActivity : Activity() {
     private lateinit var transports: List<Transport>
     private lateinit var transcriptBox: LinearLayout
     private lateinit var scroll: ScrollView
-    private lateinit var emptyHint: TextView
+    private lateinit var emptyHint: View
     private lateinit var pttHint: TextView
     private lateinit var status: TextView
     private lateinit var langSpinner: Spinner
     private lateinit var input: EditText
-    private lateinit var alertBox: CheckBox
+    private lateinit var alertPill: TextView
+    private lateinit var pttRing: View
+    private var pulse: android.animation.ValueAnimator? = null
     private var tts: TextToSpeech? = null
     private var track: AudioTrack? = null
     private var pcm: PcmRecorder? = null
@@ -80,16 +79,25 @@ class MainActivity : Activity() {
         status = findViewById(R.id.status)
         langSpinner = findViewById(R.id.lang)
         input = findViewById(R.id.input)
-        alertBox = findViewById(R.id.alert)
+        alertPill = findViewById(R.id.alert)
+        pttRing = findViewById(R.id.pttRing)
+        alertPill.setOnClickListener { setAlert(!alertPill.isSelected) }
 
-        langSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, langNames)
-        langSpinner.setSelection(1) // Hindi default
+        langSpinner.adapter = ArrayAdapter(this, R.layout.spinner_pill_item, langNames).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+        langSpinner.setSelection(intent.getIntExtra("lang", 1))
+        langSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p: AdapterView<*>?, v: View?, pos: Int, id: Long) = refreshInput()
+            override fun onNothingSelected(p: AdapterView<*>?) {}
+        }
 
         tts = TextToSpeech(this) { }
         // Heavy natives (sherpa-onnx JNI + VAD model) load off the main thread —
         // blocking here starved PttService.startForeground() past its ANR deadline.
         Thread {
             speech = SpeechEngine(this)
+            refreshInput()
             vad = try {
                 Vad(
                     assetManager = assets,
@@ -119,6 +127,9 @@ class MainActivity : Activity() {
             runOnUiThread { metaOf[s]?.let { if (!it.text.endsWith("✓")) it.append(" ✓") } }
         }
         Thread { while (true) { Thread.sleep(500); arq.tick() } }.apply { isDaemon = true }.start()
+        intent.getStringExtra("ip")?.let { ip ->
+            status.postDelayed({ (transports.first() as NsdTransport).manualConnect(ip) }, 600)
+        }
 
         val wanted = mutableListOf<String>()
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED)
@@ -134,10 +145,10 @@ class MainActivity : Activity() {
         val svc = Intent(this, PttService::class.java)
         if (Build.VERSION.SDK_INT >= 26) startForegroundService(svc) else startService(svc)
 
-        findViewById<Button>(R.id.eval).setOnClickListener {
+        findViewById<View>(R.id.eval).setOnClickListener {
             startActivity(Intent(this, EvalActivity::class.java))
         }
-        findViewById<Button>(R.id.connectIp).setOnClickListener {
+        findViewById<View>(R.id.connectIp).setOnClickListener {
             val box = EditText(this).apply {
                 hint = getString(R.string.connect_hint)
                 setText("192.168.43.1:${NsdTransport.FIXED_PORT}")
@@ -157,7 +168,8 @@ class MainActivity : Activity() {
             when (ev.action) {
                 MotionEvent.ACTION_DOWN -> {
                     pttDown(); v.isPressed = true
-                    v.animate().scaleX(1.08f).scaleY(1.08f).setDuration(120).start()
+                    v.animate().scaleX(1.06f).scaleY(1.06f).setDuration(120).start()
+                    startPulse()
                     pttHint.text = getString(R.string.ptt_listening)
                     pttHint.setTextColor(getColor(R.color.orange))
                     true
@@ -165,6 +177,7 @@ class MainActivity : Activity() {
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     v.isPressed = false; v.performClick()
                     v.animate().scaleX(1f).scaleY(1f).setDuration(120).start()
+                    stopPulse()
                     pttHint.text = getString(R.string.ptt_hint)
                     pttHint.setTextColor(getColor(R.color.textSecondary))
                     pttUp(); true
@@ -175,6 +188,40 @@ class MainActivity : Activity() {
     }
 
     private fun lang(): String = langCodes[langSpinner.selectedItemPosition]
+
+    /** Typed fallback only shows when the selected language has no STT pack (checked off-thread: sttFor loads lazily). */
+    private fun refreshInput() {
+        val l = lang()
+        Thread {
+            val has = try { speech?.sttFor(l) != null } catch (t: Throwable) { false }
+            runOnUiThread { input.visibility = if (has) View.GONE else View.VISIBLE }
+        }.start()
+    }
+
+    private fun setAlert(on: Boolean) {
+        alertPill.isSelected = on
+        alertPill.text = getString(if (on) R.string.alert_pill_on else R.string.alert_pill)
+        alertPill.setTextColor(if (on) 0xFFFFFFFF.toInt() else getColor(R.color.red))
+    }
+
+    /** Expanding orange ring while the button is held — the "I'm live" affordance. */
+    private fun startPulse() {
+        pulse?.cancel()
+        pulse = android.animation.ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = 1100; repeatCount = android.animation.ValueAnimator.INFINITE
+            addUpdateListener {
+                val f = it.animatedValue as Float
+                pttRing.scaleX = 0.88f + 0.3f * f; pttRing.scaleY = pttRing.scaleX
+                pttRing.alpha = 1f - f
+            }
+            start()
+        }
+    }
+
+    private fun stopPulse() {
+        pulse?.cancel(); pulse = null
+        pttRing.animate().alpha(0f).setDuration(150).start()
+    }
 
     private fun pttDown() {
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) return
@@ -249,8 +296,8 @@ class MainActivity : Activity() {
     }
 
     private fun send(text: String, l: String, sttMs: Long, audioSec: Double, prosody: Int? = null) {
-        val prio = if (alertBox.isChecked) Frame.ALERT else Frame.NORMAL
-        alertBox.isChecked = false // one-shot: never let the next casual message inherit max-volume
+        val prio = if (alertPill.isSelected) Frame.ALERT else Frame.NORMAL
+        setAlert(false) // one-shot: never let the next casual message inherit max-volume
         val s = seq++ and 0xFF
         val frame = Frame.pack(vc, text, l, prio, s, prosody = prosody)
         Thread {
@@ -364,16 +411,19 @@ class MainActivity : Activity() {
             s.startsWith("connected to ") -> { peer = shortPeer(s.removePrefix("connected to ")); Thread { arq.flush() }.start() }
             s.startsWith("BT connected: ") -> { peer = shortPeer(s.removePrefix("BT connected: ")); Thread { arq.flush() }.start() }
             s.startsWith("peer ") || s.startsWith("BT peer") -> peer = null
+            s == "connected" && peer == null -> peer = "peer" // a frame just went out on a live socket
         }
         val link = s.startsWith("connected") || s.startsWith("advertising") || s.startsWith("BT connected") ||
             s.startsWith("peer ") || s.startsWith("BT peer") || s.startsWith("discovery")
         val p = peer
+        val up = link && p != null
         status.text = when {
             !link -> s
-            p != null -> "● connected · $p"
+            up -> "● connected · $p"
             else -> getString(R.string.starting)
         }
-        status.setTextColor(getColor(if (link && p != null) R.color.green else R.color.textSecondary))
+        status.setBackgroundResource(if (up) R.drawable.hero_chip_green else R.drawable.hero_chip)
+        status.setTextColor(getColor(if (up) R.color.onHero else R.color.onHeroMuted))
     }
 
     /** "iTantra-sdk_gphone64_arm64-4269" → "sdk gphone64"; "192.168.43.1:47474" → "192.168.43.1". Whole words only. */
@@ -415,20 +465,29 @@ class MainActivity : Activity() {
         val chip = TextView(this).apply {
             this.text = meta
             textSize = 12f
-            setTextColor(getColor(if (kind == ALERTK) R.color.red else R.color.textSecondary))
-            setBackgroundResource(R.drawable.chip_bg)
-            setPadding(dp(8), dp(3), dp(8), dp(3))
+            typeface = resources.getFont(R.font.outfit_medium)
+            setTextColor(getColor(if (kind == ALERTK) R.color.orange else R.color.textSecondary))
+            setBackgroundResource(if (kind == ALERTK) R.drawable.chip_orange else R.drawable.chip_bg)
+            setPadding(dp(9), dp(3), dp(9), dp(3))
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply { gravity = side; topMargin = dp(3) }
+            ).apply { gravity = side; topMargin = dp(4) }
         }
         col.addView(chip)
+        col.alpha = 0f; col.translationY = dp(6).toFloat()
         transcriptBox.addView(col)
+        col.animate().alpha(1f).translationY(0f).setDuration(150).start()
         scroll.post { scroll.fullScroll(View.FOCUS_DOWN) }
         return chip
     }
 
-    private companion object { const val SENT = 0; const val RECV = 1; const val ALERTK = 2 }
+    companion object {
+        private const val SENT = 0; private const val RECV = 1; private const val ALERTK = 2
+        val LANG_NAMES = listOf(
+            "English", "हिन्दी", "বাংলা", "தமிழ்", "తెలుగు",
+            "ગુજરાતી", "मराठी", "ಕನ್ನಡ", "മലയാളം", "ଓଡ଼ିଆ"
+        )
+    }
 
     override fun onDestroy() {
         transports.forEach { it.stop() }

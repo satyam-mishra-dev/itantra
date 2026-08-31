@@ -2,85 +2,108 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/ground">
+    android:scrollbars="none">
 <LinearLayout
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:padding="16dp">
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/eval_title"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="@color/navy" />
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/eval_subtitle"
-        android:textSize="13sp"
-        android:textColor="@color/textSecondary" />
-
-    <GridLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="14dp"
-        android:columnCount="2"
-        android:useDefaultMargins="true">
-        <LinearLayout android:orientation="vertical" android:layout_columnWeight="1" android:layout_width="0dp" android:background="@drawable/card_bg" android:padding="14dp">
-            <TextView android:id="@+id/cerVal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textSize="30sp" android:textStyle="bold" android:textColor="@color/orange"/>
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/stat_cer" android:textSize="12sp" android:textColor="@color/textSecondary"/>
-        </LinearLayout>
-        <LinearLayout android:orientation="vertical" android:layout_columnWeight="1" android:layout_width="0dp" android:background="@drawable/card_bg" android:padding="14dp">
-            <TextView android:id="@+id/werVal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textSize="30sp" android:textStyle="bold" android:textColor="@color/navy"/>
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/stat_wer" android:textSize="12sp" android:textColor="@color/textSecondary"/>
-        </LinearLayout>
-        <LinearLayout android:orientation="vertical" android:layout_columnWeight="1" android:layout_width="0dp" android:background="@drawable/card_bg" android:padding="14dp">
-            <TextView android:id="@+id/rtfVal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textSize="30sp" android:textStyle="bold" android:textColor="@color/navy"/>
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/stat_rtf" android:textSize="12sp" android:textColor="@color/textSecondary"/>
-        </LinearLayout>
-        <LinearLayout android:orientation="vertical" android:layout_columnWeight="1" android:layout_width="0dp" android:background="@drawable/card_bg" android:padding="14dp">
-            <TextView android:id="@+id/ttsVal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textSize="30sp" android:textStyle="bold" android:textColor="@color/navy"/>
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/stat_tts" android:textSize="12sp" android:textColor="@color/textSecondary"/>
-        </LinearLayout>
-    </GridLayout>
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:background="@drawable/bg_hero_band"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="18dp"
+        android:paddingBottom="22dp"
+        android:elevation="6dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/eval_title"
+            android:textSize="28sp"
+            android:textColor="@color/onHero"
+            android:fontFamily="@font/outfit_bold" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/eval_subtitle"
+            android:textSize="14sp"
+            android:textColor="@color/onHeroMuted" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="32dp">
+
+    <TextView style="@style/SectionLabel" android:text="@string/section_rubric" />
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="2"
+        android:useDefaultMargins="true">
+        <LinearLayout android:orientation="vertical" android:layout_columnWeight="1" android:layout_width="0dp" android:background="@drawable/card_bg" android:padding="16dp">
+            <TextView android:id="@+id/cerVal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textSize="30sp" android:textColor="@color/orange" android:fontFamily="@font/outfit_bold"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/stat_cer" android:textAllCaps="true" android:letterSpacing="0.08" android:textSize="10sp" android:textColor="@color/label" android:fontFamily="@font/outfit_semibold"/>
+        </LinearLayout>
+        <LinearLayout android:orientation="vertical" android:layout_columnWeight="1" android:layout_width="0dp" android:background="@drawable/card_bg" android:padding="16dp">
+            <TextView android:id="@+id/werVal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textSize="30sp" android:textColor="@color/navy" android:fontFamily="@font/outfit_bold"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/stat_wer" android:textAllCaps="true" android:letterSpacing="0.08" android:textSize="10sp" android:textColor="@color/label" android:fontFamily="@font/outfit_semibold"/>
+        </LinearLayout>
+        <LinearLayout android:orientation="vertical" android:layout_columnWeight="1" android:layout_width="0dp" android:background="@drawable/card_bg" android:padding="16dp">
+            <TextView android:id="@+id/rtfVal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textSize="30sp" android:textColor="@color/navy" android:fontFamily="@font/outfit_bold"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/stat_rtf" android:textAllCaps="true" android:letterSpacing="0.08" android:textSize="10sp" android:textColor="@color/label" android:fontFamily="@font/outfit_semibold"/>
+        </LinearLayout>
+        <LinearLayout android:orientation="vertical" android:layout_columnWeight="1" android:layout_width="0dp" android:background="@drawable/card_bg" android:padding="16dp">
+            <TextView android:id="@+id/ttsVal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textSize="30sp" android:textColor="@color/navy" android:fontFamily="@font/outfit_bold"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/stat_tts" android:textAllCaps="true" android:letterSpacing="0.08" android:textSize="10sp" android:textColor="@color/label" android:fontFamily="@font/outfit_semibold"/>
+        </LinearLayout>
+    </GridLayout>
+
+    <TextView style="@style/SectionLabel" android:text="@string/section_read" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:background="@drawable/card_bg"
-        android:padding="14dp">
+        android:padding="16dp">
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/eval_read_this"
-            android:textStyle="bold"
-            android:textColor="@color/textPrimary" />
+            android:textSize="16sp"
+            android:textColor="@color/textPrimary"
+            android:fontFamily="@font/outfit_semibold" />
         <Spinner
             android:id="@+id/evalLang"
             android:layout_width="match_parent"
-            android:layout_height="44dp" />
+            android:layout_height="44dp"
+            android:layout_marginTop="6dp" />
         <TextView
             android:id="@+id/refSentence"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="20sp"
+            android:textSize="21sp"
             android:textColor="@color/textPrimary"
             android:paddingTop="8dp"
-            android:paddingBottom="12dp" />
+            android:paddingBottom="14dp" />
         <Button
             android:id="@+id/readPtt"
             android:layout_width="match_parent"
-            android:layout_height="64dp"
+            android:layout_height="58dp"
             android:background="@drawable/pill_button"
             android:stateListAnimator="@null"
             android:text="@string/eval_hold_to_read"
             android:textColor="#FFFFFF"
-            android:textStyle="bold" />
+            android:letterSpacing="0.06"
+            android:fontFamily="@font/outfit_bold" />
         <TextView
             android:id="@+id/evalResult"
             android:layout_width="match_parent"
@@ -90,25 +113,19 @@
             android:textColor="@color/textSecondary" />
     </LinearLayout>
 
+    <TextView style="@style/SectionLabel" android:text="@string/section_packs" />
+
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
         android:background="@drawable/card_bg"
-        android:padding="14dp">
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/eval_packs_title"
-            android:textStyle="bold"
-            android:textColor="@color/textPrimary" />
+        android:padding="16dp">
         <LinearLayout
             android:id="@+id/packRows"
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp" />
+            android:layout_height="wrap_content" />
         <TextView
             android:id="@+id/packStatus"
             android:layout_width="match_parent"
@@ -118,36 +135,39 @@
             android:textColor="@color/textSecondary" />
     </LinearLayout>
 
+    <TextView style="@style/SectionLabel" android:text="@string/section_eff" />
+
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="32dp"
         android:background="@drawable/card_bg"
-        android:padding="14dp">
+        android:padding="16dp">
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/eval_cpu_title"
-            android:textStyle="bold"
-            android:textColor="@color/textPrimary" />
+            android:textSize="16sp"
+            android:textColor="@color/textPrimary"
+            android:fontFamily="@font/outfit_semibold" />
         <Button
             android:id="@+id/cpuSample"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="10dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="12dp"
             android:background="@drawable/pill_button"
             android:stateListAnimator="@null"
             android:text="@string/eval_cpu_button"
             android:textColor="#FFFFFF"
-            android:textStyle="bold" />
+            android:letterSpacing="0.06"
+            android:fontFamily="@font/outfit_bold" />
         <TextView
             android:id="@+id/cpuStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:textColor="@color/textPrimary" />
+    </LinearLayout>
     </LinearLayout>
 </LinearLayout>
 </ScrollView>
