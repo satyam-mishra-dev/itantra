@@ -23,6 +23,10 @@ import com.k2fsa.sherpa.onnx.SileroVadModelConfig
 import com.k2fsa.sherpa.onnx.Vad
 import com.k2fsa.sherpa.onnx.VadModelConfig
 import java.util.Locale
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 /**
  * P3: Silero VAD chunks long PTT holds into sentences — sentence 1 is
@@ -59,7 +63,11 @@ class MainActivity : Activity() {
     private var vad: Vad? = null
     private var vadActive = false
     private var pttT0 = 0L
-    private var seq = 0
+    // One consumer for synthesis + playback: two frames landing together used to cut each other off.
+    private val playback: ExecutorService = Executors.newSingleThreadExecutor()
+    private var savedMusicVol = -1                  // -1 = no ALERT is holding the volume up right now
+    private var savedAlarmVol = -1
+    private var focusReq: AudioFocusRequest? = null
     // Mutual NSD discovery gives two sockets to the same peer; NSD+BT gives two bearers.
     // De-dup received frames by content hash. ponytail: 64-deep LRU, plenty for a walkie-talkie.
     private val seen = ArrayDeque<Int>()
@@ -298,7 +306,7 @@ class MainActivity : Activity() {
     private fun send(text: String, l: String, sttMs: Long, audioSec: Double, prosody: Int? = null) {
         val prio = if (alertPill.isSelected) Frame.ALERT else Frame.NORMAL
         setAlert(false) // one-shot: never let the next casual message inherit max-volume
-        val s = seq++ and 0xFF
+        val s = arq.nextSeq()   // skips seqs still awaiting an ACK, so a wrap never clobbers a queued frame
         val frame = Frame.pack(vc, text, l, prio, s, prosody = prosody)
         Thread {
             Log.i(LINK, "tx seq=$s bytes=${frame.size} t=${System.currentTimeMillis()}")
@@ -334,47 +342,82 @@ class MainActivity : Activity() {
     }
 
     private fun speak(msg: Frame.Msg, size: Int, tRecv: Long) {
-        val am = getSystemService(AUDIO_SERVICE) as AudioManager
         val alert = msg.prio == Frame.ALERT
-        if (alert) {
-            am.setStreamVolume(AudioManager.STREAM_MUSIC, am.getStreamMaxVolume(AudioManager.STREAM_MUSIC), 0)
-            am.setStreamVolume(AudioManager.STREAM_ALARM, am.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0)
-            if (Build.VERSION.SDK_INT >= 26) {
-                am.requestAudioFocus(
-                    AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE)
-                        .setAudioAttributes(
-                            AudioAttributes.Builder()
-                                .setUsage(AudioAttributes.USAGE_ALARM)
-                                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build()
-                        ).build()
-                )
-            }
-        }
         val engine = speech?.ttsFor(msg.lang)
         val pp = msg.prosody?.let { Prosody.ttsParams(it) }
-        Thread {
-            val label: String
-            if (engine != null) {
-                val audio = engine.generate(msg.text, 0, pp?.speed ?: 1.0f)
-                val firstAudioMs = SystemClock.elapsedRealtime() - tRecv
-                LastStats.ttsFirstAudioMs = firstAudioMs
-                label = "first audio ${firstAudioMs} ms" + (pp?.let { " · ${it.urgency}" } ?: "")
-                repeat(maxOf(if (alert) 2 else 1, pp?.repeats ?: 1)) {
-                    playPcm(audio.samples, audio.sampleRate, alert, pp?.gain ?: 1.0f)
+        val repeats = maxOf(if (alert) 2 else 1, pp?.repeats ?: 1)
+        // Serialized: each message is spoken to the end. "first audio ms" now includes queue wait — the honest receive→ear number.
+        playback.execute {
+            if (alert) raiseForAlert()
+            try {
+                val label: String
+                if (engine != null) {
+                    val audio = engine.generate(msg.text, 0, pp?.speed ?: 1.0f)
+                    val firstAudioMs = SystemClock.elapsedRealtime() - tRecv
+                    LastStats.ttsFirstAudioMs = firstAudioMs
+                    label = "first audio ${firstAudioMs} ms" + (pp?.let { " · ${it.urgency}" } ?: "")
+                    repeat(repeats) { playPcm(audio.samples, audio.sampleRate, alert, pp?.gain ?: 1.0f) }
+                } else {
+                    label = "platform TTS"
+                    speakPlatform(msg, repeats)
                 }
-            } else {
-                label = "platform TTS"
-                val parts = (ttsLocales[msg.lang] ?: "en_IN").split('_')
                 runOnUiThread {
-                    tts?.language = Locale(parts[0], parts[1])
-                    repeat(if (alert) 2 else 1) { tts?.speak(msg.text, TextToSpeech.QUEUE_ADD, null, "m$seq-$it") }
+                    bubble(msg.text, "$size B" + (if (alert) " · ALERT" else "") + " · ${msg.lang} · $label",
+                        alert, incoming = true)
                 }
+            } finally {
+                if (alert) restoreAfterAlert()   // runs even if synthesis threw or the queue was shut down
             }
-            runOnUiThread {
-                bubble(msg.text, "$size B" + (if (alert) " · ALERT" else "") + " · ${msg.lang} · $label",
-                    alert, incoming = true)
-            }
-        }.start()
+        }
+    }
+
+    /** ALERT takes the room: max volume + exclusive focus. Always paired with [restoreAfterAlert] — we used to raise and never give back. */
+    private fun raiseForAlert() {
+        val am = getSystemService(AUDIO_SERVICE) as AudioManager
+        if (savedMusicVol < 0) {   // first alert of a burst remembers what the user actually had set
+            savedMusicVol = am.getStreamVolume(AudioManager.STREAM_MUSIC)
+            savedAlarmVol = am.getStreamVolume(AudioManager.STREAM_ALARM)
+        }
+        try {
+            am.setStreamVolume(AudioManager.STREAM_MUSIC, am.getStreamMaxVolume(AudioManager.STREAM_MUSIC), 0)
+            am.setStreamVolume(AudioManager.STREAM_ALARM, am.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0)
+        } catch (_: SecurityException) { }   // DND can refuse the alarm stream; the alert still plays
+        if (Build.VERSION.SDK_INT >= 26 && focusReq == null) {
+            val r = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE)
+                .setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_ALARM)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build()
+                ).build()
+            focusReq = r
+            am.requestAudioFocus(r)
+        }
+    }
+
+    private fun restoreAfterAlert() {
+        val am = getSystemService(AUDIO_SERVICE) as AudioManager
+        try {
+            if (savedMusicVol >= 0) am.setStreamVolume(AudioManager.STREAM_MUSIC, savedMusicVol, 0)
+            if (savedAlarmVol >= 0) am.setStreamVolume(AudioManager.STREAM_ALARM, savedAlarmVol, 0)
+        } catch (_: SecurityException) { }
+        savedMusicVol = -1; savedAlarmVol = -1
+        if (Build.VERSION.SDK_INT >= 26) focusReq?.let { am.abandonAudioFocusRequest(it); focusReq = null }
+    }
+
+    /** Fallback voice. Blocks until it finishes speaking, or an ALERT loses its volume mid-sentence. */
+    private fun speakPlatform(msg: Frame.Msg, repeats: Int) {
+        val t = tts ?: return
+        val parts = (ttsLocales[msg.lang] ?: "en_IN").split('_')
+        t.language = Locale(parts[0], parts[1])
+        val done = CountDownLatch(repeats)
+        t.setOnUtteranceProgressListener(object : android.speech.tts.UtteranceProgressListener() {
+            override fun onStart(id: String?) {}
+            override fun onDone(id: String?) { done.countDown() }
+            @Suppress("OverridingDeprecatedMember", "DEPRECATION")
+            override fun onError(id: String?) { done.countDown() }
+        })
+        repeat(repeats) { t.speak(msg.text, TextToSpeech.QUEUE_ADD, null, "m${msg.seq}-$it") }
+        done.await(30, TimeUnit.SECONDS)   // bounded: a broken engine must not wedge the queue
     }
 
     private fun playPcm(samples: FloatArray, sampleRate: Int, alert: Boolean, gain: Float = 1.0f) {
@@ -382,7 +425,6 @@ class MainActivity : Activity() {
         val shorts = ShortArray(samples.size) {
             ((samples[it] * gain).coerceIn(-1f, 1f) * 32767).toInt().toShort()
         }
-        track?.release()
         val t = AudioTrack.Builder()
             .setAudioAttributes(
                 AudioAttributes.Builder()
@@ -398,9 +440,15 @@ class MainActivity : Activity() {
             .setBufferSizeInBytes(shorts.size * 2)
             .build()
         track = t
-        t.write(shorts, 0, shorts.size)
-        t.play()
-        Thread.sleep((samples.size * 1000L / sampleRate) + 100)
+        try {
+            t.write(shorts, 0, shorts.size)
+            t.play()
+            Thread.sleep((samples.size * 1000L / sampleRate) + 100)
+        } finally {
+            // Released on the thread that owns it — we used to release the previous track from the next receive thread, cutting off a live alert.
+            try { t.release() } catch (_: Exception) { }
+            track = null
+        }
     }
 
     private var peer: String? = null
@@ -491,8 +539,10 @@ class MainActivity : Activity() {
 
     override fun onDestroy() {
         transports.forEach { it.stop() }
+        playback.shutdownNow()          // interrupts playPcm's sleep; its finally releases the track
+        restoreAfterAlert()             // killing the app mid-ALERT must not leave the phone at max volume
         tts?.shutdown()
-        track?.release()
+        try { track?.release() } catch (_: Exception) { }
         vad?.release()
         stopService(Intent(this, PttService::class.java))
         super.onDestroy()
