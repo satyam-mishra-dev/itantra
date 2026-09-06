@@ -22,12 +22,27 @@ class Arq(
     private val delivered = HashSet<Int>()      // seqs ACKed (for the UI tick)
     var acked: (seq: Int) -> Unit = {}
     var retransmits = 0; private set
+    private var seqCounter = 0
+    /** Frames we had to clobber because all 256 wire seqs were in flight at once. */
+    var saturatedDrops = 0; private set
 
     val backlog: Int @Synchronized get() = pending.size
+
+    /** Next wire seq, skipping any still waiting on an ACK — the 1-byte wrap must not clobber a queued frame. */
+    @Synchronized
+    fun nextSeq(): Int {
+        repeat(256) {
+            val s = seqCounter++ and 0xFF
+            if (!pending.containsKey(s)) return s
+        }
+        // ponytail: 256 unacked means the peer has been gone half a conversation; the oldest one loses.
+        return seqCounter++ and 0xFF
+    }
 
     /** Queue + first attempt. Returns #peers the frame was written to (0 ⇒ queued, not lost). */
     @Synchronized
     fun send(seq: Int, frame: ByteArray): Int {
+        if (pending.containsKey(seq)) saturatedDrops++   // only reachable once all 256 seqs are in flight
         val p = Pending(frame, 0, 0)
         pending[seq] = p
         return attempt(seq, p)
