@@ -87,6 +87,26 @@ class ArqTest {
         assertEquals(listOf(0), ticks)
     }
 
+    /** The wire seq is one byte. Wrapping onto an unacked frame would drop it silently. */
+    @Test fun seqAllocationSkipsFramesStillInFlight() {
+        val l = Link(0.0, 8, vc)
+        l.peers = 0                                   // nothing gets ACKed: everything stays pending
+        val held = (0 until 3).map { l.a.nextSeq() }
+        for (s in held) l.a.send(s, Frame.pack(vc, "held $s", "hi", Frame.NORMAL, s))
+        assertEquals(listOf(0, 1, 2), held)
+        // walk past the 8-bit wrap; the three in flight must never come round again
+        val reissued = (0 until 400).map { l.a.nextSeq() }
+        assertTrue("wrapped seq collided with a queued frame", reissued.none { it in held })
+        assertEquals("every other seq stays available", (3..255).toList(), reissued.toSortedSet().toList())
+        assertEquals(0, l.a.saturatedDrops)
+        // and the held frames are still there to be flushed
+        assertEquals(3, l.a.backlog)
+        l.peers = 1
+        l.a.flush()
+        l.run(2_000)
+        assertEquals(listOf(0, 1, 2), l.received.sorted())
+    }
+
     @Test fun backoffCapsRetryRateButNeverGivesUp() {
         val l = Link(1.0, 4, vc) // 100% loss: never ACKed
         l.a.send(0, frames(1)[0].second)
