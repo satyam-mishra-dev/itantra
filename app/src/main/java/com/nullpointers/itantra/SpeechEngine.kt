@@ -25,7 +25,10 @@ class SpeechEngine(private val ctx: Context) {
     private val stt = HashMap<String, OfflineRecognizer?>()
     private val tts = HashMap<String, OfflineTts?>()
 
-    private fun dir(lang: String, kind: String) = File(ctx.getExternalFilesDir(null), "models/$lang/$kind")
+    private fun dir(lang: String, kind: String) = Packs.dir(ctx, lang, kind)
+
+    /** After a pack install: drop the cached "no model" so the next sttFor/ttsFor actually loads it. */
+    fun forget(lang: String) { stt.remove(lang); tts.remove(lang) }
 
     fun sttFor(lang: String): OfflineRecognizer? = stt.getOrPut(lang) {
         val d = dir(lang, "stt")

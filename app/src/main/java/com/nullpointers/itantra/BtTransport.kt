@@ -33,7 +33,9 @@ class BtTransport(
     private fun adapter(): BluetoothAdapter? =
         (ctx.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager)?.adapter
 
+    /** Safe to call again (after the BLUETOOTH_CONNECT grant, or BT turned on later). */
     override fun start() {
+        if (running) return
         val ad = adapter() ?: return
         if (!allowed()) { onStatus("BT: no permission"); return }
         if (!ad.isEnabled) { onStatus("BT off — Wi-Fi only"); return }
@@ -44,16 +46,19 @@ class BtTransport(
                 while (running) attach(srv.accept())
             } catch (_: Exception) { }
         }.start()
-        Thread { // client: try every bonded device once per start
-            for (d in try { ad.bondedDevices } catch (_: SecurityException) { emptySet() }) {
-                if (!running) break
-                try {
-                    val s = d.createRfcommSocketToServiceRecord(uuid)
-                    s.connect()
-                    attach(s)
-                } catch (_: Exception) { }
+        Thread { // client: dial every bonded device; keep retrying while we have no BT peer (the other phone may open the app later)
+            while (running) {
+                if (sockets.isEmpty()) for (d in try { ad.bondedDevices } catch (_: SecurityException) { emptySet() }) {
+                    if (!running) break
+                    try {
+                        val s = d.createRfcommSocketToServiceRecord(uuid)
+                        s.connect()
+                        attach(s)
+                    } catch (_: Exception) { }
+                }
+                Thread.sleep(15_000)
             }
-        }.start()
+        }.apply { isDaemon = true }.start()
     }
 
     private fun attach(s: BluetoothSocket) {

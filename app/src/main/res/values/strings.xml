@@ -39,6 +39,11 @@
     <string name="eval_cpu_title">Idle CPU while listening</string>
     <string name="eval_cpu_button">SAMPLE IDLE CPU (5 s)</string>
     <string name="cpu_sampling">sampling… keep the app idle</string>
-    <string name="no_stt_pack">no STT model pack for this language — sideload it first (see list below)</string>
-    <string name="sideload_hint">sideload: adb push &lt;pack&gt;/ /sdcard/Android/data/com.nullpointers.itantra/files/models/&lt;lang&gt;/</string>
+    <string name="no_stt_pack">no STT model pack for this language — download it from the talk screen first</string>
+    <string name="download_pack">Download %1$s voice pack (STT + TTS, ~200 MB, one-time)</string>
+    <string name="pack_ready">voice pack installed — hold to talk</string>
+    <string name="pack_failed">download failed: %1$s</string>
+    <string name="no_voice">no voice for %1$s on this phone — text shown; download the pack</string>
+    <string name="this_phone">This phone: %1$s</string>
+    <string name="sideload_hint">packs install from the talk screen (or adb push to /sdcard/Android/data/com.nullpointers.itantra/files/models/&lt;lang&gt;/)</string>
 </resources>
