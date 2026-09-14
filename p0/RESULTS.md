@@ -246,3 +246,22 @@ duty-free bearer — one more reason to keep frames tiny: fewer bits on air = fe
 `test_linksim.py`: 24 assertions (airtime formula vs firmware README, latency monotonic in payload size
 on every bearer, latency falls with bitrate, real-time verdicts, lossless ARQ with retransmit counts,
 BER-induced retransmits, duty-cycle rest math).
+
+## Phrasebook mode (added 2026-09-15, `phrasebook.py`, `python test_phrasebook.py`)
+
+32-phrase emergency register in all 10 languages, 12-bit index + optional 8-bit slot, `lang=15` marker in the unchanged header. Same 32 sentences, text frame vs phrase frame, mean bytes on the wire:
+
+| lang | VarnaCode text frame | phrase frame | ratio |
+|---|---|---|---|
+| en | 21.8 | 9.1 | 2.4× |
+| hi | 21.3 | 9.1 | 2.3× |
+| bn | 21.9 | 9.1 | 2.4× |
+| ta | 26.6 | 9.1 | 2.9× |
+| te | 25.8 | 9.1 | 2.8× |
+| gu | 23.7 | 9.1 | 2.6× |
+| mr | 22.9 | 9.1 | 2.5× |
+| kn | 24.6 | 9.1 | 2.7× |
+| ml | 26.4 | 9.1 | 2.9× |
+| or | 23.2 | 9.1 | 2.5× |
+
+Note the honest baseline: these register sentences are short, so text frames are 21–27 B here, not the 45 B of the held-out long sentences. The bigger win is not bytes — a phrase frame is language-neutral, so a Hindi speaker's "5 लोग घायल हैं" is spoken as "5 জন আহত" on a Bengali phone with no MT model. Matcher never auto-sends: it returns ranked candidates (exact 1.0, paraphrase 0.6–0.8, off-topic none) and the sender confirms. Translations are draft — native-speaker review pending.
