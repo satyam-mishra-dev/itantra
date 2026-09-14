@@ -1,0 +1,88 @@
+# iTantra — channel-adaptive closed loop: adversarial validation (2026-09-15)
+
+Baseline: VarnaCode text ~45 B/sentence, AES-GCM frames, AFSK Bell-202 (6 dB SNR), ESP32+SX127x LoRa, 9-byte ACKs already exist.
+Thesis under test: one closed loop {measure link → choose payload tier / FEC rate / repetition} maximising P(intelligible delivery | latency budget), scored by far-end TTS→STT CER vs SNR.
+
+## 0. Verdict first
+
+**(a)-with-a-caveat: correct, measurable in ~1 week, but only if the loop has FOUR knobs, not three.** Numbers (§1.4) show that for non-coherent FSK on an analog radio, app-layer FEC buys ~2–3 dB; the *payload tier* (45 B → 8 B) buys 5× airtime for repetition; but the *baud rate* (1200 → 300 bps) buys +6 dB Eb/N0 outright. A loop that adapts coding + FEC + repetition but leaves the modem at 1200 baud will be beaten at 0–3 dB by a fixed 300-baud FX.25 station. Add baud as knob (iv) and the thesis holds and is unique.
+**Jury risk (b) is real and is answered by framing**: FEC is commodity (FX.25/IL2P/LoRa CR have it); the measured *loop* is not — WB2OSZ wrote the loop as an unrealised idea in the FX.25 paper: "One could imagine a system where the FX.25 transmission is enabled or disabled based on the error rate detected on the receiving end" (https://cloud.dvbr.net/direwolf/direwolf_git_v1.7/doc/AX25_plus_FEC_equals_FX25.pdf). No amateur/EmComm text stack closes it; cellular (AMR) and LoRaWAN (ADR) do, which is the precedent to cite.
+**Strongest counter-argument**: the codebook tier is *semantically lossy* — a phrase index is not the sentence. If the sender's STT output is silently snapped to the nearest of 256 phrases, "intelligible delivery" measures the wrong thing. Fix: tier switch is proposed to the sender (fuzzy-match ≥ threshold, one-tap confirm), and the metric for tier-2 is *intent match*, reported separately from CER (§4.3).
+
+## 1. FEC that fits phone + ESP32 + 45–80 B frames
+
+### 1.1 Candidates
+| Code | Overhead on 45 B | Corrects | Decode cost | Lib (licence) |
+|---|---|---|---|---|
+| RS(n,45) 8 parity (shortened RS(255,k), GF(2^8)) | +8 B (18%) | 4 byte errors / 8 erasures | trivial (Berlekamp–Massey, µs on ESP32) | `reedsolo` Unlicense/MIT-0, pure Python + optional Cython, `RSCodec(nsym)`, any length via shortening, `erase_pos` (https://pypi.org/project/reedsolo/); C: `libcorrect` BSD, drop-in for libfec (https://github.com/quiet/libcorrect) |
+| RS(n,45) 16 parity | +16 B (36%) | 8 byte errors | same | same; IL2P always uses 16 parity/block: "roughly 3% symbol-error-rate recovery" (https://tarpn.net/t/il2p/il2p-specification_draft_v0-6.pdf) |
+| Conv K=7 r=1/2 + Viterbi (AX.25 sat/CCSDS style; M17 uses K=5 r=1/2 punctured) | +100% | random bit errors, soft-decision gain ~5 dB @1e-5 | 64-state Viterbi; fine on ESP32 for 500 bits | `libcorrect` (BSD, Viterbi), `liquid-dsp` (MIT: Hamming, SECDED, Golay, RS(255,223), conv, interleaver, soft decode — https://github.com/jgaeddert/liquid-dsp) |
+| Golay(24,12) | +100% | 3 bit errors per 24-bit word | table lookup; used for DMR/P25/M17 headers (M17 LICH: 4×Golay(24,12) → 96 bits, gen poly 0xC75, https://m17-protocol-specification.readthedocs.io/en/latest/physical_layer.html; P25 HDU outer RS + inner Golay, https://gophertrunk.org/reference/p25-header-data-unit/) | `liquid-dsp` (MIT); tiny Python ports exist (https://github.com/japgarrido/Golay-Python) |
+| Hamming(7,4)/(20,8) | +75–150% | 1 bit/word | trivial | IL2P uses (7,4) Hamming only to protect its optional trailing CRC; DMR slot-type uses (20,8) |
+| Short LDPC (FT8 LDPC(174,91); CCSDS (128,64), (256,128); FreeDV (224,112),(112,56)) | ~100% | best at low SNR with soft bits | BP iterations; needs soft demod output | `pyldpc` MIT (https://github.com/hichamjanati/pyldpc); FT8 matrices GPL-3 in goft8/weakmon (https://github.com/rtmrtmrtmrtm/weakmon/blob/master/ft8.py) — GPL matrices, avoid |
+| Fountain / RaptorQ (RFC 6330) | rateless, multi-frame | packet erasures | matrix ops; patent warnings in libRaptorQ README | `libRaptorQ` LGPL, python CFFI (https://github.com/mk-fg/python-libraptorq); rust `raptorq` Apache-2 — overkill for 1-frame sentences |
+
+### 1.2 Precedent sizing
+FX.25 (Direwolf) tag table: data 32/64/128/191/223/239 B with 16/32/64 check bytes, correcting 8/16/32 bytes; Direwolf auto-picks the tag by frame size (32 B data + 16 chk for very short frames) — https://cloud.dvbr.net/direwolf/direwolf_git_v1.7/doc/AX25_plus_FEC_equals_FX25.pdf. Measured there: plain AX.25 80-byte frames at BER 1e-3 → 542/1000 received; at 1e-2 → 2/1000; FX.25 "keeps going strong long after regular AX.25 is completely useless"; under good conditions FX.25 is slower (overhead). IL2P: RS per block, 2–16 parity bytes by "payload size and selected FEC strength", sync word 0xF15E48 matched with 1-bit tolerance, header separately RS-protected (same spec).
+
+### 1.3 Pick per path
+- **(a) AFSK over analog radio, 0–6 dB**: RS shortened, 8 or 16 parity (`reedsolo` on phone, `libcorrect` or a 200-line RS on ESP32), byte-interleaved across a 2× repeat when in tier T1/T2. Not Viterbi: the Bell-202 demod is hard-decision and a soft-Viterbi's ~5 dB is unavailable without a rewrite; RS also matches the burst (squelch tail, PTT edge) error pattern. Golay(24,12) for the 2–16 B codebook tier (word-granular, 100% overhead is 8→16 B, negligible airtime).
+- **(b) LoRa (SX127x)**: PHY already has CR 4/5–4/8 Hamming-class FEC + 16-bit CRC and a 128-chip CSS spreading; app FEC inside a LoRa frame is redundant — what happens below the SF limit is loss of *whole packets*, not bit errors. Adapt SF/CR (the LoRaWAN-ADR knob) and repetition instead; keep the AES-GCM tag as the integrity check.
+- **(c) BLE / Wi-Fi TCP**: lossless; FEC off, tier by RTT/loss only (packet loss on a lossy IP path → repetition or fountain, not FEC).
+
+### 1.4 Why the baud knob dominates on AFSK (computed, non-coherent BFSK, BER = ½·exp(−Eb/2N0), 3 kHz audio band)
+| SNR (3 kHz) | 1200 bps: Eb/N0 → BER | 300 bps: Eb/N0 → BER |
+|---|---|---|
+| 0 dB | 4 dB → 1.4e-1 | 10 dB → 3.4e-3 |
+| 3 dB | 7 dB → 4.1e-2 | 13 dB → 2.3e-5 |
+| 6 dB | 10 dB → 3.4e-3 | 16 dB → 1e-9 |
+Frame success P for a 45 B payload: at BER 3e-3 plain = 0.34, RS(53,45) = 0.99, RS(61,45) = 1.0; at 1e-2 plain = 0.03, RS(53,45) = 0.61, RS(61,45) = 0.96; at 2e-2 RS(61,45) = 0.43 but 8-B codebook RS(24,8) = 0.99 / Golay = 0.99; at 4e-2 everything but the codebook dies (RS(24,8) 0.80). So: FEC moves the cliff ~1e-3 → ~1e-2 (≈2–3 dB), payload tier moves it to ~4e-2 (another ~2 dB), baud rate moves it 6 dB per 4× rate drop. All four are needed to cover 0–6 dB. (Matches the FX.25 measured cliff and the FreeDV design point that 700D's rate-½ LDPC buys "4dB over 700C" https://www.rowetel.com/?p=5630.)
+
+## 2. How real systems adapt (decision rules + thresholds)
+
+- **FreeDV/Codec2**: fixed operating points, no auto-switch on TX. Table (https://github.com/drowe67/codec2/blob/main/README_freedv.md): 1600 = Golay(23,12), 4 dB min SNR, poor multipath; 700D = LDPC(224,112), 1900 b/s raw, −2 dB; 700E = LDPC(112,56), 3000 b/s raw, 1 dB, good fading; 2020 = LDPC(504,396), 2 dB. GUI: "FreeDV supports simultaneous decoding of 700D, 700E, and 1600" (multi-RX) and RADEV1 auto-selected; operator chooses TX mode (https://github.com/drowe67/freedv-gui/blob/master/USER_MANUAL.md). 700E design rule: operating point = SNR where coded BER = 0.01 and PER = 0.1 (https://www.rowetel.com/?p=7596). Measured on AWGN by KK5JY: 1600 ≈ +2 dB, 700C sync lost < −4 dB, 700D −2…−3 dB (http://www.kk5jy.net/snr-freedv/). **Lesson**: define the tier threshold as "PER = 0.1 point", and let the receiver decode all tiers simultaneously (no mode negotiation needed).
+- **FT8/FT4**: every message is exactly 77 bits + 14-bit CRC → LDPC(174,91); message types i3/n3 pack standard exchanges; decode thresholds (AWGN, BP+OSD) FT8 −20.8 dB, FT4 −17.5 dB in 2500 Hz; BP "just a few iterations", OSD adds "several dB" (Taylor/Franke, https://wsjt.sourceforge.io/FT4_FT8_QEX.pdf). **This is the fixed-small-payload analogue**: a fixed 77-bit "sentence" is what lets the code be designed once and decoded blind. JS8Call layers speeds on the same codec: Slow 30 s/−28 dB, Normal 15 s/−24 dB, Fast 10 s/−20 dB, Turbo 6 s/−18 dB — user-selected, and directed commands (SNR?, HEARING?, QUERY MSGS) are canned tokens with auto-replies (https://www.hamradiobase.com/ham-radio-digital-js8call/, https://js8call.com/JS8Call-improved/d6/d14/md_docs_2user__guide_2JS8Call__User__Guide.html). Roughly 3 dB per 2× airtime, i.e. repetition-equivalent.
+- **3GPP AMR (TS 45.009 link adaptation)**: receiver computes a Quality Indicator = normalised C/I; compared against up to 3 threshold/hysteresis pairs (THRESH_j, HYST_j) over an Active Codec Set of ≤4 modes; hysteresis "to prevent toggling between neighbouring codec modes"; the request is signalled in-band as a Codec Mode Request, mode changes on 40 ms boundaries (https://www.etsi.org/deliver/etsi_ts/145000_145099/145009/07.00.00_60/ts_145009v070000p.pdf; https://www.rfwireless-world.com/terminology/amr-basics-in-gsm; https://www.academia.edu/5222178/Adaptive_Thresholds_for_AMR_Codec_Mode_Selection). Rule: switch up only when QI > THRESH_j + HYST_j, switch down when QI < THRESH_j. **Our loop = AMR with 3 tiers instead of 4 codec modes and the CMR riding in the existing 9-byte ACK.**
+- **LoRaWAN ADR (Semtech recommended algorithm, Oct 2016)**: keep last 20 frames' SNRmax; `SNRmargin = SNRm − SNR(DR) − margin_db` (margin_db 5–10 dB); required SNR DR0(SF12) −20, SF11 −17.5, SF10 −15, SF9 −12.5, SF8 −10, SF7 −7.5 dB; `NStep = int(SNRmargin/3)`; each positive step: DR += 1 until DR5, then TxPower −= 3 dB; negative step: TxPower += 3 dB (https://www.thethingsnetwork.org/forum/uploads/default/original/2X/7/7480e044aa93a54a910dab8ef0adfb5f515d14a1.pdf). Uses **max** not mean SNR because loss is interference-dominated. **Directly reusable for our ESP32 bridge.**
+- **Meshtastic**: 9 fixed presets (Short Turbo SF7/500k 21.9 kbps 140 dB … Long Fast SF11/250k CR4/5 1.07 kbps 153 dB … Long Slow SF12/125k CR4/8 0.18 kbps 158.5 dB); no automatic adaptation, all nodes must share the preset (https://meshtastic.org/docs/overview/radio-settings/). Per-packet `rx_snr`/`rx_rssi` in MeshPacket protobuf (https://github.com/meshtastic/protobufs/blob/master/meshtastic/mesh.proto). Gap we fill: per-link adaptation *inside* a fixed preset via tier/repetition.
+- **M17**: 4FSK 9600 b/s; LSF/LICH Golay(24,12), stream payload conv K=5 r=½ punctured 296→272 bits; fixed, no adaptation (https://spec.m17project.org/files/M17_spec.pdf). **DMR/P25**: fixed per-field codes (Hamming(20,8) slot type, BPTC(196,96), Golay for headers, RS outer + Golay inner for P25 HDU); no adaptation (https://gophertrunk.org/blog/deep-dives/sdr-internals-09-framing-fec/).
+- **AX.25/FX.25/IL2P**: sender chooses check bytes; Direwolf picks the RS tag by frame size only, never by channel; receive always on (https://cloud.dvbr.net/direwolf/direwolf_git_v1.7/doc/AX25_plus_FEC_equals_FX25.pdf).
+
+## 3. Channel estimation on our three paths (cheap, concrete)
+
+1. **AFSK (phone soundcard)**. Three free estimators, in increasing cost:
+   - *Sync-word Hamming distance*: count bit errors in the 24-bit sync (IL2P recommends 1-bit tolerance; its false-match rate at 9600 b/s ≈ 1/69 s). 0 errors ≈ BER < 1e-3, 1 ≈ 1e-2 class.
+   - *RS corrected-symbol count* per decoded frame (reedsolo `decode()` returns error positions; libcorrect returns count). This is the receiver's post-FEC margin: t − corrected = headroom. Same idea as IL2P/FX.25 decoders reporting "number of bytes corrected".
+   - *Data-aided SNR on the demod output*: M2M4 or SNV estimator on the discriminator/matched-filter samples during the known preamble (Pauluzzi & Beaulieu, IEEE Trans. Comm. 48(10) 2000, https://www.researchgate.net/publication/3160255_A_Comparison_of_SNR_estimation_techniques_for_the_AWGN_channel; M2M4 in GNU Radio `digital_impl_snr_est_m2m4`). Gives dB directly; ~20 lines of numpy.
+   - Also cheap: CRC/GCM-tag failure count per N frames (Direwolf's `fix_bits` retry counts are the same signal, https://github.com/HAMradioCanada/direwolf-1/blob/master/hdlc_rec2.c).
+2. **LoRa (SX127x)**: read `RegPktSnrValue` (0x19, signed, dB = value/4) and `RegPktRssiValue` (0x1A) after RxDone; RSSI = −137 + reg when SNR ≥ 0 (×16/15 correction) and −137 + reg + SNR/4 below noise floor (https://blog.devmobile.co.nz/2021/07/29/net-core-5-sx127x-library-part6/, https://github.com/sandeepmistry/arduino-LoRa/pull/291). Margin = PktSNR − SNRlimit(SF) with the ADR table above; SNR "is a far more useful indicator of impending link failure" than RSSI (https://github.com/StuartsProjects/SX12XX-LoRa/blob/master/What%20is%20LoRa.md). Bridge puts PktSNR in the ACK it relays (1 signed byte), like LoRaWAN LinkCheckAns's 8-bit demodulation margin (https://lora-alliance.org/wp-content/uploads/2021/11/LoRaWAN-Link-Layer-Specification-v1.0.4.pdf).
+3. **Lossy IP (Wi-Fi/TCP or UDP)**: sequence numbers already exist in frames → loss % over sliding 20 frames + ACK RTT (EWMA, RFC 6298 style). No FEC; tier by loss%.
+
+Feedback carrier: the existing 9-byte roll-call ACK gains 1 byte = {2 bits tier request (AMR CMR analogue), 6 bits quality}. If no ACK in T_ack → open-loop fallback one tier down (ADR's ADR_ACK_LIMIT idea); broadcast alerts always go out at the most robust tier.
+
+## 4. Evaluation protocol
+
+### 4.1 Channel simulator (Python, p0, ~150 lines, numpy only)
+`channel(bits, snr_db, rate_bps, model)` on the *modulated* AFSK audio you already generate: AWGN at given SNR in 3 kHz; Gilbert–Elliott burst layer (P_good→bad, P_bad→good, BER_bad) to emulate squelch tails/fades; packet-erasure layer (Bernoulli p_loss, plus optional bursty loss) for LoRa/IP; parameters swept 300–1200 bps AFSK and 0.18–10.9 kbps LoRa-equivalent (Meshtastic presets). Validate the simulator against two anchor points: WB2OSZ's 80-byte AX.25 numbers (BER 1e-3 → 0.53, 1e-2 → 0.002) and your measured "6 dB works" point.
+
+### 4.2 The ONE plot
+**x = SNR (dB, 3 kHz ref), y = P(intelligible delivery within 5 s)**, four curves: fixed VarnaCode 1200 bps no FEC (today), fixed + RS16, fixed 300 bps + RS16, adaptive loop. "Intelligible" = far-end TTS→STT CER ≤ 20% (hi/bn) — the same CER pipeline you already have. Second panel (same x): **latency to first intelligible sentence** (s), which is where fixed-300-bps-RS16 loses to adaptive at high SNR (it pays 4× airtime always) and fixed-1200 loses at low SNR (retries). The adaptive curve should hug the upper envelope; that envelope-hugging is the thesis in one picture. Add a dashed vertical at each tier switch.
+
+### 4.3 FLEURS CER-after-channel protocol
+For each language (hi, bn, te, ml, ta), 100 FLEURS test sentences → your STT → VarnaCode → frame → simulator(SNR, model) → decode → TTS → your STT → CER vs (i) ground-truth transcript and (ii) the pre-channel STT output (isolates channel loss from STT loss). Report CER median + P(CER ≤ 20%) per SNR bin; a lost/garbled frame counts CER = 100%. For tier-2 (codebook) report **intent-match rate** (index decoded == index sent) separately and never fold it into CER; also report how often the sender's fuzzy-match to the codebook was accepted (that is the semantic-loss rate). TTS→ASR round-trip CER is the standard automatic intelligibility proxy (https://researchgate.net/publication/341851560_An_ASR_Guided_Speech_Intelligibility_Measure_for_TTS_Model_Selection; https://arxiv.org/html/2608.10606 warns it can mask reading errors — which is why (ii) is included).
+
+## 5. Positioning: principled, not borrowed
+
+"Phrase codebook + free text" is old: ARRL numbered radiograms (ARL FORTY SIX = a whole greeting, https://en.wikipedia.org/wiki/ARRL_Numbered_Radiogram), Q-codes, FT8's typed 77-bit messages, JS8Call directed commands, NATO brevity codes. Do not claim the codebook. Claim three things nobody in that lineage measures:
+1. **The loop, with intelligibility as the controlled variable.** AMR and LoRaWAN-ADR close a loop on C/I or SNR to pick a *codec rate* or *SF*; FreeDV/JS8Call/Meshtastic/FX.25 leave the choice to the operator; nobody controls on *CER after the far-end vocoder/STT*. Your contribution is the controller and its measured envelope, not any knob.
+2. **Multilingual script-aware tiering.** The tier-1 payload is VarnaCode (per-script Huffman) — the same loop degrades gracefully per language, and the FLEURS-by-language plot shows tier switch points differ by script entropy (ta at 13.9% CER hits the 20% wall earlier than hi at 2.9%).
+3. **Four knobs including baud**, because a soundcard modem lets you change symbol rate, which a DMR/P25/M17 radio cannot; this is the one that gives 6 dB.
+Cite the FX.25 sentence verbatim in the deck: the field wrote down the idea in 2019 and left it.
+
+## 6. Recommended decision rule (draft, tune with the simulator)
+Quality Q per link, dB-equivalent margin above the current mode's cliff (AFSK: M2M4 SNR − cliff(baud); LoRa: PktSNR − SNRlimit(SF); IP: −10·log10(loss) proxy). Sliding window: max over last 5 ACKs (ADR logic), hysteresis 2 dB (AMR logic):
+- **T0** (Q ≥ 6 dB): VarnaCode text, 1200 bps, RS 8 parity, ×1.
+- **T1** (2 ≤ Q < 6): VarnaCode text, 1200 bps, RS 16 parity, ×2 byte-interleaved.
+- **T2** (0 ≤ Q < 2): VarnaCode text at 300 bps, RS 16 parity, ×1 (equivalent airtime to T1 ×2 but +6 dB).
+- **T3** (Q < 0 or 3 unacked): codebook index 2–16 B, Golay(24,12) (or RS 16 parity), 300 bps, ×3; broadcast alerts always T3.
+Switch down immediately when Q < threshold; switch up only when Q > threshold + 2 dB for 2 consecutive ACKs. On LoRa, T0–T2 map to SF steps of the preset (SF9→SF11→SF12), not RS.
