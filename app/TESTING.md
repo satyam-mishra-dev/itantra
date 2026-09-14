@@ -68,6 +68,44 @@ B must show exactly 3 bubbles, correct text, ALERT chip, no duplicates.
 - A dead TCP peer's socket still accepts writes until the kernel notices, so the `queued` chip is not the first signal
   that the peer is gone — the missing `✓` is. `peer disconnected` arrives when the write fails or the read loop ends.
 
+## Field-bug pass (2026-09-15) — real APK on two Android 14 emulators, no `-g` shortcuts where it mattered
+
+Users reported: packs never install, phones don't connect, text/voice "not converted". Every row below is a
+run on `itantra_c`/`itantra_d` (ports 5570/5572) with the Hindi STT (IndicConformer int8, 98 MB zip) and TTS
+(Piper, 67 MB zip) packs served from a local throttled HTTP server (`-PpackBase=http://10.0.2.2:8000`).
+
+| # | check | result | evidence |
+|---|---|---|---|
+| 1 | **fresh install, no pre-granted permissions** (the real user path) | **CRASH found → fixed** | `SecurityException: Starting FGS with type microphone … requires RECORD_AUDIO` the moment the talk screen opened on Android 14; PttService now starts only after the grant. All earlier tests used `adb install -g` and never saw it |
+| 2 | in-app pack download, auto on unmetered Wi-Fi + one-tap pill | PASS | chip shows `downloading hi stt 17%`; STT engine loads (typed box hides); progress counter Int overflow at 21 MB found + fixed |
+| 3 | app killed at 64 % of a download | PASS | only `stt.part/` on disk, `installed()` false, restart re-downloads from 0; no half pack ever loaded |
+| 4 | Wi-Fi off mid-download | PASS | `SocketException` → toast + pill returns; no crash |
+| 5 | on-device STT, real Hindi clip (`EvalActivity --es wav`) | PASS | `heard: बाढ़ का पानी बढ़ रहा है तुरंत निकले`, STT 994 ms for 2.9 s (RTF 0.34 on emulator) |
+| 6 | on-device VAD sentence streaming (`--ez vad true`, 2 sentences, 0.9 s pause) | PASS | `VAD cut 2 sentence(s)`, seg 1 exact, seg 2 155/624 ms |
+| 7 | silent PTT hold with STT installed | fixed | Conformer decoded silence as "आ" and sent it; RMS gate (0.004) → `nothing heard — hold longer` |
+| 8 | VAD hears no sentence but the clip has energy | fixed | falls back to whole-clip decode (used to vanish behind "streamed as you spoke") |
+| 9 | receiver with Piper pack | PASS | chip `first audio 315–1021 ms`; bubble now lands on receipt (host latency 6 s → 2.3 s) |
+| 10 | receiver with NO voice for the language (Odia, platform TTS) | **stall found → fixed** | two messages used to take 30 s + 30 s (queue waited on a speak that never started); now both in 4 s, chip `no voice for or — text shown` |
+| 11 | discovery with mDNS disabled (scratch build, beacon only) | PASS | both `● connected` in 12 s via the UDP 47475 beacon — the fallback for OEM hotspots that filter mDNS |
+| 12 | connect-by-IP before the peer app is running | PASS | `dialing 10.0.2.16… (3/20)` → connected once B started |
+| 13 | duplicate sockets | fixed | NSD-resolve + beacon dialed the same host 4× (4 `rx` per frame); dial-once guard → 1 |
+| 14 | Wi-Fi off on B mid-conversation, message sent meanwhile, Wi-Fi on | PASS | B `searching…`, A frame queued, delivered after reconnect, ✓ |
+| 15 | peer app restart reusing seq 0 (×3) | **drop found → fixed** (p0 + Kotlin) | ReliableReceiver deduped by seq alone: message ACKed (✓ on sender!) but never shown; key is now (seq, CRC) |
+| 16 | phrase frame hi → or | PASS | "12 लोग घायल हैं" → 10 B → B renders "12 ଜଣ ଆହତ।", ACKed |
+| 17 | loop_test full/gsm/edge, resilience ×4 | PASS | tables above re-run on the Reliable/SpeakQueue build; tx→rx 2–108 ms |
+| 18 | CER on the phone vs the deck | fixed | Kotlin CER counted punctuation (26 % for a perfect transcript); now normalised like p0 `norm_dev` |
+
+Also fixed without a row: APK built on another laptop would not update this one (different debug keys) → one
+committed signing key for all build types; BT bearer never started on first launch (permission granted after
+`start()`); mDNS TTL "service lost" flipped the chip to "searching" while the socket was alive.
+
+Test hooks (debug-friendly, no logic change): `am start -n …/.EvalActivity --es wav <16 kHz PCM16 path> --es lang hi [--ez vad true]`
+and `am start -n …/.MainActivity --es say '<text>'` (singleTop) — `adb shell input text` cannot type Devanagari
+and the emulator has no injectable mic. Both test scripts now use `say`.
+
+Still emulator-blind: real mic → VAD threshold on a phone mic, Bluetooth RFCOMM, OEM hotspot client isolation,
+ALERT loudness under OEM audio policy. Those need the two phones on USB (`adb devices`), and the scripts run unchanged.
+
 ## Cannot be verified on emulators
 
 Real mic → VAD sentence segmentation, Bluetooth RFCOMM (no BT hardware), NSD across OEM hotspots, actual ALERT

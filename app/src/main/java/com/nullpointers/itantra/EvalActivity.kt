@@ -89,7 +89,7 @@ class EvalActivity : Activity() {
             val pcm = FloatArray((raw.size - 44) / 2) { i ->
                 (((raw[44 + 2 * i + 1].toInt() shl 8) or (raw[44 + 2 * i].toInt() and 0xFF)).toShort()) / 32768f
             }
-            scoreSamples(pcm)
+            if (intent.getBooleanExtra("vad", false)) vadSplit(pcm) else scoreSamples(pcm)
         }
 
         findViewById<Button>(R.id.cpuSample).setOnClickListener { sampleIdleCpu() }
@@ -117,6 +117,30 @@ class EvalActivity : Activity() {
         val rec = pcm ?: return
         pcm = null
         scoreSamples(rec.stop())
+    }
+
+    /** `--ez vad true`: run the talk screen's Silero VAD config over the clip and STT each sentence it cuts — proves "sentences stream as you pause" on device. */
+    private fun vadSplit(samples: FloatArray) {
+        val l = lang()
+        Thread {
+            val engine = speech.sttFor(l)
+            val vad = com.k2fsa.sherpa.onnx.Vad(
+                assetManager = assets,
+                config = com.k2fsa.sherpa.onnx.VadModelConfig(
+                    sileroVadModelConfig = com.k2fsa.sherpa.onnx.SileroVadModelConfig(
+                        model = "silero_vad.onnx", minSilenceDuration = 0.5f, maxSpeechDuration = 15f),
+                    sampleRate = 16000))
+            val out = StringBuilder()
+            var n = 0
+            fun drain() { while (!vad.empty()) { val seg = vad.front().samples; vad.pop(); n++
+                val t0 = SystemClock.elapsedRealtime()
+                val text = engine?.let { speech.recognize(it, seg) } ?: "(no STT pack)"
+                out.append("seg $n · %.1f s · STT %d ms · %s\n".format(seg.size / 16000.0, SystemClock.elapsedRealtime() - t0, text)) } }
+            var i = 0
+            while (i + 512 <= samples.size) { vad.acceptWaveform(samples.copyOfRange(i, i + 512)); drain(); i += 512 }
+            vad.flush(); drain(); vad.release()
+            runOnUiThread { result.text = "VAD cut $n sentence(s)\n$out" }
+        }.start()
     }
 
     private fun scoreSamples(samples: FloatArray) {
