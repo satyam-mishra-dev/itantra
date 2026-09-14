@@ -11,6 +11,7 @@
     <string name="recording">listening…</string>
     <string name="no_peers">no peer — Connect by IP</string>
     <string name="nothing_to_send">nothing to send</string>
+    <string name="nothing_heard">nothing heard — hold longer, speak closer to the mic</string>
     <string name="input_hint">type a message — no voice pack for this language yet</string>
     <string name="alert_pill">ALERT</string>
     <string name="alert_pill_on">ALERT ON · max volume</string>
@@ -42,6 +43,7 @@
     <string name="no_stt_pack">no STT model pack for this language — download it from the talk screen first</string>
     <string name="download_pack">Download %1$s voice pack (STT + TTS, ~200 MB, one-time)</string>
     <string name="pack_ready">voice pack installed — hold to talk</string>
+    <string name="no_pack_yet">no voice pack published for %1$s yet — typed text still transmits</string>
     <string name="pack_failed">download failed: %1$s</string>
     <string name="no_voice">no voice for %1$s on this phone — text shown; download the pack</string>
     <string name="this_phone">This phone: %1$s</string>

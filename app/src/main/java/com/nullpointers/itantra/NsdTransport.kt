@@ -139,14 +139,16 @@ class NsdTransport(
     } catch (_: Exception) { listOf(InetAddress.getByName("255.255.255.255")) }
 
     private fun connectedTo(host: InetAddress) = sockets.any { it.inetAddress == host }
+    private val dialing = java.util.concurrent.ConcurrentHashMap.newKeySet<InetAddress>()
 
-    /** Dial once, unless a socket to that host is already live (both discovery paths funnel here). */
+    /** Dial once per host: NSD-resolve and the beacon fire within the same second and used to open 4 sockets to one peer. */
     private fun dial(host: InetAddress, port: Int, label: String) {
-        if (connectedTo(host)) return
+        if (connectedTo(host) || !dialing.add(host)) return
         Thread {
             try {
-                if (!connectedTo(host)) attach(Socket().apply { connect(InetSocketAddress(host, port), 5000) }, label)
+                attach(Socket().apply { connect(InetSocketAddress(host, port), 5000) }, label)
             } catch (e: Exception) { Log.w(tag, "connect $host:$port failed: ${e.message}") }
+            finally { dialing.remove(host) }
         }.start()
     }
 
