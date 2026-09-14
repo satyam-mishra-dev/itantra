@@ -9,6 +9,26 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 
+/**
+ * "Connect by IP" dialog shared by both screens. Shows this phone's own address — the other
+ * side has to type it, and users had no way to see it — and prefills the hotspot host (.1).
+ */
+fun Activity.askIp(onOk: (String) -> Unit) {
+    val me = NsdTransport.myIp()
+    val guess = me?.substringBeforeLast('.')?.let { "$it.1" }?.takeIf { it != me } ?: "192.168.43.1"
+    val box = EditText(this).apply {
+        hint = getString(R.string.connect_hint)
+        setText("$guess:${NsdTransport.FIXED_PORT}")
+    }
+    AlertDialog.Builder(this)
+        .setTitle(R.string.connect_button)
+        .setMessage(getString(R.string.this_phone, me ?: "no Wi-Fi"))
+        .setView(box)
+        .setPositiveButton(android.R.string.ok) { _, _ -> onOk(box.text.toString()) }
+        .setNegativeButton(android.R.string.cancel, null)
+        .show()
+}
+
 /** Entry hero: pick a language, then find peers (NSD) or connect by IP. The talk screen owns the transports. */
 class ConnectActivity : Activity() {
 
@@ -37,18 +57,7 @@ class ConnectActivity : Activity() {
         }
         select(sel)
         findViewById<View>(R.id.findPeers).setOnClickListener { launch(null) }
-        findViewById<View>(R.id.connectIpLink).setOnClickListener {
-            val box = EditText(this).apply {
-                hint = getString(R.string.connect_hint)
-                setText("192.168.43.1:${NsdTransport.FIXED_PORT}")
-            }
-            AlertDialog.Builder(this)
-                .setTitle(R.string.connect_button)
-                .setView(box)
-                .setPositiveButton(android.R.string.ok) { _, _ -> launch(box.text.toString()) }
-                .setNegativeButton(android.R.string.cancel, null)
-                .show()
-        }
+        findViewById<View>(R.id.connectIpLink).setOnClickListener { askIp { launch(it) } }
     }
 
     private fun select(i: Int) {

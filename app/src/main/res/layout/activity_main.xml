@@ -105,6 +105,7 @@
                     android:textColor="@color/textPrimary"
                     android:fontFamily="@font/outfit_semibold" />
                 <TextView
+                    android:id="@+id/emptySub"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
@@ -126,6 +127,20 @@
         android:paddingEnd="16dp"
         android:paddingTop="6dp"
         android:paddingBottom="10dp">
+
+        <TextView
+            android:id="@+id/download"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/pill_button"
+            android:gravity="center"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:textColor="@color/onHero"
+            android:textSize="15sp"
+            android:fontFamily="@font/outfit_semibold" />
 
         <EditText
             android:id="@+id/input"

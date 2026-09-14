@@ -18,6 +18,19 @@ android {
         }
     }
 
+    buildFeatures { buildConfig = true }
+    // Where <lang>-stt.zip / <lang>-tts.zip live. Override for a local test server:
+    //   ./gradlew assembleDebug -PpackBase=http://10.0.2.2:8000
+    defaultConfig.buildConfigField("String", "PACK_BASE",
+        "\"${project.findProperty("packBase") ?: "https://github.com/satyam-mishra-dev/itantra-packs/releases/download/v1"}\"")
+
+    // One committed key for every build type + every machine: an APK built on a teammate's laptop
+    // used to fail to update one built here ("App not installed" — different debug keys).
+    signingConfigs.create("shared") {
+        storeFile = file("itantra.keystore"); storePassword = "itantra"; keyAlias = "itantra"; keyPassword = "itantra"
+    }
+    buildTypes.all { signingConfig = signingConfigs.getByName("shared") }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

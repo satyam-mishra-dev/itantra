@@ -54,6 +54,9 @@ class MainActivity : Activity() {
     private lateinit var status: TextView
     private lateinit var langSpinner: Spinner
     private lateinit var input: EditText
+    private lateinit var download: TextView
+    @Volatile private var downloading = false
+    private val autoTried = HashSet<String>()
     private lateinit var alertPill: TextView
     private lateinit var pttRing: View
     private var pulse: android.animation.ValueAnimator? = null
@@ -87,6 +90,9 @@ class MainActivity : Activity() {
         status = findViewById(R.id.status)
         langSpinner = findViewById(R.id.lang)
         input = findViewById(R.id.input)
+        download = findViewById(R.id.download)
+        download.setOnClickListener { downloadPack(lang()) }
+        NsdTransport.myIp()?.let { findViewById<TextView>(R.id.emptySub).append("\n" + getString(R.string.this_phone, it)) }
         alertPill = findViewById(R.id.alert)
         pttRing = findViewById(R.id.pttRing)
         alertPill.setOnClickListener { setAlert(!alertPill.isSelected) }
@@ -157,18 +163,7 @@ class MainActivity : Activity() {
             startActivity(Intent(this, EvalActivity::class.java))
         }
         findViewById<View>(R.id.connectIp).setOnClickListener {
-            val box = EditText(this).apply {
-                hint = getString(R.string.connect_hint)
-                setText("192.168.43.1:${NsdTransport.FIXED_PORT}")
-            }
-            android.app.AlertDialog.Builder(this)
-                .setTitle(R.string.connect_button)
-                .setView(box)
-                .setPositiveButton(android.R.string.ok) { _, _ ->
-                    (transports.first() as NsdTransport).manualConnect(box.text.toString())
-                }
-                .setNegativeButton(android.R.string.cancel, null)
-                .show()
+            askIp { (transports.first() as NsdTransport).manualConnect(it) }
         }
 
         val ptt = findViewById<Button>(R.id.ptt)
@@ -197,12 +192,44 @@ class MainActivity : Activity() {
 
     private fun lang(): String = langCodes[langSpinner.selectedItemPosition]
 
-    /** Typed fallback only shows when the selected language has no STT pack (checked off-thread: sttFor loads lazily). */
+    /**
+     * Typed fallback only shows when the selected language has no STT pack (checked off-thread: sttFor loads lazily).
+     * A missing pack offers a one-tap download and starts it by itself on an unmetered network.
+     */
     private fun refreshInput() {
         val l = lang()
         Thread {
             val has = try { speech?.sttFor(l) != null } catch (t: Throwable) { false }
-            runOnUiThread { input.visibility = if (has) View.GONE else View.VISIBLE }
+            val missing = Packs.KINDS.any { !Packs.installed(this, l, it) }
+            runOnUiThread {
+                input.visibility = if (has) View.GONE else View.VISIBLE
+                download.text = getString(R.string.download_pack, langNames[langCodes.indexOf(l)])
+                download.visibility = if (missing && !downloading) View.VISIBLE else View.GONE
+                val cm = getSystemService(CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+                if (missing && autoTried.add(l) && cm.activeNetwork != null && !cm.isActiveNetworkMetered) downloadPack(l)
+            }
+        }.start()
+    }
+
+    private fun downloadPack(l: String) {
+        if (downloading) return
+        downloading = true
+        download.visibility = View.GONE
+        Thread {
+            val msg = try {
+                Packs.install(this, l) { p -> Log.i(LINK, "pack $p"); runOnUiThread { setStatus("downloading $p") } }
+                speech?.forget(l)
+                getString(R.string.pack_ready)
+            } catch (e: Exception) {
+                Log.w(LINK, "pack install failed", e)
+                getString(R.string.pack_failed, e.message ?: e.javaClass.simpleName)
+            }
+            downloading = false
+            runOnUiThread {
+                Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+                refreshInput()
+                setStatus(if (peer != null) "connected" else getString(R.string.starting))
+            }
         }.start()
     }
 
@@ -358,8 +385,8 @@ class MainActivity : Activity() {
                     label = "first audio ${firstAudioMs} ms" + (pp?.let { " · ${it.urgency}" } ?: "")
                     repeat(repeats) { playPcm(audio.samples, audio.sampleRate, alert, pp?.gain ?: 1.0f) }
                 } else {
-                    label = "platform TTS"
-                    speakPlatform(msg, repeats)
+                    label = if (speakPlatform(msg, repeats)) "platform TTS"
+                            else getString(R.string.no_voice, msg.lang)
                 }
                 runOnUiThread {
                     bubble(msg.text, "$size B" + (if (alert) " · ALERT" else "") + " · ${msg.lang} · $label",
@@ -404,11 +431,15 @@ class MainActivity : Activity() {
         if (Build.VERSION.SDK_INT >= 26) focusReq?.let { am.abandonAudioFocusRequest(it); focusReq = null }
     }
 
-    /** Fallback voice. Blocks until it finishes speaking, or an ALERT loses its volume mid-sentence. */
-    private fun speakPlatform(msg: Frame.Msg, repeats: Int) {
-        val t = tts ?: return
+    /**
+     * Fallback voice. Blocks until it finishes speaking, or an ALERT loses its volume mid-sentence.
+     * Returns false when the engine has no voice for the language (or is not ready yet): the old code
+     * waited the full 30 s for a speak that never started, stalling every later message behind it.
+     */
+    private fun speakPlatform(msg: Frame.Msg, repeats: Int): Boolean {
+        val t = tts ?: return false
         val parts = (ttsLocales[msg.lang] ?: "en_IN").split('_')
-        t.language = Locale(parts[0], parts[1])
+        if (t.setLanguage(Locale(parts[0], parts[1])) < 0) return false   // LANG_MISSING_DATA / LANG_NOT_SUPPORTED
         val done = CountDownLatch(repeats)
         t.setOnUtteranceProgressListener(object : android.speech.tts.UtteranceProgressListener() {
             override fun onStart(id: String?) {}
@@ -416,8 +447,11 @@ class MainActivity : Activity() {
             @Suppress("OverridingDeprecatedMember", "DEPRECATION")
             override fun onError(id: String?) { done.countDown() }
         })
-        repeat(repeats) { t.speak(msg.text, TextToSpeech.QUEUE_ADD, null, "m${msg.seq}-$it") }
+        repeat(repeats) {
+            if (t.speak(msg.text, TextToSpeech.QUEUE_ADD, null, "m${msg.seq}-$it") != TextToSpeech.SUCCESS) done.countDown()
+        }
         done.await(30, TimeUnit.SECONDS)   // bounded: a broken engine must not wedge the queue
+        return true
     }
 
     private fun playPcm(samples: FloatArray, sampleRate: Int, alert: Boolean, gain: Float = 1.0f) {
@@ -535,6 +569,12 @@ class MainActivity : Activity() {
             "English", "हिन्दी", "বাংলা", "தமிழ்", "తెలుగు",
             "ગુજરાતી", "मराठी", "ಕನ್ನಡ", "മലയാളം", "ଓଡ଼ିଆ"
         )
+    }
+
+    /** BtTransport bails without BLUETOOTH_CONNECT; on first launch the grant lands after start(), so start it again. */
+    override fun onRequestPermissionsResult(code: Int, perms: Array<out String>, res: IntArray) {
+        super.onRequestPermissionsResult(code, perms, res)
+        transports.forEach { if (it is BtTransport) it.start() }
     }
 
     override fun onDestroy() {
