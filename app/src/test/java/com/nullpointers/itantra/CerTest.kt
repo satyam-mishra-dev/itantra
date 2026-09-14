@@ -16,6 +16,12 @@ class CerTest {
         assertEquals(0.0, Cer.cer("", ""), 1e-9)
     }
 
+    @Test fun punctuationIsNotAnError() {
+        // STT never emits danda/comma; the reference has them — must score 0, like p0 norm_dev
+        assertEquals(0.0, Cer.cer("बाढ़ का पानी बढ़ रहा है, तुरंत निकलें।", "बाढ़ का पानी बढ़ रहा है तुरंत निकलें"), 1e-9)
+        assertEquals(0.0, Cer.wer("बाढ़ का पानी बढ़ रहा है, तुरंत निकलें।", "बाढ़ का पानी बढ़ रहा है तुरंत निकलें"), 1e-9)
+    }
+
     @Test fun indicAgglutinationExample() {
         // one wrong akshara inside a long word: tiny CER, full-word WER hit
         val ref = "வெளியேறுங்கள்"

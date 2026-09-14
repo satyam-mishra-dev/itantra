@@ -26,7 +26,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".MainActivity" android:exported="false"
+        <activity android:name=".MainActivity" android:exported="false" android:launchMode="singleTop"
             android:configChanges="orientation|screenSize|keyboardHidden" />
 
         <activity android:name=".EvalActivity" android:exported="false" />

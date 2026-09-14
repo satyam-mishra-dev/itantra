@@ -22,8 +22,9 @@ object Packs {
     fun installed(ctx: Context, lang: String, kind: String) =
         File(dir(ctx, lang, kind), "model.onnx").exists() && File(dir(ctx, lang, kind), "tokens.txt").exists()
 
-    /** Blocking — call off the main thread. Throws IOException on network failure; a 404 = no such pack, skipped. */
-    fun install(ctx: Context, lang: String, onProgress: (String) -> Unit) {
+    /** Blocking — call off the main thread. Throws IOException on network failure; a 404 = no such pack, skipped. Returns #kinds installed now. */
+    fun install(ctx: Context, lang: String, onProgress: (String) -> Unit): Int {
+        var installedNow = 0
         for (kind in KINDS) {
             if (installed(ctx, lang, kind)) continue
             val c = URL("${BuildConfig.PACK_BASE}/$lang-$kind.zip").openConnection() as HttpURLConnection
@@ -34,11 +35,11 @@ object Packs {
             val dst = dir(ctx, lang, kind)
             val part = File(dst.path + ".part").apply { deleteRecursively(); mkdirs() }
             var last = -1
+            var got = 0L   // Long: an Int here overflowed at 21 MB and the chip counted from 0% again
             val counted = object : FilterInputStream(c.inputStream) {
-                var n = 0L
                 override fun read(b: ByteArray, off: Int, len: Int): Int = super.read(b, off, len).also {
-                    if (it > 0) { n += it; val pct = if (total > 0) (n * 100 / total).toInt() else -1
-                        if (pct != last) { last = pct; onProgress("$lang $kind ${if (pct >= 0) "$pct%" else "${n / 1_000_000} MB"}") } }
+                    if (it > 0) { got += it; val pct = if (total > 0) (got * 100 / total).toInt() else -1
+                        if (pct != last) { last = pct; onProgress("$lang $kind ${if (pct >= 0) "$pct%" else "${got / 1_000_000} MB"}") } }
                 }
             }
             ZipInputStream(counted).use { z ->
@@ -54,7 +55,9 @@ object Packs {
             c.disconnect()
             dst.deleteRecursively()
             if (!part.renameTo(dst)) throw IOException("rename failed")
+            installedNow++
         }
         onProgress("done")
+        return installedNow
     }
 }

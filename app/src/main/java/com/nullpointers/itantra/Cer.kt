@@ -22,13 +22,18 @@ object Cer {
         return prev[b.size]
     }
 
-    fun cer(ref: String, hyp: String): Double =
-        if (ref.isEmpty()) if (hyp.isEmpty()) 0.0 else 1.0
+    /** Same normalisation as p0 norm_dev: punctuation is not a recognition error (STT emits none; the on-phone number was 2× the deck's without this). */
+    fun norm(s: String) = s.replace(Regex("[।.,!?\\s]+"), " ").trim()
+
+    fun cer(refRaw: String, hypRaw: String): Double {
+        val ref = norm(refRaw); val hyp = norm(hypRaw)
+        return if (ref.isEmpty()) if (hyp.isEmpty()) 0.0 else 1.0
         else dist(ref.toList(), hyp.toList()).toDouble() / ref.length
+    }
 
     fun wer(ref: String, hyp: String): Double {
-        val r = ref.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
-        val h = hyp.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+        val r = norm(ref).split(" ").filter { it.isNotEmpty() }
+        val h = norm(hyp).split(" ").filter { it.isNotEmpty() }
         return if (r.isEmpty()) if (h.isEmpty()) 0.0 else 1.0
         else dist(r, h).toDouble() / r.size
     }

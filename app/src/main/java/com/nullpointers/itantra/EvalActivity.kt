@@ -81,6 +81,16 @@ class EvalActivity : Activity() {
         refText.text = refs.getValue("hi")
 
         renderPacks()
+        // Test hook: `am start … --es wav <path> [--es lang hi]` scores a 16 kHz mono PCM16 WAV instead of the mic —
+        // the only way to drive real STT on an emulator, and a jury can drop a FLEURS clip the same way.
+        intent.getStringExtra("wav")?.let { path ->
+            intent.getStringExtra("lang")?.let { spinner.setSelection(VarnaCode.LANGS.indexOf(it)) }
+            val raw = File(path).readBytes()
+            val pcm = FloatArray((raw.size - 44) / 2) { i ->
+                (((raw[44 + 2 * i + 1].toInt() shl 8) or (raw[44 + 2 * i].toInt() and 0xFF)).toShort()) / 32768f
+            }
+            scoreSamples(pcm)
+        }
 
         findViewById<Button>(R.id.cpuSample).setOnClickListener { sampleIdleCpu() }
 
@@ -106,7 +116,10 @@ class EvalActivity : Activity() {
     private fun score() {
         val rec = pcm ?: return
         pcm = null
-        val samples = rec.stop()
+        scoreSamples(rec.stop())
+    }
+
+    private fun scoreSamples(samples: FloatArray) {
         val l = lang()
         val ref = refs.getValue(l)
         Thread {

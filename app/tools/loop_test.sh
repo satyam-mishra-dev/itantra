@@ -42,15 +42,13 @@ for sd in $SPEEDS; do
   for d in $A $B; do $ADB -s $d logcat -c; done
   conn="✗"; connected $B && connected $A && conn="✓"
   lats=(); fail=0
-  read ix iy <<<"$(center $A input)"; read px py <<<"$(center $A ptt)"; read ax ay <<<"$(center $A alert)"
+  read ax ay <<<"$(center $A alert)"
   for i in "${!MSGS[@]}"; do
     m=${MSGS[$i]}
-    $ADB -s $A shell input tap $ix $iy; sleep 0.5
-    $ADB -s $A shell input text "${m// /%s}"
-    $ADB -s $A shell input keyevent 111; sleep 0.6           # dismiss the IME — it covers the PTT button
     [ $i -eq $ALERT_IDX ] && $ADB -s $A shell input tap $ax $ay
     t0=$(python3 -c 'import time;print(int(time.time()*1000))')
-    $ADB -s $A shell input swipe $px $py $px $py 400   # hold-to-talk (typed-text path on emulator)
+    # the `say` extra sends text exactly as the typed/STT path would (works with or without a voice pack; `input text` can't type Devanagari)
+    $ADB -s $A shell am start -n $PKG/.MainActivity --es say "'$m'" >/dev/null
     got=0; for k in $(seq 1 60); do texts $B | grep -qF "$m" && { got=1; break; }; sleep 0.5; done
     t1=$(python3 -c 'import time;print(int(time.time()*1000))')
     [ $got = 1 ] && lats+=($((t1-t0))) || { lats+=("timeout"); fail=1; }

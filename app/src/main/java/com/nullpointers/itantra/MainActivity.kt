@@ -65,6 +65,8 @@ class MainActivity : Activity() {
     private var pcm: PcmRecorder? = null
     private var vad: Vad? = null
     private var vadActive = false
+    @Volatile private var vadSegments = 0            // sentences VAD cut out of the current hold
+    private val stt: ExecutorService = Executors.newSingleThreadExecutor()   // segments recognized in order — a fast short sentence must not overtake a long one
     private var pttT0 = 0L
     // One consumer for synthesis + playback: two frames landing together used to cut each other off.
     private val playback: ExecutorService = Executors.newSingleThreadExecutor()
@@ -192,6 +194,12 @@ class MainActivity : Activity() {
 
     private fun lang(): String = langCodes[langSpinner.selectedItemPosition]
 
+    /** Test hook (singleTop): `am start … --es say <text>` sends text as if typed — `adb shell input text` cannot type Devanagari. */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        intent.getStringExtra("say")?.let { send(it, lang(), -1, 0.0) }
+    }
+
     /**
      * Typed fallback only shows when the selected language has no STT pack (checked off-thread: sttFor loads lazily).
      * A missing pack offers a one-tap download and starts it by itself on an unmetered network.
@@ -217,9 +225,9 @@ class MainActivity : Activity() {
         download.visibility = View.GONE
         Thread {
             val msg = try {
-                Packs.install(this, l) { p -> Log.i(LINK, "pack $p"); runOnUiThread { setStatus("downloading $p") } }
+                val n = Packs.install(this, l) { p -> Log.i(LINK, "pack $p"); runOnUiThread { setStatus("downloading $p") } }
                 speech?.forget(l)
-                getString(R.string.pack_ready)
+                if (n > 0) getString(R.string.pack_ready) else getString(R.string.no_pack_yet, langNames[langCodes.indexOf(l)])
             } catch (e: Exception) {
                 Log.w(LINK, "pack install failed", e)
                 getString(R.string.pack_failed, e.message ?: e.javaClass.simpleName)
@@ -264,6 +272,7 @@ class MainActivity : Activity() {
         pttT0 = SystemClock.elapsedRealtime()
         // VAD streaming path only makes sense with a real STT engine
         vadActive = vad != null && speech?.sttFor(l) != null
+        vadSegments = 0
         val v = vad
         if (vadActive && v != null) {
             v.reset()
@@ -284,14 +293,15 @@ class MainActivity : Activity() {
         while (!v.empty()) {
             val seg = v.front().samples
             v.pop()
-            Thread {
-                val sp = speech ?: return@Thread
-                val engine = sp.sttFor(l) ?: return@Thread
+            vadSegments++
+            stt.execute {
+                val sp = speech ?: return@execute
+                val engine = sp.sttFor(l) ?: return@execute
                 val t0 = SystemClock.elapsedRealtime()
                 val text = sp.recognize(engine, seg)
                 val ms = SystemClock.elapsedRealtime() - t0
                 if (text.isNotBlank()) runOnUiThread { send(text, l, ms, seg.size / 16000.0) }
-            }.start()
+            }
         }
     }
 
@@ -303,8 +313,9 @@ class MainActivity : Activity() {
         val v = vad
         if (vadActive && v != null) {
             synchronized(v) { v.flush(); drainVad(v, l) }
-            setStatus(getString(R.string.sent_vad))
-            return
+            if (vadSegments > 0) { setStatus(getString(R.string.sent_vad)); return }
+            // VAD heard no sentence (soft voice, noisy mic): decode the whole clip anyway — it used to vanish silently
+            // while the status still said "streamed as you spoke".
         }
         // fallback: whole-clip decode, or typed text when no model pack
         val t0 = SystemClock.elapsedRealtime()
@@ -313,7 +324,9 @@ class MainActivity : Activity() {
             val engine = sp?.sttFor(l)
             val sttMs: Long
             val text: String
-            if (sp != null && engine != null && samples.isNotEmpty()) {
+            // ponytail: RMS gate 0.004 (≈ -48 dBFS) — a Conformer decodes pure silence as "आ"; retune if a phone mic idles louder.
+            val rms = if (samples.isEmpty()) 0.0 else Math.sqrt(samples.sumOf { (it * it).toDouble() } / samples.size)
+            if (sp != null && engine != null && rms > SILENCE_RMS) {
                 val out = sp.recognize(engine, samples)
                 sttMs = SystemClock.elapsedRealtime() - t0
                 text = out.ifBlank { input.text.toString() }
@@ -323,7 +336,10 @@ class MainActivity : Activity() {
             }
             val prosody = if (samples.isNotEmpty()) Prosody.encode(samples) else null
             runOnUiThread {
-                if (text.isBlank()) { setStatus(getString(R.string.nothing_to_send)); return@runOnUiThread }
+                if (text.isBlank()) {
+                    setStatus(getString(if (engine != null && samples.isNotEmpty()) R.string.nothing_heard else R.string.nothing_to_send))
+                    return@runOnUiThread
+                }
                 input.setText("")
                 send(text, l, sttMs, samples.size / 16000.0, prosody)
             }
@@ -564,6 +580,7 @@ class MainActivity : Activity() {
     }
 
     companion object {
+        private const val SILENCE_RMS = 0.004
         private const val SENT = 0; private const val RECV = 1; private const val ALERTK = 2
         val LANG_NAMES = listOf(
             "English", "हिन्दी", "বাংলা", "தமிழ்", "తెలుగు",
