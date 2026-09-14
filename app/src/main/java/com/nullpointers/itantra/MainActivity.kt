@@ -442,6 +442,7 @@ class MainActivity : Activity() {
         try {
             while (true) {
                 val c = speakQueue.next() ?: break
+                Log.i(LINK, "speak msg=${c.msgId} alert=${c.alert} replay=${c.replay} clause=${c.clause}")
                 if (c.alert && !raised) { raiseForAlert(); raised = true }
                 val engine = speech?.ttsFor(c.lang)
                 var label: String? = null
