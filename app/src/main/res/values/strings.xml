@@ -47,5 +47,7 @@
     <string name="pack_failed">download failed: %1$s</string>
     <string name="no_voice">no voice for %1$s on this phone — text shown; download the pack</string>
     <string name="this_phone">This phone: %1$s</string>
+    <string name="phrase_offer">send as phrase · 9 B → “%1$s”</string>
+    <string name="phrase_sent">sent as phrase · %1$d B</string>
     <string name="sideload_hint">packs install from the talk screen (or adb push to /sdcard/Android/data/com.nullpointers.itantra/files/models/&lt;lang&gt;/)</string>
 </resources>

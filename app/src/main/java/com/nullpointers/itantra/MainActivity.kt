@@ -73,11 +73,16 @@ class MainActivity : Activity() {
     private var savedMusicVol = -1                  // -1 = no ALERT is holding the volume up right now
     private var savedAlarmVol = -1
     private var focusReq: AudioFocusRequest? = null
-    // Mutual NSD discovery gives two sockets to the same peer; NSD+BT gives two bearers.
-    // De-dup received frames by content hash. ponytail: 64-deep LRU, plenty for a walkie-talkie.
-    private val seen = ArrayDeque<Int>()
-    private lateinit var arq: Arq
+    // Reliable delivery (p0/reliable.py port): 7-byte ACK/NACK ctrl frames, seq-window dedupe, NACK on gaps,
+    // never-give-up store-and-forward (tries=null) with ×2 backoff — flush() on reconnect.
+    private val sender = ReliableSender(tries = mapOf(Frame.NORMAL to null, Frame.ALERT to null))
+    private val receiver = ReliableReceiver("hi")
+    private val seenPhrase = ArrayDeque<Int>()      // phrase frames bypass the receiver (lang=15): dedupe by content, LRU 64
     private val metaOf = HashMap<Int, TextView>()   // seq → byte chip, gets a ✓ on ACK
+    private lateinit var pb: Phrasebook
+    private val speakQueue = SpeakQueue()           // clause scheduler: ALERT preempts at a clause boundary, cut message resumes
+    private val chipOf = HashMap<Any, TextView>()   // received msgId → chip, gets "first audio N ms"
+    private var msgIds = 0
     private val LINK = "iTantraLink"                // logcat tag: tx/rx/ack with epoch ms for latency measurement
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,6 +90,7 @@ class MainActivity : Activity() {
         setContentView(R.layout.activity_main)
 
         vc = VarnaCode(assets.open("codebooks.json").readBytes().decodeToString())
+        pb = Phrasebook(assets.open("phrasebook.json").readBytes().decodeToString())
         transcriptBox = findViewById(R.id.transcriptBox)
         scroll = findViewById(R.id.scroll)
         emptyHint = findViewById(R.id.emptyHint)
@@ -134,15 +140,11 @@ class MainActivity : Activity() {
             BtTransport(this, ::onFrameBytes) { s -> runOnUiThread { setStatus(s) } },
         )
         transports.forEach { it.start() }
-        arq = Arq(
-            tx = { f -> transports.sumOf { it.send(f) } },
-            makeAck = { s -> Frame.pack(vc, "", "hi", Frame.ACK, s) },
-        )
-        arq.acked = { s ->
+        sender.acked = { s ->
             Log.i(LINK, "ack seq=$s t=${System.currentTimeMillis()}")
             runOnUiThread { metaOf[s]?.let { if (!it.text.endsWith("✓")) it.append(" ✓") } }
         }
-        Thread { while (true) { Thread.sleep(500); arq.tick() } }.apply { isDaemon = true }.start()
+        Thread { while (true) { Thread.sleep(500); pump() } }.apply { isDaemon = true }.start()
         intent.getStringExtra("ip")?.let { ip ->
             status.postDelayed({ (transports.first() as NsdTransport).manualConnect(ip) }, 600)
         }
@@ -346,71 +348,121 @@ class MainActivity : Activity() {
         }.start()
     }
 
+    private fun tx(f: ByteArray): Int = transports.sumOf { it.send(f) }
+    private val written = HashMap<Int, Int>()   // seq → peers the last attempt reached (0 ⇒ "queued" chip)
+
+    /** Put everything the sender wants on the wire: fresh frames now, retransmits/NACK resends when due. */
+    private fun pump() {
+        for (f in sender.tick()) {
+            val seq = f[1].toInt() and 0xFF
+            Log.i(LINK, "tx seq=$seq bytes=${f.size} t=${System.currentTimeMillis()}")
+            synchronized(written) { written[seq] = tx(f) }
+        }
+    }
+
     private fun send(text: String, l: String, sttMs: Long, audioSec: Double, prosody: Int? = null) {
         val prio = if (alertPill.isSelected) Frame.ALERT else Frame.NORMAL
         setAlert(false) // one-shot: never let the next casual message inherit max-volume
-        val s = arq.nextSeq()   // skips seqs still awaiting an ACK, so a wrap never clobbers a queued frame
+        val s = sender.nextSeq()   // skips seqs still in flight, so a wrap never clobbers a queued frame
         val frame = Frame.pack(vc, text, l, prio, s, prosody = prosody)
+        val best = pb.match(text, l).firstOrNull()   // phrase snap is offered, never auto-sent
         Thread {
-            Log.i(LINK, "tx seq=$s bytes=${frame.size} t=${System.currentTimeMillis()}")
-            val n = arq.send(s, frame)
+            sender.send(frame, prio)
+            pump()
+            val n = synchronized(written) { written[s] ?: 0 }
             runOnUiThread {
                 val stt = if (sttMs >= 0)
                     " · STT ${sttMs} ms" + if (audioSec > 0.05) " · RTF %.2f".format(sttMs / 1000.0 / audioSec) else ""
                 else " · typed"
                 metaOf[s] = bubble(text, "${frame.size} B" + (if (prio == Frame.ALERT) " · ALERT" else "") + stt +
                     (if (n == 0) " · queued" else ""), prio == Frame.ALERT, incoming = false)
+                best?.let { offerPhrase(it, prio) }
                 setStatus(if (n == 0) getString(R.string.no_peers) else "connected")
             }
         }.start()
     }
 
-    private fun onFrameBytes(bytes: ByteArray) {
-        if (bytes.size < 2) return
-        val (prio, s) = Arq.peek(bytes)
-        if (prio == Frame.ACK) { arq.onAck(s); return }
-        Log.i(LINK, "rx seq=$s bytes=${bytes.size} t=${System.currentTimeMillis()}")
-        arq.ackFor(prio, s)   // before dedupe: a retransmit whose first ACK was lost still gets ACKed
-        val h = bytes.contentHashCode()
-        synchronized(seen) {
-            if (h in seen) return
-            seen.addLast(h)
-            if (seen.size > 64) seen.removeFirst()
+    /** One-tap chip under the sent bubble: the same sentence as a 9–10 B language-neutral phrase frame. */
+    private fun offerPhrase(c: Phrasebook.Candidate, prio: Int) {
+        val chip = bubbleChip(getString(R.string.phrase_offer, pb.render(c.idx, lang(), c.n)), incoming = false)
+        chip.setOnClickListener {
+            chip.setOnClickListener(null)
+            val s = sender.nextSeq()
+            val f = pb.pack(c.idx, prio, s, c.n)
+            chip.text = getString(R.string.phrase_sent, f.size)
+            metaOf[s] = chip
+            Thread { sender.send(f, prio); pump() }.start()
         }
+    }
+
+    private fun onFrameBytes(bytes: ByteArray) {
+        if (bytes.size < 6) return
+        if (sender.onCtrl(bytes)) return                       // 7-byte delivery ACK/NACK for one of ours
+        val seq = bytes[1].toInt() and 0xFF
+        Log.i(LINK, "rx seq=$seq bytes=${bytes.size} t=${System.currentTimeMillis()}")
         val tRecv = SystemClock.elapsedRealtime()
-        val msg = try { Frame.unpack(vc, bytes) } catch (e: Exception) {
+        if (Phrasebook.isPhraseFrame(bytes)) {                 // lang=15: Frame.unpack would throw, so route first
+            tx(ReliableCtrl.make(seq, ReliableCtrl.ACK_BYTE))  // ACK before dedupe — a retransmit whose first ACK was lost still gets one
+            val h = bytes.contentHashCode()
+            synchronized(seenPhrase) { if (h in seenPhrase) return; seenPhrase.addLast(h); if (seenPhrase.size > 64) seenPhrase.removeFirst() }
+            val d = try { pb.unpack(bytes) } catch (e: Exception) {
+                runOnUiThread { bubble("corrupt frame dropped", "${bytes.size} B · CRC/decode failed", alert = false, incoming = true) }; return
+            }
+            runOnUiThread {
+                val l = lang()   // rendered in THIS phone's language — that is the point of a phrase frame
+                speak(Frame.Msg(0, l, d.prio, d.seq, pb.render(d.idx, l, d.n)), bytes.size, tRecv,
+                    extra = " · phrase" + if (!d.fpOk) " · book mismatch" else "")
+            }
+            return
+        }
+        val r = try { receiver.ingest(bytes, vc) } catch (e: Exception) {
             runOnUiThread { bubble("corrupt frame dropped", "${bytes.size} B · CRC/decode failed", alert = false, incoming = true) }; return
         }
+        r.ctrl.forEach { tx(it) }                              // ACK (duplicates too) + NACKs for gaps
+        val msg = r.msg ?: return                              // duplicate: ACKed above, not shown again
+        if (msg.prio == Frame.ACK) return                      // roll-call class, not for the transcript
         runOnUiThread { speak(msg, bytes.size, tRecv) }
     }
 
-    private fun speak(msg: Frame.Msg, size: Int, tRecv: Long) {
+    private fun speak(msg: Frame.Msg, size: Int, tRecv: Long, extra: String = "") {
         val alert = msg.prio == Frame.ALERT
-        val engine = speech?.ttsFor(msg.lang)
         val pp = msg.prosody?.let { Prosody.ttsParams(it) }
-        val repeats = maxOf(if (alert) 2 else 1, pp?.repeats ?: 1)
-        // Serialized: each message is spoken to the end. "first audio ms" now includes queue wait — the honest receive→ear number.
-        playback.execute {
-            if (alert) raiseForAlert()
-            try {
-                val label: String
+        val id = ++msgIds
+        // Bubble lands the moment the frame does; the chip gets "first audio N ms" when its first clause plays.
+        chipOf[id] = bubble(msg.text, "$size B" + (if (alert) " · ALERT" else "") + " · ${msg.lang}" + extra, alert, incoming = true)
+        speakQueue.enqueue(msg.text, msg.lang, alert, pp?.gain ?: 1f, msgId = id)
+        firstAudioAt[id] = tRecv
+        speedOf[id] = pp?.speed ?: 1f
+        playback.execute { drain() }
+    }
+
+    private val firstAudioAt = HashMap<Any, Long>()   // msgId → receive time until its first clause is voiced
+    private val speedOf = HashMap<Any, Float>()
+
+    /** Runs on the single `playback` thread: one clause at a time, alerts first (a long message yields between clauses). */
+    private fun drain() {
+        var raised = false
+        try {
+            while (true) {
+                val c = speakQueue.next() ?: break
+                if (c.alert && !raised) { raiseForAlert(); raised = true }
+                val engine = speech?.ttsFor(c.lang)
+                var label: String? = null
                 if (engine != null) {
-                    val audio = engine.generate(msg.text, 0, pp?.speed ?: 1.0f)
-                    val firstAudioMs = SystemClock.elapsedRealtime() - tRecv
-                    LastStats.ttsFirstAudioMs = firstAudioMs
-                    label = "first audio ${firstAudioMs} ms" + (pp?.let { " · ${it.urgency}" } ?: "")
-                    repeat(repeats) { playPcm(audio.samples, audio.sampleRate, alert, pp?.gain ?: 1.0f) }
-                } else {
-                    label = if (speakPlatform(msg, repeats)) "platform TTS"
-                            else getString(R.string.no_voice, msg.lang)
-                }
-                runOnUiThread {
-                    bubble(msg.text, "$size B" + (if (alert) " · ALERT" else "") + " · ${msg.lang} · $label",
-                        alert, incoming = true)
-                }
-            } finally {
-                if (alert) restoreAfterAlert()   // runs even if synthesis threw or the queue was shut down
+                    val audio = engine.generate(c.clause, 0, speedOf[c.msgId] ?: 1f)
+                    firstAudioAt.remove(c.msgId)?.let { t0 ->
+                        val ms = SystemClock.elapsedRealtime() - t0
+                        LastStats.ttsFirstAudioMs = ms
+                        label = "first audio $ms ms"
+                    }
+                    playPcm(audio.samples, audio.sampleRate, c.alert, c.gain)
+                } else if (firstAudioAt.remove(c.msgId) != null) {
+                    label = if (speakPlatform(c.clause, c.lang)) "platform TTS" else getString(R.string.no_voice, c.lang)
+                } else speakPlatform(c.clause, c.lang)
+                label?.let { l -> runOnUiThread { chipOf[c.msgId]?.append(" · $l") } }
             }
+        } finally {
+            if (raised) restoreAfterAlert()   // runs even if synthesis threw or the queue was shut down
         }
     }
 
@@ -452,23 +504,23 @@ class MainActivity : Activity() {
      * Returns false when the engine has no voice for the language (or is not ready yet): the old code
      * waited the full 30 s for a speak that never started, stalling every later message behind it.
      */
-    private fun speakPlatform(msg: Frame.Msg, repeats: Int): Boolean {
+    private fun speakPlatform(clause: String, lang: String): Boolean {
         val t = tts ?: return false
-        val parts = (ttsLocales[msg.lang] ?: "en_IN").split('_')
+        val parts = (ttsLocales[lang] ?: "en_IN").split('_')
         if (t.setLanguage(Locale(parts[0], parts[1])) < 0) return false   // LANG_MISSING_DATA / LANG_NOT_SUPPORTED
-        val done = CountDownLatch(repeats)
+        val done = CountDownLatch(1)
         t.setOnUtteranceProgressListener(object : android.speech.tts.UtteranceProgressListener() {
             override fun onStart(id: String?) {}
             override fun onDone(id: String?) { done.countDown() }
             @Suppress("OverridingDeprecatedMember", "DEPRECATION")
             override fun onError(id: String?) { done.countDown() }
         })
-        repeat(repeats) {
-            if (t.speak(msg.text, TextToSpeech.QUEUE_ADD, null, "m${msg.seq}-$it") != TextToSpeech.SUCCESS) done.countDown()
-        }
+        if (t.speak(clause, TextToSpeech.QUEUE_ADD, null, "c${++utt}") != TextToSpeech.SUCCESS) done.countDown()
         done.await(30, TimeUnit.SECONDS)   // bounded: a broken engine must not wedge the queue
         return true
     }
+
+    private var utt = 0
 
     private fun playPcm(samples: FloatArray, sampleRate: Int, alert: Boolean, gain: Float = 1.0f) {
         // ponytail: gain >1 hard-clips — acceptable siren effect for urgent frames
@@ -506,8 +558,8 @@ class MainActivity : Activity() {
     /** Chip shows connection state; a live peer is never overwritten by late advertise/discovery events. */
     private fun setStatus(s: String) {
         when {
-            s.startsWith("connected to ") -> { peer = shortPeer(s.removePrefix("connected to ")); Thread { arq.flush() }.start() }
-            s.startsWith("BT connected: ") -> { peer = shortPeer(s.removePrefix("BT connected: ")); Thread { arq.flush() }.start() }
+            s.startsWith("connected to ") -> { peer = shortPeer(s.removePrefix("connected to ")); Thread { sender.flush(); pump() }.start() }
+            s.startsWith("BT connected: ") -> { peer = shortPeer(s.removePrefix("BT connected: ")); Thread { sender.flush(); pump() }.start() }
             s.startsWith("peer ") || s.startsWith("BT peer") -> peer = null
             s == "connected" && peer == null -> peer = "peer" // a frame just went out on a live socket
         }
@@ -575,6 +627,25 @@ class MainActivity : Activity() {
         col.alpha = 0f; col.translationY = dp(6).toFloat()
         transcriptBox.addView(col)
         col.animate().alpha(1f).translationY(0f).setDuration(150).start()
+        scroll.post { scroll.fullScroll(View.FOCUS_DOWN) }
+        return chip
+    }
+
+    /** A lone chip row (no bubble) under the last message — used for the phrase-snap offer. */
+    private fun bubbleChip(text: String, incoming: Boolean): TextView {
+        val side = if (incoming) Gravity.START else Gravity.END
+        val chip = TextView(this).apply {
+            this.text = text
+            textSize = 12f
+            typeface = resources.getFont(R.font.outfit_medium)
+            setTextColor(getColor(R.color.orange))
+            setBackgroundResource(R.drawable.chip_orange)
+            setPadding(dp(9), dp(4), dp(9), dp(4))
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { gravity = side; topMargin = dp(4) }
+        }
+        transcriptBox.addView(chip)
         scroll.post { scroll.fullScroll(View.FOCUS_DOWN) }
         return chip
     }
