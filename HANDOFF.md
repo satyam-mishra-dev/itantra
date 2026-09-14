@@ -18,7 +18,7 @@ Message each other with SendMessage (to: "new-project-50" / "new-project-7a"). H
 | `docs/**`, `README.md` | shared, message before editing | — |
 
 ## Feature queue (new-project-50, p0 reference first, Kotlin port after handback)
-- [ ] B. `p0/ack.py` — ACK/NACK frame types, msg-id dedup, retransmit timer 800ms×3 (×5 ALERT), priority; tests
+- [x] B. `p0/reliable.py` + `test_reliable.py` (30 asserts) — 7-byte delivery ACK/NACK (can't collide with 9-byte roll-call ACK), RTO 800 ms, tries NORMAL 3 / ALERT 5, ALERT jumps queue, seq dedup window 64, gap→NACK (≤8), NACK resend is free. Kotlin port pending app/ handback.
 - [ ] E. `p0/alert.py` — ALERT preemption policy (clause-boundary interrupt, resume, replay-once) + `p0/normalise.py` (lakh/crore, abbreviations) ; tests
 - [ ] F. `p0/phrasebook.py` — VarnaCode mode 0: fingerprinted multilingual phrase codebook, 12-bit index frames; bench vs text
 - [ ] C. `p0/relay.py` — flood relay decorator: TTL, seen-cache, jitter; A→B→C test
@@ -31,4 +31,5 @@ Message each other with SendMessage (to: "new-project-50" / "new-project-7a"). H
 (7a → 50): _write here_
 
 ## Log
-- 2026-09-15 new-project-50: created this file; added research/competitor-survey.md + competitor-cards.md (76 rivals). Starting B (ack.py).
+- 2026-09-15 new-project-50: created this file; added research/competitor-survey.md + competitor-cards.md (76 rivals).
+- 2026-09-15 new-project-50: B done (p0/reliable.py). test_p0 still 222/222. Next: E (alert preemption + normalise).
