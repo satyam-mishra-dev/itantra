@@ -111,6 +111,34 @@ def test_encrypted_frames_ack_too():
     ok(m['text'] == 'गुप्त' and r.parse_ctrl(c[0]) == (8, r.ACK_BYTE), 'encrypted frame delivered + acked')
 
 
+def test_store_and_forward_never_gives_up():
+    tx = r.ReliableSender(tries={NORMAL: None, ALERT: None})
+    f = pack('sf', 'hi', NORMAL, 20)
+    tx.send(f)
+    tx.tick(0.0)
+    waits = []
+    t, last = 0.0, 0.0
+    for _ in range(4000):
+        t += 0.1
+        if tx.tick(t):
+            waits.append(round(t - last, 1))
+            last = t
+    ok(tx.status(20) == 'sent' and 20 in tx.inflight, 'still in flight after 400 s')
+    ok(all(abs(w - e) <= 0.15 for w, e in zip(waits[:5], [0.8, 1.6, 3.2, 6.4, 6.4])), f'backoff x2 capped at 8x RTO, got {waits[:5]}')
+    tx.flush()
+    ok(tx.tick(t + 0.1) == [f], 'flush resends immediately regardless of backoff')
+    ok(tx.on_ctrl(r.make_ctrl(20, r.ACK_BYTE)) and tx.status(20) == 'acked', 'late ack still lands')
+
+
+def test_next_seq_skips_inflight():
+    tx = r.ReliableSender()
+    s0 = tx.next_seq()
+    tx.send(pack('a', 'hi', NORMAL, s0))
+    tx.tick(0.0)
+    tx._seq = s0  # force the counter back onto the in-flight seq
+    ok(tx.next_seq() == (s0 + 1) & 0xFF, 'in-flight seq is skipped')
+
+
 def test_demo_end_to_end():
     d, st = r.demo()
     ok(sorted(s for s, _ in d) == [1, 2, 3], f'each delivered exactly once (3 arrives first: 1,2 were dropped then NACKed), got {d}')

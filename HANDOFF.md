@@ -18,8 +18,8 @@ Message each other with SendMessage (to: "new-project-50" / "new-project-7a"). H
 | `docs/**`, `README.md` | shared, message before editing | — |
 
 ## Feature queue (new-project-50, p0 reference first, Kotlin port after handback)
-- [x] B. `p0/reliable.py` + `test_reliable.py` (30 asserts) — 7-byte delivery ACK/NACK (can't collide with 9-byte roll-call ACK), RTO 800 ms, tries NORMAL 3 / ALERT 5, ALERT jumps queue, seq dedup window 64, gap→NACK (≤8), NACK resend is free. Kotlin port pending app/ handback.
-- [ ] E. `p0/alert.py` — ALERT preemption policy (clause-boundary interrupt, resume, replay-once) + `p0/normalise.py` (lakh/crore, abbreviations) ; tests
+- [x] B. `p0/reliable.py` + `test_reliable.py` (35 asserts) — 7-byte delivery ACK/NACK (can't collide with 9-byte roll-call ACK), RTO 800 ms, tries NORMAL 3 / ALERT 5, ALERT jumps queue, seq dedup window 64, gap→NACK (≤8), NACK resend is free; `tries=None` = store-and-forward never-give-up with x2 backoff capped 8× (= Arq.kt semantics), `flush()` on reconnect, `next_seq()` skips in-flight. Port = replace Arq.kt wholesale (its 9-byte empty-VarnaCode ACK has plen=3 like roll-call and only parses apart by luck).
+- [x] E. `p0/speak.py` + `test_speak.py` (30 asserts) — `normalise()`: danda/punct → clauses (Piper otherwise says "पूर्णविराम"), Indian-grouped numbers → lakh/crore words in all 10 langs, unit abbreviations (en/hi/mr/bn lexicon), acronyms spelled out; `SpeakQueue`: ALERT preempts at clause boundary, interrupted msg resumes at its clause, alert plays twice, ALERT_GAIN flag for STREAM_ALARM. Kotlin port pending.
 - [ ] F. `p0/phrasebook.py` — VarnaCode mode 0: fingerprinted multilingual phrase codebook, 12-bit index frames; bench vs text
 - [ ] C. `p0/relay.py` — flood relay decorator: TTL, seen-cache, jitter; A→B→C test
 - [ ] L. `p0/fec.py` — FEC for AFSK/LoRa path (pick per research_adaptive.md)
@@ -33,5 +33,6 @@ Message each other with SendMessage (to: "new-project-50" / "new-project-7a"). H
 
 ## Log
 - 2026-09-15 new-project-50: created this file; added research/competitor-survey.md + competitor-cards.md (76 rivals).
-- 2026-09-15 new-project-50: B done (p0/reliable.py). test_p0 still 222/222. Next: E (alert preemption + normalise).
+- 2026-09-15 new-project-50: B done (p0/reliable.py, now with Arq.kt's store-and-forward semantics). E done (p0/speak.py). test_p0 still 222/222. Next: F (phrasebook mode).
+- 2026-09-15 new-project-7a: app/ WIP = Packs.kt downloader, NSD MulticastLock + UDP beacon fallback, BT restart after permission, platform-TTS fallback fix, shared keystore. No wire change. Will write "app/ free" when committed. Emulators itantra_c/_d on 5570/5572 and itantra_ui_a/_b on 5580/5582 are theirs — don't start emulators on those ports.
 - 2026-09-15 new-project-7a: app/ field-bug pass committed (2bca924): in-app pack download, discovery hardening (MulticastLock + UDP beacon + retrying IP connect), BT restart, TTS no-voice stall fix, shared signing key. Verified on itantra_c/_d: hi STT+TTS packs download + load. Next: full feature test matrix, UI sub-agent.
