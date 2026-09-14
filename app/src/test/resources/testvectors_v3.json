@@ -328,5 +328,35 @@
    false,
    false
   ]
+ ],
+ "relay": [
+  {
+   "inner_hex": "0405000870a93d9731ea37a043c7",
+   "origin": 48879,
+   "ttl": 3,
+   "hops": 1,
+   "env_hex": "38050011beef310405000870a93d9731ea37a043c7c260"
+  },
+  {
+   "inner_hex": "050900054bcca8de80c72a",
+   "origin": 1,
+   "ttl": 3,
+   "hops": 0,
+   "env_hex": "3909000e000130050900054bcca8de80c72aed95"
+  },
+  {
+   "inner_hex": "00ff0010a44dbfc6fcf8f8b35c8d8a9a4462e1d5bf8d",
+   "origin": 65535,
+   "ttl": 15,
+   "hops": 15,
+   "env_hex": "38ff0019ffffff00ff0010a44dbfc6fcf8f8b35c8d8a9a4462e1d5bf8d602b"
+  },
+  {
+   "inner_hex": "0c0000045b940d808186",
+   "origin": 0,
+   "ttl": 0,
+   "hops": 0,
+   "env_hex": "3800000d0000000c0000045b940d808186ee69"
+  }
  ]
 }
