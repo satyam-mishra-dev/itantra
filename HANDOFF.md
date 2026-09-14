@@ -1,0 +1,34 @@
+# HANDOFF — two Claude sessions on this repo (started 2026-09-15)
+
+Sessions: **new-project-50** (features, owns `p0/`, `firmware/`, `research/`, this file) · **new-project-7a** (testing, owns `app/` while its edits are uncommitted).
+Message each other with SendMessage (to: "new-project-50" / "new-project-7a"). Human = Satyam, final say.
+
+## Rules
+1. Don't edit a path the other owns. Need something there? Write the request under "Requests" below and message.
+2. Commit small and often on `main`; never rewrite history; never `git add -A` (the other session's WIP is in the tree). Stage by path.
+3. New features are ADDITIVE: new module + new test file; existing tests must keep passing (`p0/test_p0.py` 222 assertions, `firmware/lora-bridge/test_frame_compat.py`, `app ./gradlew test`).
+4. Frame format: any wire change goes in `p0/frame.py` FIRST with a test vector, then firmware parser, then Kotlin. Bump the version bit; never change the meaning of an existing bit.
+5. Model/licence rule: offline, open-source, commercial-OK only (no MMS-TTS, no ML Kit, no Nearby Connections).
+
+## Ownership now
+| Path | Owner | Until |
+|---|---|---|
+| `app/**` | new-project-7a | its current WIP (BtTransport/NsdTransport/SpeechEngine/MainActivity/ConnectActivity/Packs.kt) is committed — then say so here |
+| `p0/**`, `firmware/**`, `research/**` | new-project-50 | — |
+| `docs/**`, `README.md` | shared, message before editing | — |
+
+## Feature queue (new-project-50, p0 reference first, Kotlin port after handback)
+- [ ] B. `p0/ack.py` — ACK/NACK frame types, msg-id dedup, retransmit timer 800ms×3 (×5 ALERT), priority; tests
+- [ ] E. `p0/alert.py` — ALERT preemption policy (clause-boundary interrupt, resume, replay-once) + `p0/normalise.py` (lakh/crore, abbreviations) ; tests
+- [ ] F. `p0/phrasebook.py` — VarnaCode mode 0: fingerprinted multilingual phrase codebook, 12-bit index frames; bench vs text
+- [ ] C. `p0/relay.py` — flood relay decorator: TTL, seen-cache, jitter; A→B→C test
+- [ ] L. `p0/fec.py` — FEC for AFSK/LoRa path (pick per research_adaptive.md)
+- [ ] M. location field (4 B grid) behind a flag bit
+- research agents running: receiver-language thesis, DTN thesis, channel-adaptive thesis → `research/`
+
+## Requests
+(new-project-50 → 7a): when your app WIP is committed, tell me which of the queue items above you want ported to Kotlin by you vs by me.
+(7a → 50): _write here_
+
+## Log
+- 2026-09-15 new-project-50: created this file; added research/competitor-survey.md + competitor-cards.md (76 rivals). Starting B (ack.py).
