@@ -23,7 +23,8 @@ from varnacode import LANGS
 
 ACK_BYTE, NACK_BYTE = 0, 1
 RTO = 0.8
-TRIES = {NORMAL: 3, ALERT: 5}
+TRIES = {NORMAL: 3, ALERT: 5}   # None = never give up (store-and-forward), backoff x2 capped at 8x RTO
+BACKOFF_CAP = 3                  # 2**3 = 8x
 DEDUP_WINDOW = 64  # seqs remembered per link
 
 
@@ -66,9 +67,21 @@ class ReliableSender:
         self.rto = rto
         self.tries = dict(TRIES if tries is None else tries)
         self.queue = []            # [(seq, frame, prio)] not yet transmitted
-        self.inflight = {}         # seq -> {'frame','prio','sent','left'}
+        self.inflight = {}         # seq -> {'frame','prio','sent','left','tries'}
         self.state = {}            # seq -> status string
         self.now = now
+        self._seq = 0
+        self.retransmits = 0
+
+    def next_seq(self):
+        """Next wire seq, skipping any still in flight so the 1-byte wrap never clobbers a queued frame."""
+        busy = set(self.inflight) | {q[0] for q in self.queue}
+        for _ in range(256):
+            s = self._seq & 0xFF
+            self._seq += 1
+            if s not in busy:
+                return s
+        return self._seq & 0xFF  # 256 unacked: the peer has been gone half a conversation; oldest loses
 
     @staticmethod
     def seq_of(frame_bytes):
@@ -103,27 +116,37 @@ class ReliableSender:
         # 1. retransmits / expiries, oldest first
         for seq in sorted(self.inflight, key=lambda s: self.inflight[s]['sent']):
             f = self.inflight[seq]
-            if f.pop('nack', False):
+            if f.pop('nack', False) or f.pop('flush', False):
                 f['sent'] = now
                 out.append(f['frame'])
                 continue
-            if now - f['sent'] < self.rto:
+            wait = self.rto * (1 << min(f['tries'] - 1, BACKOFF_CAP)) if f['left'] is None else self.rto
+            if now - f['sent'] < wait:
                 continue
-            if f['left'] <= 0:
-                del self.inflight[seq]
-                self.state[seq] = 'failed'
-                continue
-            f['left'] -= 1
+            if f['left'] is not None:
+                if f['left'] <= 0:
+                    del self.inflight[seq]
+                    self.state[seq] = 'failed'
+                    continue
+                f['left'] -= 1
+            f['tries'] += 1
             f['sent'] = now
+            self.retransmits += 1
             out.append(f['frame'])
         # 2. fresh sends
         while self.queue:
             seq, frame_bytes, prio = self.queue.pop(0)
-            self.inflight[seq] = {'frame': frame_bytes, 'prio': prio, 'sent': now,
-                                  'left': self.tries.get(prio, TRIES[NORMAL]) - 1}
+            budget = self.tries.get(prio, TRIES[NORMAL])
+            self.inflight[seq] = {'frame': frame_bytes, 'prio': prio, 'sent': now, 'tries': 1,
+                                  'left': None if budget is None else budget - 1}
             self.state[seq] = 'sent'
             out.append(frame_bytes)
         return out
+
+    def flush(self):
+        """Peer (re)connected: resend everything in flight on the next tick, no backoff wait."""
+        for f in self.inflight.values():
+            f['flush'] = True
 
     def status(self, seq):
         return self.state.get(seq)
