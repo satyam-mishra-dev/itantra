@@ -19,8 +19,8 @@ class TransportTest {
         try { pumpFrames(stream) { got += it } } catch (_: EOFException) { }
         assertEquals(3, got.size)
         assertArrayEquals(f1, got[0]); assertArrayEquals(f2, got[1]); assertArrayEquals(f3, got[2])
-        assertEquals(Frame.ACK, Arq.peek(got[1]).first)
-        assertEquals(2, Arq.peek(got[2]).second)
+        assertEquals(Frame.ACK, got[1][0].toInt() and 3)
+        assertEquals(2, got[2][1].toInt() and 0xFF)
     }
 
     @Test fun truncatedFrameNeverDelivered() {
