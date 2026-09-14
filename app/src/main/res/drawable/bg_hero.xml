@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <gradient android:angle="315" android:startColor="@color/navy2" android:endColor="@color/navy" android:type="linear"/>
-</shape>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:angle="270" android:startColor="@color/heroDeep" android:centerColor="@color/hero" android:endColor="@color/heroGlow" android:type="linear"/>
+        </shape>
+    </item>
+    <item android:top="140dp" android:left="140dp" android:right="-240dp" android:bottom="120dp">
+        <shape android:shape="oval">
+            <gradient android:type="radial" android:gradientRadius="360dp" android:startColor="#38FFFFFF" android:endColor="#00FFFFFF"/>
+        </shape>
+    </item>
+</layer-list>

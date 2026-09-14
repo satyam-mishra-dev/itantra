@@ -8,9 +8,8 @@
     android:paddingBottom="9dp"
     android:gravity="center_vertical"
     android:textSize="16sp"
-    android:textColor="@color/pillInk"
+    android:textColor="@color/ink"
     android:fontFamily="@font/outfit_semibold"
     android:drawableEnd="@drawable/ic_chevron"
-    android:drawableTint="#4B3BC9"
     android:drawablePadding="4dp"
     android:singleLine="true" />

@@ -19,7 +19,7 @@
         android:icon="@android:drawable/ic_btn_speak_now"
         android:theme="@style/Theme.ITantra">
 
-        <activity android:name=".ConnectActivity" android:exported="true">
+        <activity android:name=".ConnectActivity" android:exported="true" android:theme="@style/Theme.ITantra.Hero">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

@@ -2,15 +2,26 @@
 <resources>
     <style name="Theme.ITantra" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@drawable/bg_surface</item>
-        <item name="android:colorAccent">@color/orange</item>
-        <item name="android:textColorPrimary">@color/textPrimary</item>
-        <item name="android:textColorSecondary">@color/textSecondary</item>
-        <item name="android:statusBarColor">@color/navy</item>
-        <item name="android:navigationBarColor">@color/surfaceBot</item>
+        <item name="android:colorAccent">@color/heroGlow</item>
+        <item name="android:colorPrimary">@color/hero</item>
+        <item name="android:colorControlActivated">@color/heroGlow</item>
+        <item name="android:textColorPrimary">@color/ink</item>
+        <item name="android:textColorSecondary">@color/inkMuted</item>
+        <item name="android:statusBarColor">@color/heroDeep</item>
+        <item name="android:navigationBarColor">@color/card</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowLightNavigationBar">false</item>
         <item name="android:textViewStyle">@style/ITantra.TextView</item>
         <item name="android:buttonStyle">@style/ITantra.Button</item>
         <item name="android:editTextStyle">@style/ITantra.EditText</item>
+        <item name="android:alertDialogTheme">@style/ITantra.Dialog</item>
+    </style>
+    <style name="Theme.ITantra.Hero">
+        <item name="android:navigationBarColor">@color/heroDeep</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+    <style name="ITantra.Dialog" parent="android:Theme.Material.Dialog.Alert">
+        <item name="android:colorAccent">@color/heroGlow</item>
+        <item name="android:fontFamily">@font/outfit</item>
     </style>
 </resources>
