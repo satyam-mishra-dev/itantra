@@ -1,14 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="SectionLabel">
+    <!-- tracked micro-label: only where it names a section or a state -->
+    <style name="Micro">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">18dp</item>
-        <item name="android:layout_marginBottom">8dp</item>
         <item name="android:textAllCaps">true</item>
-        <item name="android:letterSpacing">0.12</item>
+        <item name="android:letterSpacing">0.14</item>
         <item name="android:textSize">11sp</item>
         <item name="android:textColor">@color/label</item>
         <item name="android:fontFamily">@font/outfit_semibold</item>
+    </style>
+    <style name="SectionLabel" parent="Micro">
+        <item name="android:layout_marginTop">22dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:layout_marginStart">4dp</item>
+    </style>
+    <style name="StatCard">
+        <item name="android:orientation">vertical</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_columnWeight">1</item>
+        <item name="android:background">@drawable/card_bg</item>
+        <item name="android:padding">16dp</item>
+        <item name="android:elevation">2dp</item>
+    </style>
+    <style name="StatValue">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:text">—</item>
+        <item name="android:textSize">32sp</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="android:fontFamily">@font/outfit_bold</item>
+    </style>
+    <style name="StatLabel" parent="Micro">
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:letterSpacing">0.08</item>
+        <item name="android:textSize">10sp</item>
+    </style>
+    <style name="IconTile">
+        <item name="android:layout_width">50dp</item>
+        <item name="android:layout_height">50dp</item>
+        <item name="android:background">@drawable/tile_bg</item>
     </style>
 </resources>

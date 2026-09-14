@@ -70,7 +70,9 @@ class EvalActivity : Activity() {
         ttsVal = findViewById(R.id.ttsVal)
         if (LastStats.ttsFirstAudioMs >= 0) ttsVal.text = "${LastStats.ttsFirstAudioMs} ms"
 
-        spinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, langNames)
+        spinner.adapter = ArrayAdapter(this, R.layout.spinner_item_ink, langNames).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
         spinner.setSelection(1)
         spinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p: android.widget.AdapterView<*>?, v: android.view.View?, pos: Int, id: Long) {
@@ -141,27 +143,30 @@ class EvalActivity : Activity() {
         val wrap = LinearLayout.LayoutParams.WRAP_CONTENT
         fun chip(kind: String, f: File) = TextView(this).apply {
             val ok = f.exists()
-            text = if (ok) "$kind ✓ %.0f MB".format(f.length() / 1e6) else "$kind ✗"
+            text = if (ok) "$kind  %.0f MB".format(f.length() / 1e6) else kind
             textSize = 12f
-            setTextColor(getColor(if (ok) R.color.green else R.color.textSecondary))
-            setBackgroundResource(R.drawable.chip_bg)
-            setPadding((8 * d).toInt(), (3 * d).toInt(), (8 * d).toInt(), (3 * d).toInt())
+            typeface = resources.getFont(R.font.outfit_semibold)
+            setTextColor(getColor(if (ok) R.color.ok else R.color.label))
+            setBackgroundResource(if (ok) R.drawable.chip_ok else R.drawable.chip_bg)
+            alpha = if (ok) 1f else 0.7f
+            setPadding((9 * d).toInt(), (4 * d).toInt(), (9 * d).toInt(), (4 * d).toInt())
             layoutParams = LinearLayout.LayoutParams(wrap, wrap).apply { marginStart = (6 * d).toInt() }
         }
         for ((i, l) in VarnaCode.LANGS.withIndex()) {
             rows.addView(LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_VERTICAL
-                setPadding(0, (5 * d).toInt(), 0, (5 * d).toInt())
+                setPadding(0, (7 * d).toInt(), 0, (7 * d).toInt())
                 addView(android.widget.ImageView(context).apply {
                     setImageResource(R.drawable.ic_pack)
                     setBackgroundResource(R.drawable.tile_bg)
-                    setPadding((8 * d).toInt(), (8 * d).toInt(), (8 * d).toInt(), (8 * d).toInt())
-                    layoutParams = LinearLayout.LayoutParams((36 * d).toInt(), (36 * d).toInt()).apply { marginEnd = (12 * d).toInt() }
+                    setPadding((9 * d).toInt(), (9 * d).toInt(), (9 * d).toInt(), (9 * d).toInt())
+                    layoutParams = LinearLayout.LayoutParams((38 * d).toInt(), (38 * d).toInt()).apply { marginEnd = (12 * d).toInt() }
                 })
                 addView(TextView(context).apply {
                     text = langNames[i]; textSize = 16f
-                    setTextColor(getColor(R.color.textPrimary))
+                    typeface = resources.getFont(R.font.outfit_medium)
+                    setTextColor(getColor(R.color.ink))
                     layoutParams = LinearLayout.LayoutParams(0, wrap, 1f)
                 })
                 addView(chip("STT", File(base, "$l/stt/model.onnx")))

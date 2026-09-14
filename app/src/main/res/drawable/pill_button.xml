@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_pressed="true">
-        <shape android:shape="rectangle">
-            <solid android:color="@color/orange"/>
-            <corners android:radius="32dp"/>
-        </shape>
-    </item>
+<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#40FFFFFF">
     <item>
-        <shape android:shape="rectangle">
-            <solid android:color="@color/navy"/>
-            <corners android:radius="32dp"/>
-        </shape>
+        <selector>
+            <item android:state_pressed="true">
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/heroDeep"/>
+                    <corners android:radius="30dp"/>
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient android:angle="0" android:startColor="@color/hero" android:endColor="@color/heroDeep" android:type="linear"/>
+                    <corners android:radius="30dp"/>
+                </shape>
+            </item>
+        </selector>
     </item>
-</selector>
+</ripple>

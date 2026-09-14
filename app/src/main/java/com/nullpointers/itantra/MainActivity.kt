@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Typeface
 import android.view.Gravity
 import android.view.View
 import android.media.AudioAttributes
@@ -174,7 +173,7 @@ class MainActivity : Activity() {
                     v.animate().scaleX(1.06f).scaleY(1.06f).setDuration(120).start()
                     startPulse()
                     pttHint.text = getString(R.string.ptt_listening)
-                    pttHint.setTextColor(getColor(R.color.orange))
+                    pttHint.setTextColor(getColor(R.color.live))
                     true
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
@@ -182,7 +181,7 @@ class MainActivity : Activity() {
                     v.animate().scaleX(1f).scaleY(1f).setDuration(120).start()
                     stopPulse()
                     pttHint.text = getString(R.string.ptt_hint)
-                    pttHint.setTextColor(getColor(R.color.textSecondary))
+                    pttHint.setTextColor(getColor(R.color.inkMuted))
                     pttUp(); true
                 }
                 else -> false
@@ -236,7 +235,7 @@ class MainActivity : Activity() {
     private fun setAlert(on: Boolean) {
         alertPill.isSelected = on
         alertPill.text = getString(if (on) R.string.alert_pill_on else R.string.alert_pill)
-        alertPill.setTextColor(if (on) 0xFFFFFFFF.toInt() else getColor(R.color.red))
+        alertPill.setTextColor(if (on) 0xFFFFFFFF.toInt() else getColor(R.color.alert))
     }
 
     /** Expanding orange ring while the button is held — the "I'm live" affordance. */
@@ -499,13 +498,21 @@ class MainActivity : Activity() {
             s.startsWith("peer ") || s.startsWith("BT peer") || s.startsWith("discovery")
         val p = peer
         val up = link && p != null
-        status.text = when {
+        val text = when {
             !link -> s
-            up -> "● connected · $p"
+            up -> "connected · $p"
             else -> getString(R.string.starting)
         }
-        status.setBackgroundResource(if (up) R.drawable.hero_chip_green else R.drawable.hero_chip)
-        status.setTextColor(getColor(if (up) R.color.onHero else R.color.onHeroMuted))
+        // chip colour = link state: mint connected / amber downloading / red no peer / translucent searching
+        val (bg, glyph, fg) = when {
+            up -> Triple(R.drawable.chip_status_ok, "●  ", R.color.pillInk)
+            text.startsWith("downloading") -> Triple(R.drawable.chip_status_warn, "↓  ", R.color.pillInk)
+            text == getString(R.string.no_peers) -> Triple(R.drawable.chip_status_bad, "○  ", R.color.onHero)
+            else -> Triple(R.drawable.hero_chip, "", R.color.onHero)
+        }
+        status.text = glyph + text
+        status.setBackgroundResource(bg)
+        status.setTextColor(getColor(fg))
     }
 
     /** "iTantra-sdk_gphone64_arm64-4269" → "sdk gphone64"; "192.168.43.1:47474" → "192.168.43.1". Whole words only. */
@@ -518,49 +525,79 @@ class MainActivity : Activity() {
 
     private fun dp(x: Int) = (x * resources.displayMetrics.density).toInt()
 
-    /** Chat bubble + muted byte chip — the chip is the on-stage wow moment (45 B per sentence). */
+    /**
+     * Chat bubble + byte chip — the chip is the on-stage wow moment (45 B per sentence), so it is a
+     * two-segment pill: solid "45 B" block, then the muted meta (lang · timing · ✓ on ACK).
+     */
     private fun bubble(text: String, meta: String, alert: Boolean, incoming: Boolean): TextView {
         emptyHint.visibility = View.GONE
         // side keys on direction only; ALERT changes colour, never alignment
         val side = if (incoming) Gravity.START else Gravity.END
         val kind = if (alert) ALERTK else if (incoming) RECV else SENT
+        val wrap = LinearLayout.LayoutParams.WRAP_CONTENT
         val col = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply { gravity = side; topMargin = dp(8) }
+            layoutParams = LinearLayout.LayoutParams(wrap, wrap).apply { gravity = side; topMargin = dp(10) }
         }
-        col.addView(TextView(this).apply {
-            this.text = text
-            textSize = 18f
-            setTextColor(getColor(if (kind == ALERTK) R.color.red else R.color.textPrimary))
-            if (kind == ALERTK) setTypeface(null, Typeface.BOLD)
+        val onDark = kind != RECV
+        col.addView(LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
             setBackgroundResource(when (kind) {
                 SENT -> R.drawable.bubble_sent; ALERTK -> R.drawable.bubble_alert; else -> R.drawable.bubble_recv
             })
-            setPadding(dp(14), dp(10), dp(14), dp(10))
-            maxWidth = (resources.displayMetrics.widthPixels * 0.8).toInt()
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply { gravity = side }
+            elevation = dp(if (kind == RECV) 1 else 3).toFloat()
+            setPadding(dp(16), dp(if (kind == ALERTK) 10 else 12), dp(16), dp(12))
+            layoutParams = LinearLayout.LayoutParams(wrap, wrap).apply { gravity = side }
+            if (kind == ALERTK) addView(TextView(context).apply {
+                this.text = getString(R.string.alert_pill)
+                textSize = 11f; letterSpacing = 0.14f
+                typeface = resources.getFont(R.font.outfit_bold)
+                setTextColor(0xCCFFFFFF.toInt())
+                setPadding(0, 0, 0, dp(2))
+            })
+            addView(TextView(context).apply {
+                this.text = text
+                textSize = 18f
+                typeface = resources.getFont(if (kind == ALERTK) R.font.outfit_semibold else R.font.outfit_medium)
+                setLineSpacing(0f, 1.15f)
+                setTextColor(if (onDark) 0xFFFFFFFF.toInt() else getColor(R.color.ink))
+                maxWidth = (resources.displayMetrics.widthPixels * 0.78).toInt() - dp(32)
+            })
         })
-        val chip = TextView(this).apply {
-            this.text = meta
+        // "45 B · hi · first audio 320 ms" → bytes segment | meta segment
+        val bytes = meta.substringBefore(" · ")
+        val rest = meta.substringAfter(" · ", "")
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setBackgroundResource(if (kind == ALERTK) R.drawable.chip_alert else R.drawable.chip_bg)
+            clipToOutline = true
+            layoutParams = LinearLayout.LayoutParams(wrap, wrap).apply { gravity = side; topMargin = dp(5) }
+        }
+        val byteChip = TextView(this).apply {
+            this.text = bytes
+            textSize = 13f
+            typeface = resources.getFont(R.font.outfit_bold)
+            setTextColor(0xFFFFFFFF.toInt())
+            setBackgroundColor(getColor(if (kind == ALERTK) R.color.alert else R.color.hero))
+            setPadding(dp(10), dp(5), dp(10), dp(5))
+        }
+        val metaChip = TextView(this).apply {
+            this.text = rest
             textSize = 12f
             typeface = resources.getFont(R.font.outfit_medium)
-            setTextColor(getColor(if (kind == ALERTK) R.color.orange else R.color.textSecondary))
-            setBackgroundResource(if (kind == ALERTK) R.drawable.chip_orange else R.drawable.chip_bg)
-            setPadding(dp(9), dp(3), dp(9), dp(3))
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply { gravity = side; topMargin = dp(4) }
+            setTextColor(getColor(if (kind == ALERTK) R.color.alert else R.color.inkMuted))
+            setPadding(dp(9), dp(5), dp(10), dp(5))
+            maxWidth = (resources.displayMetrics.widthPixels * 0.78).toInt() - dp(70)
+            visibility = if (rest.isEmpty()) View.GONE else View.VISIBLE
         }
-        col.addView(chip)
+        row.addView(byteChip); row.addView(metaChip)
+        col.addView(row)
         col.alpha = 0f; col.translationY = dp(6).toFloat()
         transcriptBox.addView(col)
         col.animate().alpha(1f).translationY(0f).setDuration(150).start()
         scroll.post { scroll.fullScroll(View.FOCUS_DOWN) }
-        return chip
+        return if (rest.isEmpty()) byteChip else metaChip
     }
 
     companion object {
