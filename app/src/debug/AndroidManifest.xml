@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- debug only: lets -PpackBase=http://10.0.2.2:8000 (local pack server) work; release stays https-only -->
+<!-- debug only: cleartext for PpackBase=http://10.0.2.2:8000 (local pack server), and the talk/eval screens
+     exported so the adb test hooks (am start with the say / wav extras) work on unrooted phones. Release keeps both off. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <application android:usesCleartextTraffic="true" tools:ignore="UnusedAttribute" />
+    <application android:usesCleartextTraffic="true" tools:ignore="UnusedAttribute">
+        <activity android:name=".MainActivity" android:exported="true" tools:replace="android:exported" />
+        <activity android:name=".EvalActivity" android:exported="true" tools:replace="android:exported" />
+    </application>
 </manifest>
