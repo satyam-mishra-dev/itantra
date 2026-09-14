@@ -103,6 +103,19 @@ def test_seq_wrap():
     ok(nacked == [0, 255], f'gap across wrap nacks 255 and 0, got {nacked}')
 
 
+def test_peer_restart_reuses_seq_is_not_a_duplicate():
+    rx = r.ReliableReceiver()
+    old = pack('पुराना', 'hi', NORMAL, 0)
+    m, _ = rx.ingest(old)
+    ok(m['text'] == 'पुराना', 'first session seq 0 delivered')
+    m, c = rx.ingest(old)
+    ok(m is None, 'identical retransmit still deduped')
+    new = pack('नया', 'hi', NORMAL, 0)  # peer restarted: same seq, different bytes
+    m, c = rx.ingest(new)
+    ok(m is not None and m['text'] == 'नया', 'restarted peer\'s seq 0 is delivered, not dropped')
+    ok(r.parse_ctrl(c[0]) == (0, r.ACK_BYTE), 'and acked')
+
+
 def test_encrypted_frames_ack_too():
     key = bytes(range(16))
     rx = r.ReliableReceiver()
