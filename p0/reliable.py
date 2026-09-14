@@ -9,8 +9,10 @@ rollcall.parse_ack rejects plen != 3):
 
 Policy (matches what the strongest rivals ship, tuned for our 45-byte frames):
     retransmit after RTO (default 800 ms); NORMAL gets 3 tries, ALERT gets 5;
-    ALERT frames jump the send queue; receiver dedups by seq within a window and
-    NACKs gaps it observes (sender resends the missing seq at once).
+    ALERT frames jump the send queue; receiver dedups by (seq, frame CRC) within a
+    window — seq alone is not enough: a peer that restarts reuses seq 0 within 64
+    messages and its first sentence would be ACKed and silently dropped — and NACKs
+    gaps it observes (sender resends the missing seq at once).
 
 Transport-agnostic and clock-injected: the caller feeds bytes in, gets bytes out,
 and calls tick(now). Stdlib only.
@@ -162,11 +164,15 @@ class ReliableReceiver:
     def __init__(self, lang='hi', window=DEDUP_WINDOW):
         self.lang = lang
         self.window = window
-        self.seen = OrderedDict()  # seq -> True, insertion ordered
+        self.seen = OrderedDict()  # (seq<<16 | crc16) -> True, insertion ordered
         self.last = None           # last in-order seq observed
 
-    def _remember(self, seq):
-        self.seen[seq] = True
+    @staticmethod
+    def _key(frame_bytes):
+        return (frame_bytes[1] << 16) | struct.unpack('>H', frame_bytes[-2:])[0]
+
+    def _remember(self, key):
+        self.seen[key] = True
         while len(self.seen) > self.window:
             self.seen.popitem(last=False)
 
@@ -178,16 +184,17 @@ class ReliableReceiver:
         if msg['prio'] == ACK:
             return msg, []  # roll-call or other ACK-class payload: not ours to ack
         ctrl = [make_ctrl(seq, ACK_BYTE, self.lang)]
-        if seq in self.seen:
+        key = self._key(frame_bytes)
+        if key in self.seen:
             return None, ctrl
         if self.last is not None:
             gap = _seq_gap(self.last, seq)
             if 0 < gap <= 8:  # a small forward gap = something was lost; ask for it
                 for k in range(1, gap + 1):
                     missing = (self.last + k) % 256
-                    if missing not in self.seen:
+                    if not any(k >> 16 == missing for k in self.seen):
                         ctrl.append(make_ctrl(missing, NACK_BYTE, self.lang))
-        self._remember(seq)
+        self._remember(key)
         self.last = seq
         return msg, ctrl
 

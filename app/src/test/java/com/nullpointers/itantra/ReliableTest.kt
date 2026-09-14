@@ -109,6 +109,17 @@ class ReliableTest {
         r = rx.ingest(Frame.pack(vc, "तीन", "hi", Frame.NORMAL, 3), vc); assertEquals(3, r.msg!!.seq); assertEquals(1, r.ctrl.size)
     }
 
+    @Test fun peerRestartReusingSeqIsNotADuplicate() {
+        val rx = ReliableReceiver()
+        val old = Frame.pack(vc, "पुराना", "hi", Frame.NORMAL, 0)
+        assertEquals("पुराना", rx.ingest(old, vc).msg!!.text)
+        assertNull(rx.ingest(old, vc).msg)                       // identical retransmit still deduped
+        val fresh = Frame.pack(vc, "नया", "hi", Frame.NORMAL, 0)  // peer restarted: same seq, new bytes
+        val r = rx.ingest(fresh, vc)
+        assertEquals("नया", r.msg!!.text)
+        assertEquals(Pair(0, 0), ReliableCtrl.parse(r.ctrl[0]))
+    }
+
     @Test fun receiverSeqWrapAndCtrlPassThrough() {
         val rx = ReliableReceiver()
         rx.ingest(Frame.pack(vc, "a", "hi", Frame.NORMAL, 254), vc)

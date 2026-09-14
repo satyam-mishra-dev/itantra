@@ -11,8 +11,9 @@ package com.nullpointers.itantra
  * Sender: NORMAL 3 tries / ALERT 5 (bounded) or tries=null = never give up with ×2 backoff capped at
  * 8×RTO (store-and-forward; frames wait while no peer is connected and flush() on reconnect).
  * ALERT jumps the queue. A NACK resends immediately without spending a try.
- * Receiver: ACKs every data frame (duplicates too — the first ACK may have been lost), dedups by seq
- * in a 64-entry window, NACKs forward gaps ≤ 8.
+ * Receiver: ACKs every data frame (duplicates too — the first ACK may have been lost), dedups by
+ * (seq, frame CRC) in a 64-entry window — seq alone would drop a restarted peer's first message,
+ * which reuses seq 0 — and NACKs forward gaps ≤ 8.
  *
  * Pure Kotlin, clock-injected, no Android imports; byte-identical to the Python reference.
  */
@@ -130,11 +131,14 @@ class ReliableSender(
 class ReliableReceiver(private val lang: String = "hi", private val window: Int = 64) {
     data class Result(val msg: Frame.Msg?, val ctrl: List<ByteArray>)
 
-    private val seen = LinkedHashSet<Int>()
+    private val seen = LinkedHashSet<Int>()   // (seq shl 16) or crc16
     private var last: Int? = null
 
-    private fun remember(seq: Int) {
-        seen += seq
+    private fun key(f: ByteArray) = ((f[1].toInt() and 0xFF) shl 16) or
+        (((f[f.size - 2].toInt() and 0xFF) shl 8) or (f[f.size - 1].toInt() and 0xFF))
+
+    private fun remember(k: Int) {
+        seen += k
         while (seen.size > window) seen.remove(seen.first())
     }
 
@@ -146,15 +150,16 @@ class ReliableReceiver(private val lang: String = "hi", private val window: Int 
         if (msg.prio == Frame.ACK) return Result(msg, emptyList())   // roll-call etc.: not ours to ack
         val ctrl = ArrayList<ByteArray>()
         ctrl += ReliableCtrl.make(msg.seq, ReliableCtrl.ACK_BYTE, lang)
-        if (msg.seq in seen) return Result(null, ctrl)
+        val k = key(frame)
+        if (k in seen) return Result(null, ctrl)
         last?.let { l ->
             val gap = (msg.seq - l - 1) and 0xFF
             if (gap in 1..8) for (k in 1..gap) {
                 val missing = (l + k) and 0xFF
-                if (missing !in seen) ctrl += ReliableCtrl.make(missing, ReliableCtrl.NACK_BYTE, lang)
+                if (seen.none { it shr 16 == missing }) ctrl += ReliableCtrl.make(missing, ReliableCtrl.NACK_BYTE, lang)
             }
         }
-        remember(msg.seq)
+        remember(k)
         last = msg.seq
         return Result(msg, ctrl)
     }
