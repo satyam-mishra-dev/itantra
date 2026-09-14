@@ -158,10 +158,7 @@ class MainActivity : Activity() {
         if (Build.VERSION.SDK_INT >= 31 &&
             checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED)
             wanted += Manifest.permission.BLUETOOTH_CONNECT
-        if (wanted.isNotEmpty()) requestPermissions(wanted.toTypedArray(), 1)
-
-        val svc = Intent(this, PttService::class.java)
-        if (Build.VERSION.SDK_INT >= 26) startForegroundService(svc) else startService(svc)
+        if (wanted.isNotEmpty()) requestPermissions(wanted.toTypedArray(), 1) else startPtt()
 
         findViewById<View>(R.id.eval).setOnClickListener {
             startActivity(Intent(this, EvalActivity::class.java))
@@ -659,9 +656,20 @@ class MainActivity : Activity() {
         )
     }
 
-    /** BtTransport bails without BLUETOOTH_CONNECT; on first launch the grant lands after start(), so start it again. */
+    /**
+     * The microphone-type foreground service may only start once RECORD_AUDIO is granted — on Android 14 a fresh
+     * install crashed with SecurityException the first time the talk screen opened (every earlier test pre-granted).
+     */
+    private fun startPtt() {
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) return
+        val svc = Intent(this, PttService::class.java)
+        if (Build.VERSION.SDK_INT >= 26) startForegroundService(svc) else startService(svc)
+    }
+
+    /** Grants land after start(): BtTransport bails without BLUETOOTH_CONNECT, PttService needs RECORD_AUDIO. */
     override fun onRequestPermissionsResult(code: Int, perms: Array<out String>, res: IntArray) {
         super.onRequestPermissionsResult(code, perms, res)
+        startPtt()
         transports.forEach { if (it is BtTransport) it.start() }
     }
 

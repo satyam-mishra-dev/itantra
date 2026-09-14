@@ -31,10 +31,14 @@ class PttService : Service() {
             .setContentText("Listening for push-to-talk and incoming messages")
             .setSmallIcon(android.R.drawable.ic_btn_speak_now)
             .build()
-        if (Build.VERSION.SDK_INT >= 30) {
-            startForeground(1, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE)
-        } else {
-            startForeground(1, n)
+        try {
+            if (Build.VERSION.SDK_INT >= 30) {
+                startForeground(1, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE)
+            } else {
+                startForeground(1, n)
+            }
+        } catch (e: SecurityException) {   // mic permission revoked while running: degrade, never crash the app
+            stopSelf()
         }
     }
 
