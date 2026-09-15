@@ -358,5 +358,63 @@
    "hops": 0,
    "env_hex": "3800000d0000000c0000045b940d808186ee69"
   }
+ ],
+ "location": [
+  {
+   "text": "नाव भेजो",
+   "lang": "hi",
+   "prio": 1,
+   "seq": 7,
+   "prosody": 2,
+   "lat": 18.5204,
+   "lon": 73.8567,
+   "key_hex": null,
+   "hex": "4507000f4270a93d9731ea37a00d2b89348534342d",
+   "dec_lat": 18.520395755767822,
+   "dec_lon": 73.8567066192627,
+   "dec_prosody": 66
+  },
+  {
+   "text": "x",
+   "lang": "en",
+   "prio": 0,
+   "seq": 0,
+   "prosody": null,
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "key_hex": null,
+   "hex": "4000000b40f1470ea8e7ea606b86d03ac9",
+   "dec_lat": -33.86878967285156,
+   "dec_lon": 151.20929718017578,
+   "dec_prosody": 64
+  },
+  {
+   "text": "गुप्त",
+   "lang": "hi",
+   "prio": 1,
+   "seq": 9,
+   "prosody": 38,
+   "lat": 28.6139,
+   "lon": 77.209,
+   "key_hex": "000102030405060708090a0b0c0d0e0f",
+   "hex": "c509002966000000000000000000000000cd48333edf6fb2d5e3bf9d10c20bd3a8009499c665747e60a9fc06953b98",
+   "dec_lat": 28.6138916015625,
+   "dec_lon": 77.2089958190918,
+   "dec_prosody": 102
+  },
+  {
+   "text": "edge",
+   "lang": "ta",
+   "prio": 0,
+   "seq": 1,
+   "prosody": null,
+   "lat": 90.0,
+   "lon": -180.0,
+   "key_hex": null,
+   "hex": "4c010010408aca95cfcc565036004000008000008457",
+   "dec_lat": 90.0,
+   "dec_lon": -180.0,
+   "dec_prosody": 64
+  }
  ]
 }
