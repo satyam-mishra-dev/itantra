@@ -5,62 +5,134 @@
     android:background="@drawable/bg_hero">
 
     <View
-        android:layout_width="280dp"
-        android:layout_height="280dp"
-        android:layout_gravity="top|start"
-        android:translationX="-110dp"
-        android:translationY="-40dp"
-        android:background="@drawable/circle_translucent" />
-    <View
-        android:layout_width="380dp"
-        android:layout_height="380dp"
-        android:layout_gravity="bottom|end"
-        android:translationX="150dp"
-        android:translationY="120dp"
-        android:background="@drawable/circle_translucent" />
-    <View
-        android:layout_width="160dp"
-        android:layout_height="160dp"
+        android:layout_width="360dp"
+        android:layout_height="360dp"
         android:layout_gravity="top|end"
-        android:translationX="40dp"
-        android:translationY="220dp"
+        android:translationX="140dp"
+        android:translationY="-120dp"
+        android:background="@drawable/circle_translucent" />
+    <View
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:layout_gravity="bottom|start"
+        android:translationX="-150dp"
+        android:translationY="60dp"
         android:background="@drawable/circle_translucent" />
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingStart="28dp"
-        android:paddingEnd="28dp"
-        android:paddingTop="24dp"
-        android:paddingBottom="28dp">
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="24dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/app_name"
             android:textColor="@color/onHero"
-            android:textSize="22sp"
+            android:textSize="24sp"
             android:fontFamily="@font/outfit_bold" />
 
-        <ImageView
+        <!-- hero stage: a stack of message cards; the front one carries the 45 B claim -->
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:scaleType="fitCenter"
-            android:adjustViewBounds="true"
-            android:src="@drawable/illustration_hero"
-            android:contentDescription="@null" />
+            android:clipChildren="false"
+            android:clipToPadding="false">
+
+            <ImageView
+                android:layout_width="132dp"
+                android:layout_height="132dp"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="-8dp"
+                android:alpha="0.6"
+                android:src="@drawable/illustration_hero"
+                android:contentDescription="@null" />
+
+            <View
+                android:layout_width="250dp"
+                android:layout_height="140dp"
+                android:layout_gravity="center"
+                android:translationX="26dp"
+                android:translationY="-26dp"
+                android:rotation="9"
+                android:background="@drawable/hero_chip" />
+            <View
+                android:layout_width="262dp"
+                android:layout_height="146dp"
+                android:layout_gravity="center"
+                android:translationX="-16dp"
+                android:translationY="16dp"
+                android:rotation="-7"
+                android:background="@drawable/hero_chip" />
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="270dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:rotation="-3"
+                android:elevation="18dp"
+                android:background="@drawable/card_bg"
+                android:padding="20dp">
+                <ImageView
+                    android:layout_width="140dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/ic_wave"
+                    android:contentDescription="@null" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/hero_sample"
+                    android:textColor="@color/ink"
+                    android:textSize="19sp"
+                    android:lineSpacingMultiplier="1.15"
+                    android:fontFamily="@font/outfit_semibold" />
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:gravity="center_vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/hero_sample_meta"
+                        android:textColor="@color/inkMuted"
+                        android:textSize="12sp"
+                        android:fontFamily="@font/outfit_medium" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/card_hero"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:paddingTop="5dp"
+                        android:paddingBottom="5dp"
+                        android:text="@string/hero_bytes"
+                        android:textColor="@color/onHero"
+                        android:textSize="16sp"
+                        android:fontFamily="@font/outfit_bold" />
+                </LinearLayout>
+            </LinearLayout>
+        </FrameLayout>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/entry_headline"
             android:textColor="@color/onHero"
-            android:textSize="36sp"
-            android:lineSpacingMultiplier="0.98"
+            android:textSize="38sp"
+            android:lineSpacingMultiplier="0.96"
             android:fontFamily="@font/outfit_bold" />
 
         <TextView
@@ -72,20 +144,19 @@
             android:textSize="16sp" />
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
+            style="@style/Micro"
+            android:layout_marginTop="24dp"
             android:text="@string/entry_speak_in"
-            android:textAllCaps="true"
-            android:letterSpacing="0.14"
-            android:textColor="@color/onHeroMuted"
-            android:textSize="11sp"
-            android:fontFamily="@font/outfit_semibold" />
+            android:textColor="@color/onHeroMuted" />
 
         <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:layout_marginStart="-24dp"
+            android:layout_marginEnd="-24dp"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
             android:scrollbars="none"
             android:clipToPadding="false">
             <LinearLayout
@@ -98,16 +169,17 @@
         <Button
             android:id="@+id/findPeers"
             android:layout_width="match_parent"
-            android:layout_height="58dp"
-            android:layout_marginTop="22dp"
+            android:layout_height="60dp"
+            android:layout_marginTop="20dp"
             android:background="@drawable/pill_white"
             android:stateListAnimator="@null"
+            android:elevation="10dp"
             android:text="@string/find_peers"
-            android:textColor="@color/navy"
+            android:textColor="@color/heroDeep"
             android:textSize="17sp"
-            android:fontFamily="@font/outfit_semibold"
+            android:fontFamily="@font/outfit_bold"
             android:drawableStart="@drawable/ic_wifi"
-            android:drawableTint="#16324A"
+            android:drawableTint="#4B3BC9"
             android:drawablePadding="-24dp"
             android:paddingStart="24dp"
             android:paddingEnd="24dp" />

@@ -4,17 +4,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- hero header band -->
+    <!-- header band -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_hero_band"
+        android:elevation="8dp">
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_hero_band"
         android:paddingStart="20dp"
         android:paddingEnd="20dp"
-        android:paddingTop="14dp"
-        android:paddingBottom="18dp"
-        android:elevation="6dp">
+        android:paddingTop="12dp"
+        android:paddingBottom="18dp">
 
         <LinearLayout
             android:orientation="horizontal"
@@ -26,44 +29,39 @@
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:text="@string/app_name"
-                android:textSize="26sp"
+                android:textSize="24sp"
                 android:textColor="@color/onHero"
                 android:fontFamily="@font/outfit_bold" />
-            <TextView
-                android:id="@+id/status"
+            <Spinner
+                android:id="@+id/lang"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:maxWidth="210dp"
-                android:singleLine="true"
-                android:ellipsize="end"
-                android:background="@drawable/hero_chip"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:paddingTop="7dp"
-                android:paddingBottom="7dp"
-                android:text="@string/starting"
-                android:textSize="13sp"
-                android:textColor="@color/onHeroMuted"
-                android:fontFamily="@font/outfit_medium" />
+                android:layout_height="42dp"
+                android:minWidth="120dp"
+                android:background="@drawable/pill_white"
+                android:elevation="4dp"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp" />
         </LinearLayout>
 
         <TextView
-            android:layout_width="match_parent"
+            android:id="@+id/status"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="@string/tagline"
+            android:layout_marginTop="12dp"
+            android:maxWidth="320dp"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:background="@drawable/hero_chip"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:text="@string/starting"
             android:textSize="13sp"
-            android:textColor="@color/onHeroMuted" />
-
-        <Spinner
-            android:id="@+id/lang"
-            android:layout_width="match_parent"
-            android:layout_height="46dp"
-            android:layout_marginTop="14dp"
-            android:background="@drawable/pill_white"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp" />
+            android:textColor="@color/onHero"
+            android:fontFamily="@font/outfit_semibold" />
     </LinearLayout>
+    </FrameLayout>
 
     <ScrollView
         android:id="@+id/scroll"
@@ -75,7 +73,8 @@
         android:clipToPadding="false"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:paddingTop="12dp">
+        android:paddingTop="14dp"
+        android:paddingBottom="10dp">
         <LinearLayout
             android:id="@+id/transcriptBox"
             android:orientation="vertical"
@@ -86,23 +85,23 @@
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="36dp"
+                android:layout_marginTop="28dp"
                 android:gravity="center"
                 android:padding="24dp">
                 <ImageView
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
                     android:background="@drawable/tile_bg"
-                    android:padding="14dp"
-                    android:src="@drawable/ic_wifi"
+                    android:padding="16dp"
+                    android:src="@drawable/ic_radio"
                     android:contentDescription="@null" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="14dp"
                     android:text="@string/empty_state"
-                    android:textSize="17sp"
-                    android:textColor="@color/textPrimary"
+                    android:textSize="18sp"
+                    android:textColor="@color/ink"
                     android:fontFamily="@font/outfit_semibold" />
                 <TextView
                     android:id="@+id/emptySub"
@@ -113,49 +112,53 @@
                     android:lineSpacingExtra="3dp"
                     android:text="@string/empty_state_sub"
                     android:textSize="14sp"
-                    android:textColor="@color/textSecondary" />
+                    android:textColor="@color/inkMuted" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
 
-    <!-- bottom control panel -->
+    <!-- bottom sheet: controls + the hero action -->
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/sheet_bg"
+        android:elevation="14dp"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:paddingTop="6dp"
-        android:paddingBottom="10dp">
+        android:paddingTop="12dp"
+        android:paddingBottom="6dp">
 
         <TextView
             android:id="@+id/download"
             android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/pill_button"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/pill_soft"
             android:gravity="center"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
             android:paddingTop="12dp"
             android:paddingBottom="12dp"
-            android:textColor="@color/onHero"
-            android:textSize="15sp"
+            android:textColor="@color/heroDeepText"
+            android:textSize="13sp"
             android:fontFamily="@font/outfit_semibold" />
 
         <EditText
             android:id="@+id/input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/card_bg"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/input_bg"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:paddingTop="14dp"
-            android:paddingBottom="14dp"
+            android:paddingTop="13dp"
+            android:paddingBottom="13dp"
             android:hint="@string/input_hint"
             android:textSize="16sp"
-            android:textColor="@color/textPrimary"
-            android:textColorHint="@color/textSecondary"
+            android:textColor="@color/ink"
+            android:textColorHint="@color/label"
             android:inputType="text"
             android:imeOptions="actionDone" />
 
@@ -167,23 +170,21 @@
             <TextView
                 android:id="@+id/alert"
                 android:layout_width="wrap_content"
-                android:layout_height="44dp"
+                android:layout_height="46dp"
                 android:gravity="center"
-                android:paddingStart="18dp"
-                android:paddingEnd="18dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
                 android:background="@drawable/pill_red_toggle"
                 android:text="@string/alert_pill"
-                android:textColor="@color/red"
+                android:textColor="@color/alert"
                 android:textSize="13sp"
-                android:letterSpacing="0.08"
+                android:letterSpacing="0.1"
                 android:fontFamily="@font/outfit_bold" />
             <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
             <FrameLayout
                 android:id="@+id/connectIp"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="10dp"
-                android:background="@drawable/tile_bg">
+                style="@style/IconTile"
+                android:layout_marginEnd="10dp">
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
@@ -193,9 +194,7 @@
             </FrameLayout>
             <FrameLayout
                 android:id="@+id/eval"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="@drawable/tile_bg">
+                style="@style/IconTile">
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
@@ -207,12 +206,12 @@
 
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="236dp"
+            android:layout_height="220dp"
             android:layout_marginTop="2dp">
             <View
                 android:id="@+id/pttRing"
-                android:layout_width="236dp"
-                android:layout_height="236dp"
+                android:layout_width="220dp"
+                android:layout_height="220dp"
                 android:layout_gravity="center"
                 android:alpha="0"
                 android:background="@drawable/ptt_ring" />
@@ -222,12 +221,12 @@
                 android:layout_height="200dp"
                 android:layout_gravity="center"
                 android:background="@drawable/ptt_button"
-                android:elevation="10dp"
                 android:stateListAnimator="@null"
                 android:text="@string/ptt_label"
                 android:textColor="#FFFFFF"
-                android:textSize="21sp"
-                android:letterSpacing="0.04"
+                android:textSize="22sp"
+                android:lineSpacingMultiplier="1.05"
+                android:letterSpacing="0.06"
                 android:fontFamily="@font/outfit_bold" />
         </FrameLayout>
 
@@ -239,6 +238,6 @@
             android:gravity="center"
             android:text="@string/ptt_hint"
             android:textSize="12sp"
-            android:textColor="@color/textSecondary" />
+            android:textColor="@color/inkMuted" />
     </LinearLayout>
 </LinearLayout>

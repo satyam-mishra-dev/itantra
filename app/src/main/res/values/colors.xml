@@ -1,28 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="navy">#16324A</color>
-    <color name="navy2">#1E4D7A</color>
-    <color name="orange">#E65100</color>
-    <color name="orangeSoft">#FDE9DD</color>
-    <color name="orangeRing">#A6E65100</color>
-    <color name="red">#C62828</color>
-    <color name="redTint">#FDECEA</color>
-    <color name="green">#2E7D32</color>
-    <color name="greenTint">#E6F4EA</color>
-    <color name="ground">#F4F7FB</color>
-    <color name="surfaceTop">#E6EFFA</color>
-    <color name="surfaceMid">#F6F9FD</color>
-    <color name="surfaceBot">#FFFFFF</color>
-    <color name="card">#FFFFFF</color>
-    <color name="tile">#E8F0FA</color>
-    <color name="sentTint">#E8EEF6</color>
-    <color name="stroke">#E5E9F0</color>
-    <color name="textPrimary">#1A1A2E</color>
-    <color name="textSecondary">#6B7280</color>
-    <color name="label">#858597</color>
-    <color name="onHero">#FFFFFF</color>
-    <color name="onHeroMuted">#CCFFFFFF</color>
-    <color name="heroCircle">#14FFFFFF</color>
-    <color name="iconTint">#16324A</color>
+    <!-- hero purple family -->
+    <color name="hero">#6A5AE0</color>
+    <color name="heroDeep">#4B3BC9</color>
+    <color name="heroGlow">#8F80FF</color>
+    <color name="heroSoft">#ECE9FF</color>
+    <color name="heroSoft2">#DCD7FF</color>
+    <color name="heroHalo">#26FFFFFF</color>
     <color name="heroChip">#2EFFFFFF</color>
+    <color name="heroChipStroke">#55FFFFFF</color>
+    <color name="onHero">#FFFFFF</color>
+    <color name="onHeroMuted">#D9D4FF</color>
+    <!-- surfaces -->
+    <color name="ground">#F5F4FC</color>
+    <color name="groundTop">#EDEAFB</color>
+    <color name="card">#FFFFFF</color>
+    <color name="cardAlt">#F1EFFA</color>
+    <color name="stroke">#E4E1F3</color>
+    <color name="shadow">#2A6A5AE0</color>
+    <!-- text -->
+    <color name="ink">#17153A</color>
+    <color name="inkMuted">#625F82</color>
+    <color name="label">#8B88A8</color>
+    <!-- live = recording -->
+    <color name="live">#FF5C3A</color>
+    <color name="liveDeep">#E6391B</color>
+    <color name="liveSoft">#FFE6DF</color>
+    <color name="liveRing">#99FF5C3A</color>
+    <!-- alert -->
+    <color name="alert">#E0243B</color>
+    <color name="alertDeep">#B8122A</color>
+    <color name="alertSoft">#FDE4E8</color>
+    <!-- link states -->
+    <color name="ok">#1FA36B</color>
+    <color name="okChip">#3EE0A0</color>
+    <color name="okSoft">#E1F8EE</color>
+    <color name="warnChip">#FFC24D</color>
+    <color name="warnText">#8A5A00</color>
+    <color name="ptt_halo">#1F6A5AE0</color>
+    <color name="heroDeepText">#4B3BC9</color>
+    <color name="pillInk">#1E1A4A</color>
+    <color name="iconTint">#5B4BD6</color>
 </resources>

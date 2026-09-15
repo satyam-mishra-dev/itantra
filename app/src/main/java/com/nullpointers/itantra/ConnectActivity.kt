@@ -46,7 +46,7 @@ class ConnectActivity : Activity() {
                 textSize = 15f
                 typeface = resources.getFont(R.font.outfit_semibold)
                 setBackgroundResource(R.drawable.lang_chip)
-                setPadding((18 * d).toInt(), (10 * d).toInt(), (18 * d).toInt(), (10 * d).toInt())
+                setPadding((18 * d).toInt(), (11 * d).toInt(), (18 * d).toInt(), (11 * d).toInt())
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
                 ).apply { marginEnd = (8 * d).toInt() }
@@ -64,7 +64,7 @@ class ConnectActivity : Activity() {
         sel = i
         for ((j, c) in chips.withIndex()) {
             c.isSelected = j == i
-            c.setTextColor(getColor(if (j == i) R.color.navy else R.color.onHero))
+            c.setTextColor(getColor(if (j == i) R.color.heroDeep else R.color.onHero))
         }
     }
 
