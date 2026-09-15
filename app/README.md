@@ -28,7 +28,7 @@ python3 tools/export_codebooks.py && ./gradlew test
 `pythonInteropVectors` asserts Kotlin `pack()` is byte-identical to
 `p0/frame.pack()` on 30 vectors — wire compatibility is tested, not assumed.
 
-## Model packs (sideload for now)
+## Model packs (in-app download; adb sideload for development)
 
 ```
 adb push <lang-pack>/stt/  /sdcard/Android/data/com.nullpointers.itantra/files/models/<lang>/stt/
@@ -82,7 +82,16 @@ e.g. जाएँ→जाए). Recipe generalizes: Bengali converts+quantizes t
 140 MB and loads clean. The official AI4Bharat int8 ONNX remains a HF-gated
 alternative; ours removes that dependency.
 
-## P5 next
+## Wave 3 (2026-09-15)
 
-In-app pack downloads, store-and-forward queue on disconnect, AES-GCM frame
-envelope, ESP32 LoRa bridge firmware.
+Reliable delivery (`Reliable.kt`, replaces Arq), clause-level speech policy with ALERT preemption
+(`Speak.kt`), phrasebook mode — 9–10 B language-neutral frames rendered in the listener's language
+(`Phrasebook.kt`), flood relay over NSD+BT (`RelayTransport.kt`), optional location trailer (`Frame.kt`).
+44 JUnit tests, all byte-identical to the Python reference via `src/test/resources/testvectors_v3.json`.
+Field verification: `app/TESTING.md`, `app/testlogs/summary.md`.
+
+App-side, same night: in-app model-pack download (auto on Wi-Fi, atomic install; `Packs.kt`, `-PpackBase`),
+discovery hardening (MulticastLock, UDP beacon fallback, retrying connect-by-IP, own IP shown), Android 14
+first-run crash fixed (mic foreground service before the RECORD_AUDIO grant), platform-TTS no-voice stall
+fixed, shared signing key, modern UI. Packs are installed from the talk screen — the adb sideload above
+still works for development.
