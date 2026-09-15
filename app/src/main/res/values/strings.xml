@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">iTantra</string>
-    <string name="tagline">offline voice → ~45-byte text → voice · works when towers don\'t</string>
-    <string name="entry_headline">Voice that travels\nas text</string>
-    <string name="entry_sub">offline · 10 languages · works when towers don\'t</string>
+    <string name="tagline">the signal that gets through</string>
+    <string name="entry_headline">Talk through\nthe blackout.</string>
+    <string name="entry_sub">Speak in your language, heard in theirs — 45 bytes a sentence, zero towers.</string>
     <string name="entry_speak_in">Speak in</string>
     <string name="find_peers">Find peers nearby</string>
     <string name="connect_ip_link">Connect by IP instead</string>
@@ -19,7 +19,7 @@
     <string name="ptt_hint">hold to speak · release to send · sentences stream as you pause</string>
     <string name="ptt_listening">listening — release to send</string>
     <string name="sent_vad">streamed as you spoke</string>
-    <string name="empty_state">No messages yet</string>
+    <string name="empty_state">Nothing sent yet</string>
     <string name="empty_state_sub">Peers on the same Wi-Fi or hotspot connect automatically.\nOtherwise tap the link tile to connect by IP.</string>
     <string name="eval_button">Evaluate</string>
     <string name="connect_button">Connect by IP</string>
@@ -55,11 +55,38 @@
     <string name="share_location">Attach my location (+7 B)</string>
     <string name="peers_title">Peers on the link</string>
     <string name="no_peers_yet">none yet</string>
-    <string name="stats_strip">%1$d sentences · %2$s sent · a voice call would be %3$s · %4$s× smaller</string>
+    <string name="stats_strip">%1$d sentences · %2$s sent · a voice call would be %3$s</string>
     <string name="encrypted_no_key">encrypted — set the same team key</string>
     <string name="sideload_hint">packs install from the talk screen (or adb push to /sdcard/Android/data/com.nullpointers.itantra/files/models/&lt;lang&gt;/)</string>
     <string name="hero_sample">बाढ़ का पानी बढ़ रहा है, तुरंत निकलें।</string>
     <string name="hero_sample_meta">hi · 1.4 s of speech · sent as</string>
     <string name="hero_bytes">45 B</string>
-    <string name="hero_kicker">offline · 10 languages</string>
+    <string name="hero_kicker">offline · 10 languages · encrypted</string>
+    <!-- brand surfaces -->
+    <string name="brand_kicker">offline · 10 languages · encrypted · relays</string>
+    <string name="stats_caption">smaller than a voice call</string>
+    <string name="cmp_title">Why not a walkie-talkie?</string>
+    <string name="cmp_sub">the five-second version</string>
+    <string name="cmp_walkie">Walkie-talkie</string>
+    <string name="cmp_itantra">iTantra</string>
+    <string name="cmp_w1">analog voice, ~12 kbps</string>
+    <string name="cmp_i1">45 bytes a sentence — 169× smaller than a call</string>
+    <string name="cmp_w2">one language, one accent</string>
+    <string name="cmp_i2">10 Indic languages, heard in YOUR language</string>
+    <string name="cmp_w3">“did you copy?”</string>
+    <string name="cmp_i3">every sentence acknowledged ✓</string>
+    <string name="cmp_w4">anyone with a scanner hears it</string>
+    <string name="cmp_i4">AES-GCM team key</string>
+    <string name="cmp_w5">one radio, one range</string>
+    <string name="cmp_i5">relays phone → phone · Wi-Fi, Bluetooth, LoRa, any radio via AFSK</string>
+    <string name="num_1">169×</string>
+    <string name="num_1_l">smaller than a voice call</string>
+    <string name="num_2">2.9%</string>
+    <string name="num_2_l">Hindi CER on real speech</string>
+    <string name="num_3">0.3–1 s</string>
+    <string name="num_3_l">receive → first audio</string>
+    <string name="num_4">0</string>
+    <string name="num_4_l">towers needed</string>
+    <string name="scroll_hint">why it beats a radio ↓</string>
+    <string name="settings_sub">Team key</string>
 </resources>

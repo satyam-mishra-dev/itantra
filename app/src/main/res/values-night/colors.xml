@@ -1,23 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="hero">#5B4BD3</color>
-    <color name="heroDeep">#2D2470</color>
-    <color name="heroGlow">#7D6DF2</color>
-    <color name="heroSoft">#262052</color>
-    <color name="heroSoft2">#2F2866</color>
+    <color name="hero">#3442C4</color>
+    <color name="heroDeep">#131A66</color>
+    <color name="heroGlow">#5B6CFF</color>
+    <color name="heroSoft">#1E2352</color>
+    <color name="heroSoft2">#272D66</color>
     <color name="heroHalo">#1FFFFFFF</color>
     <color name="heroChip">#26FFFFFF</color>
     <color name="heroChipStroke">#40FFFFFF</color>
-    <color name="onHeroMuted">#CFC9FF</color>
-    <color name="ground">#0E0C1E</color>
-    <color name="groundTop">#14112B</color>
-    <color name="card">#201C40</color>
-    <color name="cardAlt">#2A2552</color>
-    <color name="stroke">#383270</color>
+    <color name="onHeroMuted">#C3CAFF</color>
+    <color name="ripple">#335B6CFF</color>
+    <color name="signal">#FFB94D</color>
+    <color name="signalDeep">#F0A030</color>
+    <color name="signalSoft">#3A2C14</color>
+    <color name="ground">#0A0C20</color>
+    <color name="groundTop">#10132C</color>
+    <color name="card">#1A1E40</color>
+    <color name="cardAlt">#232852</color>
+    <color name="stroke">#33396E</color>
     <color name="shadow">#00000000</color>
-    <color name="ink">#F0EEFF</color>
-    <color name="inkMuted">#A9A5CC</color>
-    <color name="label">#7F7BA6</color>
+    <color name="ink">#EEF0FF</color>
+    <color name="inkMuted">#A7ABCF</color>
+    <color name="label">#7C80A8</color>
     <color name="liveSoft">#3A1F1A</color>
     <color name="alert">#FF4D63</color>
     <color name="alertDeep">#D81E3C</color>
@@ -25,7 +29,7 @@
     <color name="ok">#35D48F</color>
     <color name="okSoft">#14382A</color>
     <color name="warnText">#FFD98A</color>
-    <color name="ptt_halo">#2E8F80FF</color>
-    <color name="heroDeepText">#C9C0FF</color>
-    <color name="iconTint">#A89CFF</color>
+    <color name="ptt_halo">#2E5B6CFF</color>
+    <color name="heroDeepText">#C3CAFF</color>
+    <color name="iconTint">#A3ACFF</color>
 </resources>
