@@ -1,5 +1,5 @@
 
 | speed:delay | connected | bubbles on B | dupes | ALERT chip | latency host (ms) | latency logcat (ms) | result |
 |---|---|---|---|---|---|---|---|
-| full:none | ✓ | 3/3 | 0 | ✓ | 2703 2539 2822 | -125,-110,-122 | PASS |
-| gsm:gsm | ✓ | 3/3 | 0 | ✓ | 2466 2434 2274 | -120,-119,-127 | PASS |
+| full:none | ✓ | 3/3 | 0 | ✓ | 2388 2910 2381 | 639,639,637 | PASS |
+| gsm:gsm | ✓ | 3/3 | 0 | ✓ | 2565 3000 2398 | 650,639,638 | PASS |

@@ -53,8 +53,11 @@ for sd in $SPEEDS; do
     t1=$(python3 -c 'import time;print(int(time.time()*1000))')
     [ $got = 1 ] && lats+=($((t1-t0))) || { lats+=("timeout"); fail=1; }
   done
-  bt=$(texts $B); n=0; dup=0
-  for m in "${MSGS[@]}"; do c=$(grep -cF "$m" <<<"$bt"); n=$((n+c)); [ $c -gt 1 ] && dup=$((dup+c-1)); done
+  # bubbles = distinct seqs B received (logcat = ground truth: the header now hides the oldest bubble off-screen);
+  # dupes = the same text drawn twice on screen
+  bt=$(texts $B); dup=0
+  n=$($ADB -s $B logcat -d -s iTantraLink | grep -o "rx seq=[0-9]*" | sort -u | wc -l | tr -d ' ')
+  for m in "${MSGS[@]}"; do c=$(grep -cF "$m" <<<"$bt"); [ $c -gt 1 ] && dup=$((dup+c-1)); done
   alert="✗"; grep -q "ALERT" <<<"$bt" && alert="✓"
   # device-side: pair tx seq on A with rx seq on B via logcat epoch stamps (emulators share the host clock)
   lc=$( { $ADB -s $A logcat -d -s iTantraLink; $ADB -s $B logcat -d -s iTantraLink; } | python3 -c "
