@@ -43,7 +43,9 @@ class NsdTransport(
     }
     private val tag = "iTantraNsd"
     private val serviceType = "_itantra._tcp."
-    private val myName = "iTantra-" + android.os.Build.MODEL.replace(' ', '_') + "-" + (1000..9999).random()
+    // var: Android may rename the service on a conflict ("… (2)") — onServiceRegistered hands back the real name,
+    // and the own-name check must use that or we discover and dial ourselves.
+    @Volatile private var myName = "iTantra-" + android.os.Build.MODEL.replace(' ', '_') + "-" + (1000..9999).random()
     private val sockets = CopyOnWriteArrayList<Socket>()
     private var server: ServerSocket? = null
     private var beacon: DatagramSocket? = null
@@ -81,7 +83,7 @@ class NsdTransport(
             this.port = port
         }
         regListener = object : NsdManager.RegistrationListener {
-            override fun onServiceRegistered(i: NsdServiceInfo) { onStatus("advertising as $myName") }
+            override fun onServiceRegistered(i: NsdServiceInfo) { myName = i.serviceName; onStatus("advertising as $myName") }
             override fun onRegistrationFailed(i: NsdServiceInfo, e: Int) { onStatus("advertise failed: $e") }
             override fun onServiceUnregistered(i: NsdServiceInfo) {}
             override fun onUnregistrationFailed(i: NsdServiceInfo, e: Int) {}
@@ -142,7 +144,13 @@ class NsdTransport(
     private val dialing = java.util.concurrent.ConcurrentHashMap.newKeySet<InetAddress>()
 
     /** Dial once per host: NSD-resolve and the beacon fire within the same second and used to open 4 sockets to one peer. */
+    private fun isMe(host: InetAddress) = host.isLoopbackAddress || try {
+        NetworkInterface.getByInetAddress(host) != null
+    } catch (_: Exception) { false }
+
     private fun dial(host: InetAddress, port: Int, label: String) {
+        if (isMe(host)) { Log.i(tag, "ignoring own address $host ($label)"); return }
+        Log.i(tag, "dial $host:$port ($label)")
         if (connectedTo(host) || !dialing.add(host)) return
         Thread {
             try {
