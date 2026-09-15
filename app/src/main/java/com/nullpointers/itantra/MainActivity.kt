@@ -666,8 +666,8 @@ class MainActivity : Activity() {
             this.text = bytes
             textSize = 13f
             typeface = resources.getFont(R.font.outfit_bold)
-            setTextColor(0xFFFFFFFF.toInt())
-            setBackgroundColor(getColor(if (kind == ALERTK) R.color.alert else R.color.hero))
+            setTextColor(if (kind == ALERTK) 0xFFFFFFFF.toInt() else getColor(R.color.onSignal))
+            setBackgroundColor(getColor(if (kind == ALERTK) R.color.alert else R.color.signal))
             setPadding(dp(10), dp(5), dp(10), dp(5))
         }
         val metaChip = TextView(this).apply {
@@ -725,8 +725,18 @@ class MainActivity : Activity() {
         nSent++; bytesSent += bytes; voiceSec += sec
         val voice = voiceSec * 1525
         stats.visibility = View.VISIBLE
-        stats.text = getString(R.string.stats_strip, nSent, fmtBytes(bytesSent), fmtBytes(voice.toLong()),
-            if (bytesSent > 0) "%,d".format((voice / bytesSent).toLong()) else "–")
+        // "169×" as the hero figure, then the caption and the raw numbers underneath
+        val ratio = (if (bytesSent > 0) "%,d".format((voice / bytesSent).toLong()) else "–") + "×"
+        val caption = getString(R.string.stats_caption)
+        val detail = getString(R.string.stats_strip, nSent, fmtBytes(bytesSent), fmtBytes(voice.toLong()))
+        stats.text = android.text.SpannableStringBuilder("$ratio $caption\n$detail").apply {
+            setSpan(android.text.style.RelativeSizeSpan(2.6f), 0, ratio.length, 0)
+            setSpan(android.text.style.ForegroundColorSpan(getColor(R.color.signal)), 0, ratio.length, 0)
+            setSpan(if (Build.VERSION.SDK_INT >= 28) android.text.style.TypefaceSpan(resources.getFont(R.font.outfit_bold))
+                    else android.text.style.StyleSpan(android.graphics.Typeface.BOLD), 0, ratio.length, 0)
+            setSpan(android.text.style.RelativeSizeSpan(1.25f), ratio.length + 1, ratio.length + 1 + caption.length, 0)
+            setSpan(android.text.style.ForegroundColorSpan(0xFFFFFFFF.toInt()), ratio.length + 1, ratio.length + 1 + caption.length, 0)
+        }
     }
 
     private fun fmtBytes(b: Long) = when {
@@ -735,16 +745,37 @@ class MainActivity : Activity() {
 
     private fun showSettings() {
         val d = resources.displayMetrics.density
-        val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding((20 * d).toInt(), (8 * d).toInt(), (20 * d).toInt(), 0) }
-        val keyBox = EditText(this).apply { hint = getString(R.string.team_key_hint); setText(prefs.getString("teamKey", "")) }
-        val note = TextView(this).apply { text = getString(R.string.team_key_note); textSize = 12f }
-        val loc = android.widget.Switch(this).apply { text = getString(R.string.share_location); isChecked = prefs.getBoolean("shareLoc", false) }
+        val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding((24 * d).toInt(), (12 * d).toInt(), (24 * d).toInt(), (4 * d).toInt()) }
+        val label = { s: String -> TextView(this).apply {
+            text = s.uppercase(); textSize = 11f; letterSpacing = 0.12f
+            typeface = resources.getFont(R.font.outfit_semibold); setTextColor(getColor(R.color.label))
+            setPadding(0, (18 * d).toInt(), 0, (6 * d).toInt())
+        } }
+        val keyBox = EditText(this).apply {
+            hint = getString(R.string.team_key_hint); setText(prefs.getString("teamKey", ""))
+            textSize = 16f; typeface = resources.getFont(R.font.outfit_medium)
+            setBackgroundResource(R.drawable.input_bg); setHintTextColor(getColor(R.color.label))
+            setPadding((16 * d).toInt(), (13 * d).toInt(), (16 * d).toInt(), (13 * d).toInt())
+        }
+        val note = TextView(this).apply {
+            text = getString(R.string.team_key_note); textSize = 12f; setTextColor(getColor(R.color.inkMuted))
+            setPadding((4 * d).toInt(), (8 * d).toInt(), 0, 0)
+        }
+        val loc = android.widget.Switch(this).apply {
+            text = getString(R.string.share_location); isChecked = prefs.getBoolean("shareLoc", false)
+            textSize = 15f; typeface = resources.getFont(R.font.outfit_medium); setTextColor(getColor(R.color.ink))
+            setPadding((4 * d).toInt(), (10 * d).toInt(), (4 * d).toInt(), (6 * d).toInt())
+        }
         val peers = (nsd.peers() + bt.peers()).ifEmpty { listOf(getString(R.string.no_peers_yet)) }
         val peersView = TextView(this).apply {
-            text = getString(R.string.peers_title) + "\n" + peers.joinToString("\n") { "● " + shortPeer(it) }
-            setPadding(0, (16 * d).toInt(), 0, 0)
+            text = peers.joinToString("\n") { "●  " + shortPeer(it) }
+            textSize = 14f; typeface = resources.getFont(R.font.outfit_medium); setTextColor(getColor(R.color.ink))
+            setLineSpacing(0f, 1.3f)
+            setBackgroundResource(R.drawable.chip_bg)
+            setPadding((14 * d).toInt(), (10 * d).toInt(), (14 * d).toInt(), (10 * d).toInt())
         }
-        box.addView(keyBox); box.addView(note); box.addView(loc); box.addView(peersView)
+        box.addView(label(getString(R.string.settings_sub))); box.addView(keyBox); box.addView(note)
+        box.addView(loc); box.addView(label(getString(R.string.peers_title))); box.addView(peersView)
         android.app.AlertDialog.Builder(this)
             .setTitle(R.string.settings_title)
             .setView(box)
