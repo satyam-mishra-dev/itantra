@@ -265,3 +265,15 @@ BER-induced retransmits, duty-cycle rest math).
 | or | 23.2 | 9.1 | 2.5× |
 
 Note the honest baseline: these register sentences are short, so text frames are 21–27 B here, not the 45 B of the held-out long sentences. The bigger win is not bytes — a phrase frame is language-neutral, so a Hindi speaker's "5 लोग घायल हैं" is spoken as "5 জন আহত" on a Bengali phone with no MT model. Matcher never auto-sends: it returns ranked candidates (exact 1.0, paraphrase 0.6–0.8, off-topic none) and the sender confirms. Translations are draft — native-speaker review pending.
+
+## FEC on the analog-radio path (added 2026-09-15, `fec.py`, `python -c "import fec; fec.sweep(...)"`)
+
+31-byte ALERT frame through `afsk.voice_channel` (300–3400 Hz bandpass + AWGN), 30 seeds per cell, frame-success rate. `no FEC` = today's `afsk.demodulate` (CRC gate discards any bit error); RS = shortened Reed–Solomon (`reedsolo`) decoded from a raw demod *before* the CRC gate.
+
+| SNR (dB) | −4 | −2 | 0 | 2 | 4 | 6 | 8 | audio per frame |
+|---|---|---|---|---|---|---|---|---|
+| no FEC | 0% | 0% | 3% | 67% | 100% | 100% | 100% | 0.29 s |
+| RS8 (+8 B) | 0% | 0% | **77%** | **100%** | 100% | 100% | 100% | 0.35 s |
+| RS16 (+16 B) | 0% | 0% | **90%** | 100% | 100% | 100% | 100% | 0.40 s |
+
+Read: RS buys ≈2 dB on this modem for 20–35% more airtime — matching the 2–3 dB the literature predicts for app-layer FEC (research/thesis-channel-adaptive.md). Below −2 dB nothing decodes regardless of parity: the floor is the Bell-202 demodulator (no clock recovery / AGC), not the code. The next 6 dB is a baud-rate knob (1200 → 300 bps), which is the adaptive-tier work, not more parity. LoRa is not app-FEC'd (PHY CR 4/5–4/8 already; failures are whole-packet loss).
