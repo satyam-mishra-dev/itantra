@@ -1,27 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- hero purple family -->
-    <color name="hero">#6A5AE0</color>
-    <color name="heroDeep">#4B3BC9</color>
-    <color name="heroGlow">#8F80FF</color>
-    <color name="heroSoft">#ECE9FF</color>
-    <color name="heroSoft2">#DCD7FF</color>
+    <!-- brand: "blackout indigo" ground + "signal amber" — the one dot that gets through -->
+    <color name="hero">#2E3AB8</color>
+    <color name="heroDeep">#1A2180</color>
+    <color name="heroGlow">#5B6CFF</color>
+    <color name="heroSoft">#E9EBFF</color>
+    <color name="heroSoft2">#D8DCFF</color>
     <color name="heroHalo">#26FFFFFF</color>
     <color name="heroChip">#2EFFFFFF</color>
     <color name="heroChipStroke">#55FFFFFF</color>
     <color name="onHero">#FFFFFF</color>
-    <color name="onHeroMuted">#D9D4FF</color>
+    <color name="onHeroMuted">#C9CFFF</color>
+    <color name="ripple">#332E3AB8</color>
+    <!-- signal amber: byte chips, the hero number, the dot in the mark -->
+    <color name="signal">#FFB03B</color>
+    <color name="signalDeep">#E8921C</color>
+    <color name="signalSoft">#FFF1D9</color>
+    <color name="onSignal">#1B1A2E</color>
     <!-- surfaces -->
-    <color name="ground">#F5F4FC</color>
-    <color name="groundTop">#EDEAFB</color>
+    <color name="ground">#F4F5FC</color>
+    <color name="groundTop">#E9EBFA</color>
     <color name="card">#FFFFFF</color>
-    <color name="cardAlt">#F1EFFA</color>
-    <color name="stroke">#E4E1F3</color>
-    <color name="shadow">#2A6A5AE0</color>
+    <color name="cardAlt">#EEF0FA</color>
+    <color name="stroke">#DFE2F2</color>
+    <color name="shadow">#2A2E3AB8</color>
     <!-- text -->
-    <color name="ink">#17153A</color>
-    <color name="inkMuted">#625F82</color>
-    <color name="label">#8B88A8</color>
+    <color name="ink">#12163A</color>
+    <color name="inkMuted">#5C6082</color>
+    <color name="label">#868AA8</color>
     <!-- live = recording -->
     <color name="live">#FF5C3A</color>
     <color name="liveDeep">#E6391B</color>
@@ -37,8 +43,8 @@
     <color name="okSoft">#E1F8EE</color>
     <color name="warnChip">#FFC24D</color>
     <color name="warnText">#8A5A00</color>
-    <color name="ptt_halo">#1F6A5AE0</color>
-    <color name="heroDeepText">#4B3BC9</color>
-    <color name="pillInk">#1E1A4A</color>
-    <color name="iconTint">#5B4BD6</color>
+    <color name="ptt_halo">#1F2E3AB8</color>
+    <color name="heroDeepText">#1A2180</color>
+    <color name="pillInk">#141A4A</color>
+    <color name="iconTint">#2E3AB8</color>
 </resources>

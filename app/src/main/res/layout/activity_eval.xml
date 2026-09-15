@@ -19,8 +19,25 @@
         android:layout_height="wrap_content"
         android:paddingStart="20dp"
         android:paddingEnd="20dp"
-        android:paddingTop="18dp"
+        android:paddingTop="14dp"
         android:paddingBottom="24dp">
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:gravity="center_vertical">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_mark"
+                android:contentDescription="@null" />
+            <TextView
+                style="@style/Micro"
+                android:layout_marginStart="8dp"
+                android:text="@string/app_name"
+                android:textColor="@color/onHeroMuted" />
+        </LinearLayout>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

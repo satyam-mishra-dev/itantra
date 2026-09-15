@@ -23,5 +23,7 @@
     <style name="ITantra.Dialog" parent="android:Theme.Material.Dialog.Alert">
         <item name="android:colorAccent">@color/heroGlow</item>
         <item name="android:fontFamily">@font/outfit</item>
+        <item name="android:windowTitleStyle">@style/ITantra.DialogTitle</item>
+        <item name="android:colorBackground">@color/card</item>
     </style>
 </resources>

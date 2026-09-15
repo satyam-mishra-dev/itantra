@@ -41,4 +41,61 @@
         <item name="android:layout_height">50dp</item>
         <item name="android:background">@drawable/tile_bg</item>
     </style>
+    <!-- entry-screen comparison strip -->
+    <style name="CmpRow">
+        <item name="android:orientation">horizontal</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingTop">9dp</item>
+        <item name="android:paddingBottom">9dp</item>
+    </style>
+    <style name="CmpRule">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">@color/stroke</item>
+    </style>
+    <style name="CmpHead" parent="Micro">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0.02</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">@font/outfit_bold</item>
+    </style>
+    <style name="CmpOld">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingEnd">10dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/inkMuted</item>
+        <item name="android:fontFamily">@font/outfit</item>
+    </style>
+    <style name="CmpNew" parent="CmpOld">
+        <item name="android:paddingEnd">0dp</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="android:fontFamily">@font/outfit_semibold</item>
+    </style>
+    <style name="NumCard">
+        <item name="android:orientation">vertical</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_columnWeight">1</item>
+        <item name="android:layout_gravity">fill_vertical</item>
+        <item name="android:background">@drawable/hero_chip</item>
+        <item name="android:padding">16dp</item>
+    </style>
+    <style name="NumValue">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">30sp</item>
+        <item name="android:textColor">@color/signal</item>
+        <item name="android:fontFamily">@font/outfit_bold</item>
+    </style>
+    <style name="NumLabel" parent="Micro">
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:letterSpacing">0.06</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:textColor">@color/onHeroMuted</item>
+    </style>
 </resources>
