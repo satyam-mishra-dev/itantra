@@ -47,6 +47,8 @@ class NsdTransport(
     // and the own-name check must use that or we discover and dial ourselves.
     @Volatile private var myName = "iTantra-" + android.os.Build.MODEL.replace(' ', '_') + "-" + (1000..9999).random()
     private val sockets = CopyOnWriteArrayList<Socket>()
+    private val labels = java.util.concurrent.ConcurrentHashMap<Socket, String>()
+    fun peers(): List<String> = sockets.map { labels[it] ?: (it.inetAddress.hostAddress ?: "peer") }
     private var server: ServerSocket? = null
     private var beacon: DatagramSocket? = null
     private var mcast: WifiManager.MulticastLock? = null
@@ -162,13 +164,13 @@ class NsdTransport(
 
     /** Both directions announce the peer — the accept() side used to stay on "searching…" while receiving. */
     private fun attach(s: Socket, label: String) {
-        sockets.add(s)
+        sockets.add(s); labels[s] = label
         onStatus("connected to $label")
         Thread {
             try {
                 pumpFrames(DataInputStream(s.getInputStream()), onFrame)
             } catch (_: Exception) {
-                sockets.remove(s)
+                sockets.remove(s); labels.remove(s)
                 try { s.close() } catch (_: Exception) {}
                 if (sockets.isEmpty()) onStatus("peer disconnected")   // a duplicate socket dying is not a disconnect
             }
