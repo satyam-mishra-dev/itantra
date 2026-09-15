@@ -1,28 +1,28 @@
 --------- beginning of main
-09-15 10:10:05.454 16002 16111 I iTantraLink: tx seq=0 bytes=45 t=1789447205454
-09-15 10:10:05.466 16002 16083 I iTantraLink: ack seq=0 t=1789447205466
-09-15 10:10:20.153 16002 16132 I iTantraLink: tx seq=1 bytes=37 t=1789447220153
-09-15 10:10:20.164 16002 16083 I iTantraLink: ack seq=1 t=1789447220164
-09-15 10:10:26.821 16002 16167 I iTantraLink: tx seq=2 bytes=49 t=1789447226821
-09-15 10:10:27.846 16002 16075 I iTantraLink: tx seq=2 bytes=49 t=1789447227846
-09-15 10:10:27.857 16002 16174 I iTantraLink: tx seq=3 bytes=49 t=1789447227857
-09-15 10:10:28.852 16002 16075 I iTantraLink: tx seq=3 bytes=49 t=1789447228852
-09-15 10:10:29.854 16002 16075 I iTantraLink: tx seq=2 bytes=49 t=1789447229854
-09-15 10:10:30.857 16002 16075 I iTantraLink: tx seq=3 bytes=49 t=1789447230857
-09-15 10:10:33.366 16002 16075 I iTantraLink: tx seq=2 bytes=49 t=1789447233366
-09-15 10:10:34.367 16002 16075 I iTantraLink: tx seq=3 bytes=49 t=1789447234367
-09-15 10:10:39.878 16002 16075 I iTantraLink: tx seq=2 bytes=49 t=1789447239878
-09-15 10:10:40.883 16002 16075 I iTantraLink: tx seq=3 bytes=49 t=1789447240883
-09-15 10:10:42.767 16002 16197 I iTantraLink: tx seq=2 bytes=49 t=1789447242767
-09-15 10:10:42.767 16002 16197 I iTantraLink: tx seq=3 bytes=49 t=1789447242767
-09-15 10:10:42.775 16002 16196 I iTantraLink: ack seq=2 t=1789447242775
-09-15 10:10:42.787 16002 16196 I iTantraLink: ack seq=3 t=1789447242787
+09-15 15:25:38.934 22247 22356 I iTantraLink: tx seq=0 bytes=45 t=1789466138934
+09-15 15:25:38.940 22247 22327 I iTantraLink: ack seq=0 t=1789466138940
+09-15 15:25:53.933 22247 22378 I iTantraLink: tx seq=1 bytes=37 t=1789466153933
+09-15 15:25:53.957 22247 22327 I iTantraLink: ack seq=1 t=1789466153957
+09-15 15:26:01.576 22247 22414 I iTantraLink: tx seq=2 bytes=49 t=1789466161576
+09-15 15:26:02.463 22247 22318 I iTantraLink: tx seq=2 bytes=49 t=1789466162463
+09-15 15:26:02.605 22247 22421 I iTantraLink: tx seq=3 bytes=49 t=1789466162605
+09-15 15:26:03.467 22247 22318 I iTantraLink: tx seq=3 bytes=49 t=1789466163467
+09-15 15:26:04.471 22247 22318 I iTantraLink: tx seq=2 bytes=49 t=1789466164471
+09-15 15:26:05.475 22247 22318 I iTantraLink: tx seq=3 bytes=49 t=1789466165475
+09-15 15:26:07.980 22247 22318 I iTantraLink: tx seq=2 bytes=49 t=1789466167980
+09-15 15:26:08.981 22247 22318 I iTantraLink: tx seq=3 bytes=49 t=1789466168981
+09-15 15:26:14.494 22247 22318 I iTantraLink: tx seq=2 bytes=49 t=1789466174493
+09-15 15:26:15.495 22247 22318 I iTantraLink: tx seq=3 bytes=49 t=1789466175495
+09-15 15:26:17.798 22247 22444 I iTantraLink: tx seq=2 bytes=49 t=1789466177798
+09-15 15:26:17.800 22247 22444 I iTantraLink: tx seq=3 bytes=49 t=1789466177800
+09-15 15:26:17.836 22247 22443 I iTantraLink: ack seq=2 t=1789466177836
+09-15 15:26:17.842 22247 22443 I iTantraLink: ack seq=3 t=1789466177842
 --------- beginning of main
-09-15 10:10:05.330 15781 15854 I iTantraLink: rx seq=0 bytes=45 t=1789447205330
-09-15 10:10:05.365 15781 15888 I iTantraLink: speak msg=1 alert=false replay=false clause=Bridge on the east road is gone
-09-15 10:10:20.029 15781 15854 I iTantraLink: rx seq=1 bytes=37 t=1789447220029
-09-15 10:10:20.056 15781 15888 I iTantraLink: speak msg=2 alert=false replay=false clause=Landscape test message
-09-15 10:10:42.640 15993 16069 I iTantraLink: rx seq=2 bytes=49 t=1789447242640
-09-15 10:10:42.645 15993 16069 I iTantraLink: rx seq=3 bytes=49 t=1789447242645
-09-15 10:10:43.086 15993 16075 I iTantraLink: speak msg=1 alert=false replay=false clause=Queued while you were gone one
-09-15 10:10:47.271 15993 16075 I iTantraLink: speak msg=2 alert=false replay=false clause=Queued while you were gone two
+09-15 15:25:39.573 12891 12966 I iTantraLink: rx seq=0 bytes=45 t=1789466139572
+09-15 15:25:39.585 12891 13003 I iTantraLink: speak msg=1 alert=false replay=false clause=Bridge on the east road is gone
+09-15 15:25:54.582 12891 12966 I iTantraLink: rx seq=1 bytes=37 t=1789466154581
+09-15 15:25:54.622 12891 13003 I iTantraLink: speak msg=2 alert=false replay=false clause=Landscape test message
+09-15 15:26:18.450 13141 13219 I iTantraLink: rx seq=2 bytes=49 t=1789466178450
+09-15 15:26:18.474 13141 13219 I iTantraLink: rx seq=3 bytes=49 t=1789466178474
+09-15 15:26:18.896 13141 13225 I iTantraLink: speak msg=1 alert=false replay=false clause=Queued while you were gone one
+09-15 15:26:23.376 13141 13225 I iTantraLink: speak msg=2 alert=false replay=false clause=Queued while you were gone two

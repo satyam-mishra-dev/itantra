@@ -1,16 +1,16 @@
 ### gsm:gsm
 --------- beginning of main
-09-15 10:09:29.784 15783 15917 I iTantraLink: tx seq=0 bytes=44 t=1789447169784
-09-15 10:09:29.799 15783 15866 I iTantraLink: ack seq=0 t=1789447169799
-09-15 10:09:32.270 15783 15925 I iTantraLink: tx seq=1 bytes=33 t=1789447172270
-09-15 10:09:32.286 15783 15866 I iTantraLink: ack seq=1 t=1789447172286
-09-15 10:09:34.769 15783 15939 I iTantraLink: tx seq=2 bytes=54 t=1789447174769
-09-15 10:09:34.782 15783 15866 I iTantraLink: ack seq=2 t=1789447174782
+09-15 15:24:58.181 22024 22160 I iTantraLink: tx seq=0 bytes=44 t=1789466098181
+09-15 15:24:58.202 22024 22110 I iTantraLink: ack seq=0 t=1789466098202
+09-15 15:25:00.769 22024 22169 I iTantraLink: tx seq=1 bytes=33 t=1789466100769
+09-15 15:25:00.775 22024 22110 I iTantraLink: ack seq=1 t=1789466100775
+09-15 15:25:03.835 22024 22184 I iTantraLink: tx seq=2 bytes=54 t=1789466103835
+09-15 15:25:03.854 22024 22110 I iTantraLink: ack seq=2 t=1789466103854
 --------- beginning of main
-09-15 10:09:29.665 15439 15511 I iTantraLink: rx seq=0 bytes=44 t=1789447169664
-09-15 10:09:29.707 15439 15546 I iTantraLink: speak msg=1 alert=false replay=false clause=Water rising near the bridge
-09-15 10:09:32.152 15439 15511 I iTantraLink: rx seq=1 bytes=33 t=1789447172151
-09-15 10:09:32.181 15439 15546 I iTantraLink: speak msg=2 alert=false replay=false clause=Send boats to ward 7
-09-15 10:09:34.642 15439 15511 I iTantraLink: rx seq=2 bytes=54 t=1789447174642
-09-15 10:09:34.662 15439 15546 I iTantraLink: speak msg=3 alert=true replay=false clause=Cyclone landfall in 2 hours evacuate
-09-15 10:09:37.734 15439 15546 I iTantraLink: speak msg=3 alert=true replay=true clause=Cyclone landfall in 2 hours evacuate
+09-15 15:24:58.831 12585 12660 I iTantraLink: rx seq=0 bytes=44 t=1789466098831
+09-15 15:24:58.932 12585 12697 I iTantraLink: speak msg=1 alert=false replay=false clause=Water rising near the bridge
+09-15 15:25:01.408 12585 12660 I iTantraLink: rx seq=1 bytes=33 t=1789466101408
+09-15 15:25:02.309 12585 12697 I iTantraLink: speak msg=2 alert=false replay=false clause=Send boats to ward 7
+09-15 15:25:04.473 12585 12660 I iTantraLink: rx seq=2 bytes=54 t=1789466104473
+09-15 15:25:04.548 12585 12697 I iTantraLink: speak msg=3 alert=true replay=false clause=Cyclone landfall in 2 hours evacuate
+09-15 15:25:07.828 12585 12697 I iTantraLink: speak msg=3 alert=true replay=true clause=Cyclone landfall in 2 hours evacuate
