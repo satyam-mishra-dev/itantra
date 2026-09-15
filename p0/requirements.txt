@@ -7,3 +7,4 @@ onnxruntime==1.29.0
 sherpa-onnx==1.13.6
 soundfile==0.14.0
 vosk==0.3.44
+reedsolo==1.7.0
