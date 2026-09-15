@@ -46,7 +46,9 @@ class MainActivity : Activity() {
 
     private lateinit var vc: VarnaCode
     @Volatile private var speech: SpeechEngine? = null
-    private lateinit var transports: List<Transport>
+    private lateinit var transports: List<Transport>   // [relay] — the bearers live inside it
+    private lateinit var nsd: NsdTransport
+    private lateinit var bt: BtTransport
     private lateinit var transcriptBox: LinearLayout
     private lateinit var scroll: ScrollView
     private lateinit var emptyHint: View
@@ -135,10 +137,16 @@ class MainActivity : Activity() {
             } catch (t: Throwable) { null }
         }.start()
 
-        transports = listOf(
-            NsdTransport(this, ::onFrameBytes) { s -> runOnUiThread { setStatus(s) } },
-            BtTransport(this, ::onFrameBytes) { s -> runOnUiThread { setStatus(s) } },
-        )
+        // Flood relay wraps both bearers: A→B→C when A and C can't hear each other (+9 B envelope, TTL 3).
+        // myId = 16 bits, stable per install, so a relay node can dedupe our frames across our restarts.
+        val prefs = getSharedPreferences("itantra", MODE_PRIVATE)
+        val myId = prefs.getInt("relayId", -1).takeIf { it >= 0 }
+            ?: (1..0xFFFF).random().also { prefs.edit().putInt("relayId", it).apply() }
+        val relay = RelayTransport(myId, onFrame = ::onFrameBytes)
+        nsd = NsdTransport(this, relay::onReceive) { s -> runOnUiThread { setStatus(s) } }
+        bt = BtTransport(this, relay::onReceive) { s -> runOnUiThread { setStatus(s) } }
+        relay.attach(listOf(nsd, bt))
+        transports = listOf(relay)
         transports.forEach { it.start() }
         sender.acked = { s ->
             Log.i(LINK, "ack seq=$s t=${System.currentTimeMillis()}")
@@ -146,7 +154,7 @@ class MainActivity : Activity() {
         }
         Thread { while (true) { Thread.sleep(500); pump() } }.apply { isDaemon = true }.start()
         intent.getStringExtra("ip")?.let { ip ->
-            status.postDelayed({ (transports.first() as NsdTransport).manualConnect(ip) }, 600)
+            status.postDelayed({ nsd.manualConnect(ip) }, 600)
         }
 
         val wanted = mutableListOf<String>()
@@ -164,7 +172,7 @@ class MainActivity : Activity() {
             startActivity(Intent(this, EvalActivity::class.java))
         }
         findViewById<View>(R.id.connectIp).setOnClickListener {
-            askIp { (transports.first() as NsdTransport).manualConnect(it) }
+            askIp { nsd.manualConnect(it) }
         }
 
         val ptt = findViewById<Button>(R.id.ptt)
@@ -671,7 +679,7 @@ class MainActivity : Activity() {
     override fun onRequestPermissionsResult(code: Int, perms: Array<out String>, res: IntArray) {
         super.onRequestPermissionsResult(code, perms, res)
         startPtt()
-        transports.forEach { if (it is BtTransport) it.start() }
+        bt.start()
     }
 
     override fun onDestroy() {
