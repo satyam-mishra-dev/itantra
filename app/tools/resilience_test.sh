@@ -17,7 +17,7 @@ print((int(m.group(1))+int(m.group(3)))//2,(int(m.group(2))+int(m.group(4)))//2)
 start() { # launcher is ConnectActivity (MainActivity is not exported): open it and tap "find peers"
   $ADB -s $1 shell am start -n $PKG/.ConnectActivity >/dev/null; sleep 2
   read fx fy <<<"$(center $1 findPeers)"; [ -n "${fx:-}" ] && $ADB -s $1 shell input tap $fx $fy; sleep 1; }
-connected() { for i in $(seq 1 30); do texts "$1" | grep -q "● connected" && return 0; sleep 2; done; return 1; }
+connected() { for i in $(seq 1 30); do texts "$1" | grep -q "connected ·" && return 0; sleep 2; done; return 1; }
 send() { # dev text — `say` extra: same code path as typed/STT text, works with a voice pack installed (input box hidden then)
   $ADB -s $1 shell am start -n $PKG/.MainActivity --es say "'$2'" >/dev/null 2>&1; }
 seen() { for k in $(seq 1 $3); do texts $1 | grep -qF "$2" && return 0; sleep 1; done; return 1; }
