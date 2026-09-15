@@ -10,8 +10,8 @@ android {
         applicationId = "com.nullpointers.itantra"
         minSdk = 26 // res/font (Outfit) needs 26; Android 8 (2017) is the floor of "low-end phones sold today"
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.2"
+        versionCode = 2
+        versionName = "0.3"
         ndk {
             // real target phones are ARM; dropping x86 halves the APK (rubric: efficiency)
             abiFilters += listOf("arm64-v8a", "armeabi-v7a")
