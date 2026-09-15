@@ -94,6 +94,7 @@ run on `itantra_c`/`itantra_d` (ports 5570/5572) with the Hindi STT (IndicConfor
 | 16 | phrase frame hi → or | PASS | "12 लोग घायल हैं" → 10 B → B renders "12 ଜଣ ଆହତ।", ACKed |
 | 17 | loop_test full/gsm/edge, resilience ×4 | PASS | tables above re-run on the Reliable/SpeakQueue build; tx→rx 2–108 ms |
 | 18 | CER on the phone vs the deck | fixed | Kotlin CER counted punctuation (26 % for a perfect transcript); now normalised like p0 `norm_dev` |
+| 19 | **real phone** — Realme RMX3842 (Android 16, 8 GB), Wi-Fi-adb, packs from this Mac | PASS | fresh install + 3 permission prompts, no crash; both hi packs downloaded in ~15 s over the phone's hotspot; mic → STT "हाँ सही है" STT 552 ms for ≈0.8 s of speech (**RTF 0.70**, first utterance incl. engine warm-up), ✓ from the emulator peer; receive → first audio 2110 ms first message, 359–823 ms after; ALERT raised MUSIC/ALARM 9/4 → 16/16 and restored (stopped further ALERT tests at the owner's request); **self-dial bug found** (restarted app discovered its own stale mDNS record and connected to itself) → fixed |
 
 Also fixed without a row: APK built on another laptop would not update this one (different debug keys) → one
 committed signing key for all build types; BT bearer never started on first launch (permission granted after
