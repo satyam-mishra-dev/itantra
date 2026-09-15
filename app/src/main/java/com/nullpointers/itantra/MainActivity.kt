@@ -84,6 +84,11 @@ class MainActivity : Activity() {
     private val speakQueue = SpeakQueue()           // clause scheduler: ALERT preempts at a clause boundary, cut message resumes
     private val chipOf = HashMap<Any, TextView>()   // received msgId → chip, gets "first audio N ms"
     private var msgIds = 0
+    // Team key (AES-GCM, +28 B/frame) and location sharing (+7 B) live in prefs; the settings tile edits them.
+    private lateinit var prefs: android.content.SharedPreferences
+    @Volatile private var key: ByteArray? = null
+    private lateinit var stats: TextView
+    private var nSent = 0; private var bytesSent = 0L; private var voiceSec = 0.0   // the on-stage number: text bytes vs a voice call
     private val LINK = "iTantraLink"                // logcat tag: tx/rx/ack with epoch ms for latency measurement
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -138,7 +143,10 @@ class MainActivity : Activity() {
 
         // Flood relay wraps both bearers: A→B→C when A and C can't hear each other (+9 B envelope, TTL 3).
         // myId = 16 bits, stable per install, so a relay node can dedupe our frames across our restarts.
-        val prefs = getSharedPreferences("itantra", MODE_PRIVATE)
+        prefs = getSharedPreferences("itantra", MODE_PRIVATE)
+        key = keyFrom(prefs.getString("teamKey", "") ?: "")
+        stats = findViewById(R.id.stats)
+        findViewById<View>(R.id.settings).setOnClickListener { showSettings() }
         val myId = prefs.getInt("relayId", -1).takeIf { it >= 0 }
             ?: (1..0xFFFF).random().also { prefs.edit().putInt("relayId", it).apply() }
         val relay = RelayTransport(myId, onFrame = ::onFrameBytes)
@@ -149,7 +157,9 @@ class MainActivity : Activity() {
         transports.forEach { it.start() }
         sender.acked = { s ->
             Log.i(LINK, "ack seq=$s t=${System.currentTimeMillis()}")
-            runOnUiThread { metaOf[s]?.let { if (!it.text.endsWith("✓")) it.append(" ✓") } }
+            runOnUiThread {
+                metaOf[s]?.let { if (!it.text.endsWith("✓")) { it.append(" ✓"); buzz() } }
+            }
         }
         Thread { while (true) { Thread.sleep(500); pump() } }.apply { isDaemon = true }.start()
         intent.getStringExtra("ip")?.let { ip ->
@@ -368,8 +378,9 @@ class MainActivity : Activity() {
         val prio = if (alertPill.isSelected) Frame.ALERT else Frame.NORMAL
         setAlert(false) // one-shot: never let the next casual message inherit max-volume
         val s = sender.nextSeq()   // skips seqs still in flight, so a wrap never clobbers a queued frame
-        val frame = Frame.pack(vc, text, l, prio, s, prosody = prosody)
+        val frame = Frame.pack(vc, text, l, prio, s, key = key, prosody = prosody, location = myLocation())
         val best = pb.match(text, l).firstOrNull()   // phrase snap is offered, never auto-sent
+        countSentence(frame.size, if (audioSec > 0.05) audioSec else text.length / 12.0)
         Thread {
             sender.send(frame, prio)
             pump()
@@ -419,8 +430,9 @@ class MainActivity : Activity() {
             }
             return
         }
-        val r = try { receiver.ingest(bytes, vc) } catch (e: Exception) {
-            runOnUiThread { bubble("corrupt frame dropped", "${bytes.size} B · CRC/decode failed", alert = false, incoming = true) }; return
+        val r = try { receiver.ingest(bytes, vc, key) } catch (e: Exception) {
+            val why = if (e.message?.contains("key") == true || e.message == "auth failed") getString(R.string.encrypted_no_key) else "CRC/decode failed"
+            runOnUiThread { bubble("corrupt frame dropped", "${bytes.size} B · $why", alert = false, incoming = true) }; return
         }
         r.ctrl.forEach { tx(it) }                              // ACK (duplicates too) + NACKs for gaps
         val msg = r.msg ?: return                              // duplicate: ACKed above, not shown again
@@ -432,8 +444,10 @@ class MainActivity : Activity() {
         val alert = msg.prio == Frame.ALERT
         val pp = msg.prosody?.let { Prosody.ttsParams(it) }
         val id = ++msgIds
+        val where = msg.location?.let { " · 📍 " + describe(it) } ?: ""
+        countSentence(size, msg.text.length / 12.0)
         // Bubble lands the moment the frame does; the chip gets "first audio N ms" when its first clause plays.
-        chipOf[id] = bubble(msg.text, "$size B" + (if (alert) " · ALERT" else "") + " · ${msg.lang}" + extra, alert, incoming = true)
+        chipOf[id] = bubble(msg.text, "$size B" + (if (alert) " · ALERT" else "") + " · ${msg.lang}" + extra + where, alert, incoming = true)
         speakQueue.enqueue(msg.text, msg.lang, alert, pp?.gain ?: 1f, msgId = id)
         firstAudioAt[id] = tRecv
         speedOf[id] = pp?.speed ?: 1f
@@ -672,6 +686,76 @@ class MainActivity : Activity() {
         col.animate().alpha(1f).translationY(0f).setDuration(150).start()
         scroll.post { scroll.fullScroll(View.FOCUS_DOWN) }
         return if (rest.isEmpty()) byteChip else metaChip
+    }
+
+    private fun buzz() {
+        val v = getSystemService(VIBRATOR_SERVICE) as? android.os.Vibrator ?: return
+        if (Build.VERSION.SDK_INT >= 26) v.vibrate(android.os.VibrationEffect.createOneShot(25, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
+    }
+
+    /** SHA-256 of the passphrase, first 16 bytes = AES-128 key; empty passphrase = plaintext frames. */
+    private fun keyFrom(pass: String): ByteArray? =
+        if (pass.isBlank()) null else java.security.MessageDigest.getInstance("SHA-256").digest(pass.trim().toByteArray()).copyOf(16)
+
+    private fun lastFix(): android.location.Location? {
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) return null
+        val lm = getSystemService(LOCATION_SERVICE) as android.location.LocationManager
+        return try {
+            lm.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER)
+                ?: lm.getLastKnownLocation(android.location.LocationManager.NETWORK_PROVIDER)
+        } catch (_: SecurityException) { null }
+    }
+
+    /** lat/lon to attach, or null (sharing off / no fix yet). ponytail: last known fix — no GPS wake-up, zero battery cost. */
+    private fun myLocation(): Pair<Double, Double>? =
+        if (!prefs.getBoolean("shareLoc", false)) null else lastFix()?.let { Pair(it.latitude, it.longitude) }
+
+    /** "1.2 km NE" from our own fix, else the raw coordinates. */
+    private fun describe(p: Pair<Double, Double>): String {
+        val me = lastFix() ?: return "%.4f, %.4f".format(p.first, p.second)
+        val out = FloatArray(2)
+        android.location.Location.distanceBetween(me.latitude, me.longitude, p.first, p.second, out)
+        val dirs = listOf("N", "NE", "E", "SE", "S", "SW", "W", "NW")
+        val dir = dirs[(((out[1] + 360) % 360 + 22.5) / 45).toInt() % 8]
+        return if (out[0] < 1000) "%.0f m %s".format(out[0], dir) else "%.1f km %s".format(out[0] / 1000, dir)
+    }
+
+    /** Text bytes on the wire vs what a voice call would have cost (AMR-NB 12.2 kbps = 1525 B/s) — the number the jury remembers. */
+    private fun countSentence(bytes: Int, sec: Double) {
+        nSent++; bytesSent += bytes; voiceSec += sec
+        val voice = voiceSec * 1525
+        stats.visibility = View.VISIBLE
+        stats.text = getString(R.string.stats_strip, nSent, fmtBytes(bytesSent), fmtBytes(voice.toLong()),
+            if (bytesSent > 0) "%,d".format((voice / bytesSent).toLong()) else "–")
+    }
+
+    private fun fmtBytes(b: Long) = when {
+        b < 1000 -> "$b B"; b < 1_000_000 -> "%.1f KB".format(b / 1000.0); else -> "%.2f MB".format(b / 1e6)
+    }
+
+    private fun showSettings() {
+        val d = resources.displayMetrics.density
+        val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding((20 * d).toInt(), (8 * d).toInt(), (20 * d).toInt(), 0) }
+        val keyBox = EditText(this).apply { hint = getString(R.string.team_key_hint); setText(prefs.getString("teamKey", "")) }
+        val note = TextView(this).apply { text = getString(R.string.team_key_note); textSize = 12f }
+        val loc = android.widget.Switch(this).apply { text = getString(R.string.share_location); isChecked = prefs.getBoolean("shareLoc", false) }
+        val peers = (nsd.peers() + bt.peers()).ifEmpty { listOf(getString(R.string.no_peers_yet)) }
+        val peersView = TextView(this).apply {
+            text = getString(R.string.peers_title) + "\n" + peers.joinToString("\n") { "● " + shortPeer(it) }
+            setPadding(0, (16 * d).toInt(), 0, 0)
+        }
+        box.addView(keyBox); box.addView(note); box.addView(loc); box.addView(peersView)
+        android.app.AlertDialog.Builder(this)
+            .setTitle(R.string.settings_title)
+            .setView(box)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                prefs.edit().putString("teamKey", keyBox.text.toString()).putBoolean("shareLoc", loc.isChecked).apply()
+                key = keyFrom(keyBox.text.toString())
+                if (loc.isChecked && checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+                    requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 2)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     /** A lone chip row (no bubble) under the last message — used for the phrase-snap offer. */

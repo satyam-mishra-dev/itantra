@@ -49,6 +49,14 @@
     <string name="this_phone">This phone: %1$s</string>
     <string name="phrase_offer">send as phrase · 9 B → “%1$s”</string>
     <string name="phrase_sent">sent as phrase · %1$d B</string>
+    <string name="settings_title">Team &amp; sharing</string>
+    <string name="team_key_hint">team key (leave empty = no encryption)</string>
+    <string name="team_key_note">Same key on every phone. Frames are AES-GCM encrypted (+28 B).</string>
+    <string name="share_location">Attach my location (+7 B)</string>
+    <string name="peers_title">Peers on the link</string>
+    <string name="no_peers_yet">none yet</string>
+    <string name="stats_strip">%1$d sentences · %2$s sent · a voice call would be %3$s · %4$s× smaller</string>
+    <string name="encrypted_no_key">encrypted — set the same team key</string>
     <string name="sideload_hint">packs install from the talk screen (or adb push to /sdcard/Android/data/com.nullpointers.itantra/files/models/&lt;lang&gt;/)</string>
     <string name="hero_sample">बाढ़ का पानी बढ़ रहा है, तुरंत निकलें।</string>
     <string name="hero_sample_meta">hi · 1.4 s of speech · sent as</string>

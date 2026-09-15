@@ -60,6 +60,16 @@
             android:textSize="13sp"
             android:textColor="@color/onHero"
             android:fontFamily="@font/outfit_semibold" />
+
+        <TextView
+            android:id="@+id/stats"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textSize="12sp"
+            android:textColor="@color/onHeroMuted"
+            android:fontFamily="@font/outfit_medium" />
     </LinearLayout>
     </FrameLayout>
 
@@ -181,6 +191,17 @@
                 android:letterSpacing="0.1"
                 android:fontFamily="@font/outfit_bold" />
             <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
+            <FrameLayout
+                android:id="@+id/settings"
+                style="@style/IconTile"
+                android:layout_marginEnd="10dp">
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_settings"
+                    android:contentDescription="@string/settings_title" />
+            </FrameLayout>
             <FrameLayout
                 android:id="@+id/connectIp"
                 style="@style/IconTile"

@@ -25,6 +25,7 @@ class BtTransport(
     private val uuid: UUID = UUID.fromString("6a746e74-7261-4001-8000-00805f9b34fb") // "itantra" v1
     private val sockets = CopyOnWriteArrayList<BluetoothSocket>()
     @Volatile private var running = false
+    fun peers(): List<String> = sockets.map { "BT " + (try { it.remoteDevice.name } catch (_: SecurityException) { null } ?: it.remoteDevice.address) }
 
     private fun allowed(): Boolean =
         Build.VERSION.SDK_INT < 31 ||
