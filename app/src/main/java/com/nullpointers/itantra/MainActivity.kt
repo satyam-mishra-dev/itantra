@@ -681,8 +681,8 @@ class MainActivity : Activity() {
             this.text = text
             textSize = 12f
             typeface = resources.getFont(R.font.outfit_medium)
-            setTextColor(getColor(R.color.orange))
-            setBackgroundResource(R.drawable.chip_orange)
+            setTextColor(getColor(R.color.warnText))
+            setBackgroundResource(R.drawable.chip_status_warn)
             setPadding(dp(9), dp(4), dp(9), dp(4))
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
