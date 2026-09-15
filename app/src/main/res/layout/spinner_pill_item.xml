@@ -11,6 +11,6 @@
     android:textColor="@color/pillInk"
     android:fontFamily="@font/outfit_semibold"
     android:drawableEnd="@drawable/ic_chevron"
-    android:drawableTint="#4B3BC9"
+    android:drawableTint="@color/heroDeep"
     android:drawablePadding="4dp"
     android:singleLine="true" />

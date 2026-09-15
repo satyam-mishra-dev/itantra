@@ -33,5 +33,11 @@
     <style name="ITantra.Dialog" parent="android:Theme.Material.Light.Dialog.Alert">
         <item name="android:colorAccent">@color/hero</item>
         <item name="android:fontFamily">@font/outfit</item>
+        <item name="android:windowTitleStyle">@style/ITantra.DialogTitle</item>
+        <item name="android:colorBackground">@color/card</item>
+    </style>
+    <style name="ITantra.DialogTitle" parent="android:TextAppearance.Material.DialogWindowTitle">
+        <item name="android:fontFamily">@font/outfit_bold</item>
+        <item name="android:textColor">@color/ink</item>
     </style>
 </resources>
