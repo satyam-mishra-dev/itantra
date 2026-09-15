@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">iTantra</string>
     <string name="tagline">offline voice → ~45-byte text → voice · works when towers don\'t</string>
-    <string name="entry_headline">Voice that travels as text</string>
+    <string name="entry_headline">Voice that travels\nas text</string>
     <string name="entry_sub">offline · 10 languages · works when towers don\'t</string>
     <string name="entry_speak_in">Speak in</string>
     <string name="find_peers">Find peers nearby</string>
@@ -50,4 +50,8 @@
     <string name="phrase_offer">send as phrase · 9 B → “%1$s”</string>
     <string name="phrase_sent">sent as phrase · %1$d B</string>
     <string name="sideload_hint">packs install from the talk screen (or adb push to /sdcard/Android/data/com.nullpointers.itantra/files/models/&lt;lang&gt;/)</string>
+    <string name="hero_sample">बाढ़ का पानी बढ़ रहा है, तुरंत निकलें।</string>
+    <string name="hero_sample_meta">hi · 1.4 s of speech · sent as</string>
+    <string name="hero_bytes">45 B</string>
+    <string name="hero_kicker">offline · 10 languages</string>
 </resources>
