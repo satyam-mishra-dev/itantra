@@ -31,7 +31,7 @@ still works when the towers don't."
 
 ## Numbers you may quote (all measured, sources in p0/RESULTS.md and app/TESTING.md)
 45 B/sentence · 169× smaller than an AMR-NB cellular call · VarnaCode 4.45–5.4 bits/char (beats Unishox2 7.3–7.8, SCSU 8.2–8.7) ·
-Hindi real-speech CER 2.9 % · receive → first audio 0.3–1 s on a phone · int8 STT pack 140 MB, RTF 0.7 on a Realme · AFSK frame 0.3 s of audio,
+Hindi real-speech CER 2.9 % · receive → first audio 0.3–1 s on a phone · int8 STT pack 140 MB, RTF 0.34 on the emulator (2.9 s clip) / 0.7 on a Realme first utterance incl. warm-up (0.8 s clip, TESTING.md row 19 — steady-state on a longer clip pending) · AFSK frame 0.3 s of audio,
 works at 6 dB SNR, Reed–Solomon buys ≈2 dB · relay +9 B per frame when relayed (envelope is rewritten, not stacked, per hop) · encryption +28 B/frame · location +7 B.
 
 ## Don't
