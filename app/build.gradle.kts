@@ -22,7 +22,7 @@ android {
     // Where <lang>-stt.zip / <lang>-tts.zip live. Override for a local test server:
     //   ./gradlew assembleDebug -PpackBase=http://10.0.2.2:8000
     defaultConfig.buildConfigField("String", "PACK_BASE",
-        "\"${project.findProperty("packBase") ?: "https://github.com/satyam-mishra-dev/itantra-packs/releases/download/v1"}\"")
+        "\"${project.findProperty("packBase") ?: "https://github.com/satyam-mishra-dev/itantra/releases/download/v0.3"}\"")
 
     // One committed key for every build type + every machine: an APK built on a teammate's laptop
     // used to fail to update one built here ("App not installed" — different debug keys).
