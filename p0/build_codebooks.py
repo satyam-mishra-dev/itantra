@@ -38,7 +38,7 @@ def fetch_corpus(lang):
             'explaintext': 1, 'exlimit': 20, 'exintro': 1,
         })
         url = f'https://{WIKI[lang]}.wikipedia.org/w/api.php?{q}'
-        req = urllib.request.Request(url, headers={'User-Agent': 'iTantra-SIH2026-codebook-builder/1.0'})
+        req = urllib.request.Request(url, headers={'User-Agent': 'iTantra-codebook-builder/1.0'})
         try:
             data = json.load(urllib.request.urlopen(req, timeout=30))
         except Exception as e:
@@ -71,7 +71,7 @@ def _fetch_titles(lang):
             'explaintext': 1, 'titles': title, 'redirects': 1,
         })
         url = f'https://{WIKI[lang]}.wikipedia.org/w/api.php?{q}'
-        req = urllib.request.Request(url, headers={'User-Agent': 'iTantra-SIH2026-codebook-builder/1.0'})
+        req = urllib.request.Request(url, headers={'User-Agent': 'iTantra-codebook-builder/1.0'})
         try:
             data = json.load(urllib.request.urlopen(req, timeout=30))
             for page in data.get('query', {}).get('pages', {}).values():

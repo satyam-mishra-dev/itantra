@@ -37,7 +37,7 @@ spoken sentence per frame.*
 | Coder | bits/char | Source |
 |---|---|---|
 | UTF-8 | 24.0 | 3-byte Indic plane |
-| SCSU / BOCU-1 | 8.0–8.8 | JOSS Unishox2 paper, measured (research/text-compression.md) |
+| SCSU / BOCU-1 | 8.0–8.8 | JOSS Unishox2 paper, measured |
 | Unishox2 (Meshtastic's coder) | 7.3–7.8 | JOSS paper, measured Indic sentences |
 | GSM 7-bit national tables (3GPP TS 23.038) | 7.0 | deployed SMS floor |
 | **VarnaCode v1** | **4.45–5.36** | this repo, held-out sentences |
@@ -91,7 +91,7 @@ Loop: Hindi text -> Piper VITS (hi_IN-pratham-medium) -> wav -> STT -> text, 4 s
 Round-trip CER compounds BOTH engines' errors (TTS pronunciation + STT recognition) —
 per-engine CER on natural speech is lower. Whisper-tiny emits romanized Hindi, so its raw
 same-script CER is meaningless; we report a transliteration-normalized approximation.
-IndicConformer int8 (native Devanagari, research/stt.md) replaces both in P1.
+IndicConformer int8 (native Devanagari) replaces both in P1.
 
 | Metric | Piper TTS | Whisper-tiny STT | Vosk small-hi STT |
 |---|---|---|---|
@@ -276,4 +276,4 @@ Note the honest baseline: these register sentences are short, so text frames are
 | RS8 (+8 B) | 0% | 0% | **77%** | **100%** | 100% | 100% | 100% | 0.35 s |
 | RS16 (+16 B) | 0% | 0% | **90%** | 100% | 100% | 100% | 100% | 0.40 s |
 
-Read: RS buys ≈2 dB on this modem for 20–35% more airtime — matching the 2–3 dB the literature predicts for app-layer FEC (research/thesis-channel-adaptive.md). Below −2 dB nothing decodes regardless of parity: the floor is the Bell-202 demodulator (no clock recovery / AGC), not the code. The next 6 dB is a baud-rate knob (1200 → 300 bps), which is the adaptive-tier work, not more parity. LoRa is not app-FEC'd (PHY CR 4/5–4/8 already; failures are whole-packet loss).
+Read: RS buys ≈2 dB on this modem for 20–35% more airtime — matching the 2–3 dB the literature predicts for app-layer FEC. Below −2 dB nothing decodes regardless of parity: the floor is the Bell-202 demodulator (no clock recovery / AGC), not the code. The next 6 dB is a baud-rate knob (1200 → 300 bps), which is the adaptive-tier work, not more parity. LoRa is not app-FEC'd (PHY CR 4/5–4/8 already; failures are whole-packet loss).
