@@ -22,7 +22,7 @@ android {
     // Where <lang>-stt.zip / <lang>-tts.zip live. Override for a local test server:
     //   ./gradlew assembleDebug -PpackBase=http://10.0.2.2:8000
     defaultConfig.buildConfigField("String", "PACK_BASE",
-        "\"\u0024{project.findProperty("packBase") ?: "https://github.com/satyam-mishra-dev/itantra/releases/download/v0.3"}\\")
+        "\"${project.findProperty("packBase") ?: "https://github.com/satyam-mishra-dev/itantra/releases/download/v0.3"}\"")
 
     // Release signing credentials must never be committed to source control.
     // Configure all four environment variables in a trusted local environment or CI:
