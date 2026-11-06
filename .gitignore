@@ -1,2 +1,7 @@
 .DS_Store
 corpus_cache/
+
+# Android signing credentials and local signing configuration
+*.keystore
+*.jks
+keystore.properties

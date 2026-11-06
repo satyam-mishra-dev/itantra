@@ -24,12 +24,51 @@ android {
     defaultConfig.buildConfigField("String", "PACK_BASE",
         "\"${project.findProperty("packBase") ?: "https://github.com/satyam-mishra-dev/itantra/releases/download/v0.3"}\"")
 
-    // One committed key for every build type + every machine: an APK built on a teammate's laptop
-    // used to fail to update one built here ("App not installed" — different debug keys).
-    signingConfigs.create("shared") {
-        storeFile = file("itantra.keystore"); storePassword = "itantra"; keyAlias = "itantra"; keyPassword = "itantra"
+    // Release signing credentials must never be committed to source control.
+    // Configure all four environment variables in a trusted local environment or CI:
+    // ANDROID_KEYSTORE_PATH, ANDROID_KEYSTORE_PASSWORD,
+    // ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD.
+    val releaseStoreFile = providers.environmentVariable("ANDROID_KEYSTORE_PATH").orNull
+    val releaseStorePassword = providers.environmentVariable("ANDROID_KEYSTORE_PASSWORD").orNull
+    val releaseKeyAlias = providers.environmentVariable("ANDROID_KEY_ALIAS").orNull
+    val releaseKeyPassword = providers.environmentVariable("ANDROID_KEY_PASSWORD").orNull
+
+    val releaseSigningValues = listOf(
+        releaseStoreFile,
+        releaseStorePassword,
+        releaseKeyAlias,
+        releaseKeyPassword
+    )
+    val hasReleaseSigningCredentials = releaseSigningValues.all { !it.isNullOrBlank() }
+    val hasPartialReleaseSigningCredentials =
+        releaseSigningValues.any { !it.isNullOrBlank() } && !hasReleaseSigningCredentials
+
+    if (hasPartialReleaseSigningCredentials) {
+        throw GradleException(
+            "Incomplete release signing configuration. Provide all four ANDROID_KEYSTORE_* environment variables."
+        )
     }
-    buildTypes.all { signingConfig = signingConfigs.getByName("shared") }
+
+    if (hasReleaseSigningCredentials) {
+        signingConfigs.create("release") {
+            storeFile = file(releaseStoreFile!!)
+            storePassword = releaseStorePassword!!
+            keyAlias = releaseKeyAlias!!
+            keyPassword = releaseKeyPassword!!
+        }
+    }
+
+    buildTypes {
+        getByName("debug") {
+            // Use Android Gradle Plugin's standard per-user debug signing key.
+        }
+        getByName("release") {
+            // Without release credentials, this remains an unsigned release build.
+            if (hasReleaseSigningCredentials) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
