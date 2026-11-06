@@ -377,7 +377,13 @@ class MainActivity : Activity() {
     private fun send(text: String, l: String, sttMs: Long, audioSec: Double, prosody: Int? = null) {
         val prio = if (alertPill.isSelected) Frame.ALERT else Frame.NORMAL
         setAlert(false) // one-shot: never let the next casual message inherit max-volume
-        val s = sender.nextSeq()   // skips seqs still in flight, so a wrap never clobbers a queued frame
+        val s = try {
+            sender.nextSeq()
+        } catch (_: IllegalStateException) {
+            setStatus("delivery window full · waiting for ACK")
+            Toast.makeText(this, "Too many unacknowledged messages. Wait for an ACK and try again.", Toast.LENGTH_LONG).show()
+            return
+        }
         val frame = Frame.pack(vc, text, l, prio, s, key = key, prosody = prosody, location = myLocation())
         val best = pb.match(text, l).firstOrNull()   // phrase snap is offered, never auto-sent
         countSentence(frame.size, if (audioSec > 0.05) audioSec else text.length / 12.0)
@@ -402,7 +408,12 @@ class MainActivity : Activity() {
         val chip = bubbleChip(getString(R.string.phrase_offer, pb.render(c.idx, lang(), c.n)), incoming = false)
         chip.setOnClickListener {
             chip.setOnClickListener(null)
-            val s = sender.nextSeq()
+            val s = try {
+                sender.nextSeq()
+            } catch (_: IllegalStateException) {
+                Toast.makeText(this@MainActivity, "Delivery window full. Wait for an ACK before sending a phrase.", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
             val f = pb.pack(c.idx, prio, s, c.n)
             chip.text = getString(R.string.phrase_sent, f.size)
             metaOf[s] = chip
