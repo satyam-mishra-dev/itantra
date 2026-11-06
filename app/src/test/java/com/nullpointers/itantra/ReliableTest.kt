@@ -94,6 +94,37 @@ class ReliableTest {
         assertFalse(s0 in seen)
     }
 
+    @Test fun nextSeqReservesNumbersBeforeFramesAreQueued() {
+        val tx = ReliableSender(now = { 0L })
+        val allocated = (0 until 256).map { tx.nextSeq() }
+        assertEquals(256, allocated.toSet().size)
+        try {
+            tx.nextSeq()
+            fail("Expected sequence exhaustion")
+        } catch (_: IllegalStateException) {
+            // All 256 values are reserved, even though send() has not queued them yet.
+        }
+    }
+
+    @Test fun nextSeqRejectsFullWindowAndReusesOnlyAfterAck() {
+        val tx = ReliableSender(now = { 0L }, tries = mapOf(Frame.NORMAL to null))
+        repeat(256) {
+            val seq = tx.nextSeq()
+            tx.send(Frame.pack(vc, "m$it", "hi", Frame.NORMAL, seq))
+        }
+        assertEquals(256, tx.tick().size)
+        try {
+            tx.nextSeq()
+            fail("Expected sequence exhaustion while all messages are in flight")
+        } catch (_: IllegalStateException) {
+            // No occupied sequence may be handed out.
+        }
+
+        assertTrue(tx.onCtrl(ReliableCtrl.make(127, ReliableCtrl.ACK_BYTE)))
+        val reused = tx.nextSeq()
+        assertEquals(127, reused)
+    }
+
     @Test fun receiverDedupAckAndGapNack() {
         val rx = ReliableReceiver("hi")
         val f1 = Frame.pack(vc, "एक", "hi", Frame.NORMAL, 1)
