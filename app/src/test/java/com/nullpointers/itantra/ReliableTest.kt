@@ -90,8 +90,15 @@ class ReliableTest {
         val s0 = tx.nextSeq()
         tx.send(Frame.pack(vc, "a", "hi", Frame.NORMAL, s0)); tx.tick()
         val seen = HashSet<Int>()
-        repeat(300) { seen += tx.nextSeq() }
+        repeat(255) { seen += tx.nextSeq() }
+        assertEquals(255, seen.size)
         assertFalse(s0 in seen)
+        try {
+            tx.nextSeq()
+            fail("Expected sequence exhaustion with one in-flight and 255 reserved")
+        } catch (_: IllegalStateException) {
+            // The in-flight sequence must remain unavailable after wraparound.
+        }
     }
 
     @Test fun nextSeqReservesNumbersBeforeFramesAreQueued() {
