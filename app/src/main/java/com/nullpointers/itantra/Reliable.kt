@@ -54,6 +54,9 @@ class ReliableSender(
 
     private val queue = ArrayList<Triple<Int, ByteArray, Int>>()   // (seq, frame, prio)
     private val inflight = LinkedHashMap<Int, Flight>()
+    // A sequence number is reserved as soon as nextSeq() returns, before send() queues its frame.
+    // This closes the allocation-to-enqueue gap when callers prepare frames concurrently.
+    private val reserved = HashSet<Int>()
     private val state = HashMap<Int, String>()
     private var seqCounter = 0
     var retransmits = 0; private set
@@ -62,20 +65,26 @@ class ReliableSender(
 
     val backlog: Int @Synchronized get() = inflight.size + queue.size
 
-    /** Next wire seq, skipping any still in flight or queued — the 1-byte wrap must not clobber a frame. */
+    /**
+     * Reserve the next free wire sequence number. Returns no duplicate: if all 256 values are
+     * queued, reserved, or in flight, fail explicitly so the caller can defer/reject the send.
+     */
     @Synchronized
     fun nextSeq(): Int {
-        val busy = inflight.keys + queue.map { it.first }
         repeat(256) {
             val s = seqCounter++ and 0xFF
-            if (s !in busy) return s
+            if (s !in inflight && queue.none { it.first == s } && s !in reserved) {
+                reserved += s
+                return s
+            }
         }
-        return seqCounter++ and 0xFF   // 256 unacked: the peer has been gone half a conversation
+        throw IllegalStateException("Reliable sender sequence space exhausted; wait for an ACK")
     }
 
     @Synchronized
     fun send(frame: ByteArray, prio: Int = Frame.NORMAL) {
         val seq = frame[1].toInt() and 0xFF
+        reserved.remove(seq)
         val item = Triple(seq, frame, prio)
         if (prio == Frame.ALERT) queue.add(0, item) else queue.add(item)
         state[seq] = "queued"
